@@ -130,13 +130,16 @@ Hệ thống hướng tới người học từ trình độ **A1 → C2**, tạ
 # 🔑 RBAC Authorization
 
 ```text
-ADMIN
-  ▲
-  │
-MODERATOR
-  ▲
-  │
-MEMBER
+                     GUEST
+                       ▲
+                       │
+                     MEMBER
+                       ▲
+                       │
+                   MODERATOR
+                       ▲
+                       │
+                     ADMIN
 ```
 
 ### Member
@@ -203,13 +206,13 @@ ecc-backend
 # 💬 Chat Architecture
 
 ```text
-                WebSocket
-                     │
-                     ▼
-                Redis Cache
-                     │
-                     ▼
-              MySQL Database
+                              WebSocket
+                                  │
+                                  ▼
+                               Backend
+                             ┌────┴────┐
+                             ▼         ▼
+                            Redis    MySQL
 ```
 
 ### Real-Time Layer
@@ -329,4 +332,4 @@ English Chat Club được xây dựng nhằm áp dụng các kiến thức:
 
 ---
 
-### ❤️❤️❤️ Empowering learners to practice, connect and grow through real-time English communication ❤️❤️❤️
+### ❤Empowering learners to practice, connect and grow through real-time English communication❤
