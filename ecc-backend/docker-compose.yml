@@ -1,0 +1,40 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: ${PROJECT_NAME}-mysql
+    restart: always
+    env_file:
+      - ./application-env.properties
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - ecc-mysql-data:/var/lib/mysql
+    networks:
+      - ecc-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: ${PROJECT_NAME}-redis
+    restart: always
+    env_file:
+      - ./application-env.properties
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - ecc-redis-data:/data
+    networks:
+      - ecc-network
+
+# Volume lưu dữ liệu MySQL và Redis trong container
+volumes:
+  ecc-mysql-data:
+  ecc-redis-data:
+
+# Network nội bộ cho các container ECC
+networks:
+  ecc-network:
+    driver: bridge
