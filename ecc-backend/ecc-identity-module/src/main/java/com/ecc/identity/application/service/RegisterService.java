@@ -1,7 +1,7 @@
 package com.ecc.identity.application.service;
 
 import com.ecc.common.exception.BadRequestException;
-import com.ecc.identity.api.dto.RegisterRequest;
+import com.ecc.identity.api.dto.request.RegisterRequest;
 import com.ecc.identity.application.port.in.RegisterUseCase;
 import com.ecc.identity.application.port.out.EmailSenderPort;
 import com.ecc.identity.application.port.out.TokenRepositoryPort;

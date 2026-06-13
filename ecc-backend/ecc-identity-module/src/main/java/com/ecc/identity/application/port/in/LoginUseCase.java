@@ -1,7 +1,7 @@
 package com.ecc.identity.application.port.in;
 
-import com.ecc.identity.api.dto.AuthResponse;
-import com.ecc.identity.api.dto.LoginRequest;
+import com.ecc.identity.api.dto.response.AuthResponse;
+import com.ecc.identity.api.dto.request.LoginRequest;
 
 // Use Case đăng nhập hệ thống
 public interface LoginUseCase {

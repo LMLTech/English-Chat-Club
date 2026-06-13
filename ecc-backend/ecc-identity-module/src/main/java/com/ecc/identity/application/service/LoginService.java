@@ -2,8 +2,8 @@ package com.ecc.identity.application.service;
 
 import com.ecc.common.exception.AccountLockedException;
 import com.ecc.common.exception.UnauthorizedException;
-import com.ecc.identity.api.dto.AuthResponse;
-import com.ecc.identity.api.dto.LoginRequest;
+import com.ecc.identity.api.dto.response.AuthResponse;
+import com.ecc.identity.api.dto.request.LoginRequest;
 import com.ecc.identity.application.port.in.LoginUseCase;
 import com.ecc.identity.application.port.out.LoginAttemptRepositoryPort;
 import com.ecc.identity.application.port.out.TokenCachePort;
@@ -13,7 +13,7 @@ import com.ecc.identity.domain.model.RefreshToken;
 import com.ecc.identity.domain.model.User;
 import com.ecc.identity.infrastructure.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value; // Đã bổ sung import
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
