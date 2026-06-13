@@ -6,14 +6,24 @@ import com.ecc.identity.infrastructure.repository.EmailVerificationTokenReposito
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-@Component
-@RequiredArgsConstructor
+import java.util.Optional;
+
+@Component // Adapter triển khai TokenRepositoryPort
+@RequiredArgsConstructor // Tự động tạo constructor cho dependency
 public class TokenRepositoryAdapter implements TokenRepositoryPort {
 
+    // Repository thao tác với bảng email_verification_tokens
     private final EmailVerificationTokenRepository repository;
 
     @Override
     public EmailVerificationToken saveEmailToken(EmailVerificationToken token) {
+        // Lưu EmailVerificationToken vào database
         return repository.save(token);
+    }
+
+    @Override
+    public Optional<EmailVerificationToken> findByTokenHash(String tokenHash) {
+        // Tìm token xác minh email theo tokenHash
+        return repository.findByTokenHash(tokenHash);
     }
 }
