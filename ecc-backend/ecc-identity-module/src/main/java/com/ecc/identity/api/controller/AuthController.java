@@ -1,9 +1,9 @@
 package com.ecc.identity.api.controller;
 
 import com.ecc.common.dto.ApiResponse;
-import com.ecc.identity.api.dto.AuthResponse;
-import com.ecc.identity.api.dto.LoginRequest;
-import com.ecc.identity.api.dto.RegisterRequest;
+import com.ecc.identity.api.dto.response.AuthResponse;
+import com.ecc.identity.api.dto.request.LoginRequest;
+import com.ecc.identity.api.dto.request.RegisterRequest;
 import com.ecc.identity.application.port.in.LoginUseCase;
 import com.ecc.identity.application.port.in.RegisterUseCase;
 import com.ecc.identity.application.port.in.VerifyEmailUseCase;

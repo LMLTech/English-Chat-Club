@@ -1,4 +1,4 @@
-package com.ecc.identity.api.dto;
+package com.ecc.identity.api.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
