@@ -38,7 +38,7 @@ coverage/
 
 # Next.js
 .next/
-out/
+/out/
 
 # Production / Security
 *.pem
