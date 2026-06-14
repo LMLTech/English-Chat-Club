@@ -33,4 +33,9 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     public User save(User user) {
         return repository.save(user);
     }
+
+    @Override
+    public Optional<User> findById(Long id) {
+        return repository.findById(id);
+    }
 }

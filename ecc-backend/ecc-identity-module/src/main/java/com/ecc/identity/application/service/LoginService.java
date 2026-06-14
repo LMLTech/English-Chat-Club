@@ -74,7 +74,7 @@ public class LoginService implements LoginUseCase {
         // 4. Kiểm tra 2FA
         if (user.getIs2faEnabled() != null && user.getIs2faEnabled()) {
             String tempToken = jwtTokenProvider.generateTemp2faToken(user);
-            tokenCachePort.saveTemp2faToken(user.getId(), tempToken, 5); // Lưu Redis 5 phút
+            tokenCachePort.saveTemp2faToken(tempToken, user.getId(), 5); // Lưu Redis 5 phút
             return AuthResponse.builder()
                     .require2fa(true)
                     .tempToken(tempToken)
