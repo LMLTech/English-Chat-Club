@@ -30,8 +30,15 @@ public class TokenRepositoryAdapter implements TokenRepositoryPort {
         return repository.findByTokenHash(tokenHash);
     }
 
+    // 1. Đã sửa kiểu trả về thành void cho khớp với Interface
     @Override
-    public RefreshToken saveRefreshToken(RefreshToken refreshToken) {
-        return refreshTokenRepository.save(refreshToken);
+    public void saveRefreshToken(RefreshToken refreshToken) {
+        refreshTokenRepository.save(refreshToken);
+    }
+
+    // 2. Bổ sung hàm tìm kiếm RefreshToken (Bắt buộc phải có để không bị lỗi đỏ class)
+    @Override
+    public Optional<RefreshToken> findByTokenId(String tokenId) {
+        return refreshTokenRepository.findByTokenId(tokenId);
     }
 }

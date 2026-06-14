@@ -13,6 +13,9 @@ public interface TokenRepositoryPort {
     // Tìm token theo tokenHash để phục vụ xác minh email
     Optional<EmailVerificationToken> findByTokenHash(String tokenHash);
 
-    // Lưu Refresh Token
-    RefreshToken saveRefreshToken(RefreshToken refreshToken);
+    // Tìm Refresh Token theo ID
+    Optional<RefreshToken> findByTokenId(String tokenId);
+
+    // Lưu Refresh Token (Chỉ giữ lại 1 hàm này)
+    void saveRefreshToken(RefreshToken token);
 }
