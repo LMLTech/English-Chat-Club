@@ -27,6 +27,39 @@ public class TokenCacheAdapter implements TokenCachePort {
     @Override
     public void saveRefreshToken(Long userId, String tokenId, long durationInMinutes) {
         String key = "refresh:" + userId + ":" + tokenId;
-        redisTemplate.opsForValue().set(key, "VALID", durationInMinutes, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(key, "VALID", durationInMinutes, java.util.concurrent.TimeUnit.MINUTES);
+    }
+
+    @Override
+    public void deleteRefreshToken(Long userId, String tokenId) {
+        String key = "refresh:" + userId + ":" + tokenId;
+        redisTemplate.delete(key);
+    }
+
+    @Override
+    public void addToBlacklist(String jti, long expireSeconds) {
+        String key = "blacklist:access:" + jti;
+        redisTemplate.opsForValue().set(key, "REVOKED", expireSeconds, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public boolean isBlacklisted(String jti) {
+        String key = "blacklist:access:" + jti;
+        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
+    }
+
+    @Override
+    public void saveResetPasswordOtp(Long userId, String otp, long expirationMinutes) {
+        redisTemplate.opsForValue().set("reset:password:" + userId, otp, expirationMinutes, TimeUnit.MINUTES);
+    }
+
+    @Override
+    public String getResetPasswordOtp(Long userId) {
+        return (String) redisTemplate.opsForValue().get("reset:password:" + userId);
+    }
+
+    @Override
+    public void deleteResetPasswordOtp(Long userId) {
+        redisTemplate.delete("reset:password:" + userId);
     }
 }

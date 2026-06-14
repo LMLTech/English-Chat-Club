@@ -85,8 +85,8 @@ public class LoginService implements LoginUseCase {
         List<String> permissions = List.of("room:join", "profile:read"); // Mock trước khi có RBAC
         String accessToken = jwtTokenProvider.generateAccessToken(user, permissions);
 
-        String rawRefreshToken = UUID.randomUUID().toString();
-        String tokenId = UUID.randomUUID().toString();
+        String rawRefreshToken = jwtTokenProvider.generateRefreshToken(user); // Tạo chuỗi JWT
+        String tokenId = jwtTokenProvider.getJtiFromToken(rawRefreshToken); // Trích xuất JTI từ JWT
 
         // Đã sửa: Lưu MySQL (Sử dụng plusMinutes và lấy số liệu từ application.yml)
         RefreshToken refreshTokenEntity = RefreshToken.builder()
