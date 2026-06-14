@@ -1,7 +1,11 @@
 package com.ecc.identity.api.controller;
 
 import com.ecc.common.dto.ApiResponse;
-import com.ecc.identity.api.dto.request.*;
+import com.ecc.identity.api.dto.request.LoginRequest;
+import com.ecc.identity.api.dto.request.RefreshTokenRequest;
+import com.ecc.identity.api.dto.request.RegisterRequest;
+import com.ecc.identity.api.dto.request.Verify2faLoginRequest;
+import com.ecc.identity.api.dto.request.Verify2faSetupRequest;
 import com.ecc.identity.api.dto.response.AuthResponse;
 import com.ecc.identity.api.dto.response.Setup2faResponse;
 import com.ecc.identity.application.port.in.RefreshTokenUseCase;
