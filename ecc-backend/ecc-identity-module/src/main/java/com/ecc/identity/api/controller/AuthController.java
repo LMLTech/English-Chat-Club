@@ -1,12 +1,10 @@
 package com.ecc.identity.api.controller;
 
 import com.ecc.common.dto.ApiResponse;
+import com.ecc.identity.api.dto.request.*;
 import com.ecc.identity.api.dto.response.AuthResponse;
 import com.ecc.identity.api.dto.response.Setup2faResponse;
-import com.ecc.identity.api.dto.request.LoginRequest;
-import com.ecc.identity.api.dto.request.RegisterRequest;
-import com.ecc.identity.api.dto.request.Verify2faLoginRequest;
-import com.ecc.identity.api.dto.request.Verify2faSetupRequest;
+import com.ecc.identity.application.port.in.RefreshTokenUseCase;
 
 import com.ecc.identity.application.port.in.LoginUseCase;
 import com.ecc.identity.application.port.in.RegisterUseCase;
@@ -28,6 +26,7 @@ public class AuthController {
     private final VerifyEmailUseCase verifyEmailUseCase;
     private final LoginUseCase loginUseCase;
     private final TwoFactorAuthUseCase twoFactorAuthUseCase;
+    private final RefreshTokenUseCase refreshTokenUseCase;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<String>> register(@Valid @RequestBody RegisterRequest request) {
@@ -68,6 +67,13 @@ public class AuthController {
     @PostMapping("/2fa/verify-login")
     public ResponseEntity<ApiResponse<AuthResponse>> verify2faLogin(@Valid @RequestBody Verify2faLoginRequest request) {
         AuthResponse response = twoFactorAuthUseCase.verifyLogin(request);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(
+            @Valid @RequestBody RefreshTokenRequest request) {
+        AuthResponse response = refreshTokenUseCase.refreshToken(request);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

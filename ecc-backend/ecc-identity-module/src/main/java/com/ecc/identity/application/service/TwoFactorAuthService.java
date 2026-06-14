@@ -101,8 +101,8 @@ public class TwoFactorAuthService implements TwoFactorAuthUseCase {
         List<String> permissions = List.of("room:join", "profile:read");
         String accessToken = jwtTokenProvider.generateAccessToken(user, permissions);
 
-        String rawRefreshToken = UUID.randomUUID().toString();
-        String tokenId = UUID.randomUUID().toString();
+        String rawRefreshToken = jwtTokenProvider.generateRefreshToken(user); // Tạo chuỗi JWT
+        String tokenId = jwtTokenProvider.getJtiFromToken(rawRefreshToken); // Trích xuất JTI từ JWT
 
         RefreshToken refreshTokenEntity = RefreshToken.builder()
                 .user(user)
