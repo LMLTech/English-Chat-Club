@@ -4,8 +4,8 @@ package com.ecc.identity.application.port.out;
 public interface TokenCachePort {
 
     // Lưu temp token dùng cho xác thực 2FA
-    void saveTemp2faToken(Long userId, String token, long durationInMinutes);
-
+    void saveTemp2faToken(String temToken, Long userId, long durationInMinutes);
+    Long getUserIdByTemp2faToken(String tempToken); // Thêm hàm đọc token ngược lại
     // Lưu Refresh Token vào Redis
     void saveRefreshToken(Long userId, String tokenId, long durationInMinutes);
 }

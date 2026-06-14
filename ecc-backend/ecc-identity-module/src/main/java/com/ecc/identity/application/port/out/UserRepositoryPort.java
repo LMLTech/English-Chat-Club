@@ -6,7 +6,8 @@ import java.util.Optional;
 public interface UserRepositoryPort {
     boolean existsByEmail(String email);
     Optional<User> findByReferralCode(String referralCode);
-    // Tìm User theo email
+    Optional<User> findById(Long id);
     Optional<User> findByEmail(String email);
+    // Tìm User theo email
     User save(User user);
 }
