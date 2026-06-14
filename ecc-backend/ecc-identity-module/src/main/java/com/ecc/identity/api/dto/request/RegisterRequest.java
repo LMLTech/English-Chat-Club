@@ -23,7 +23,4 @@ public class RegisterRequest {
 
     // Access token cũ truyền lên để đưa vào blacklist (Tùy chọn)
     private String accessToken;
-
-    @NotBlank(message = "Refresh token không được để trống")
-    private String refreshToken;
 }
