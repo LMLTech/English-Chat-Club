@@ -8,6 +8,7 @@ import com.ecc.identity.api.dto.request.Verify2faLoginRequest;
 import com.ecc.identity.api.dto.request.Verify2faSetupRequest;
 import com.ecc.identity.api.dto.response.AuthResponse;
 import com.ecc.identity.api.dto.response.Setup2faResponse;
+import com.ecc.identity.application.port.in.LogoutUseCase;
 import com.ecc.identity.application.port.in.RefreshTokenUseCase;
 
 import com.ecc.identity.application.port.in.LoginUseCase;
@@ -19,7 +20,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -31,6 +38,7 @@ public class AuthController {
     private final LoginUseCase loginUseCase;
     private final TwoFactorAuthUseCase twoFactorAuthUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
+    private final LogoutUseCase logoutUseCase;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<String>> register(@Valid @RequestBody RegisterRequest request) {
@@ -79,5 +87,22 @@ public class AuthController {
             @Valid @RequestBody RefreshTokenRequest request) {
         AuthResponse response = refreshTokenUseCase.refreshToken(request);
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<String>> logout(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestBody(required = false) RefreshTokenRequest request) { // Tái sử dụng class DTO có sẵn
+
+        String accessToken = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            accessToken = authHeader.substring(7);
+        }
+
+        String refreshToken = (request != null) ? request.getRefreshToken() : null;
+
+        logoutUseCase.logout(accessToken, refreshToken);
+
+        return ResponseEntity.ok(ApiResponse.success("Đăng xuất thành công!"));
     }
 }
