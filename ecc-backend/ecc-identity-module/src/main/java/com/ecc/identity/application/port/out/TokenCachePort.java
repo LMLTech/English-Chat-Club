@@ -15,4 +15,9 @@ public interface TokenCachePort {
     // Quản lý Blacklist
     void addToBlacklist(String jti, long expireSeconds);
     boolean isBlacklisted(String jti);
+
+    // Cập nhật Cổng Redis
+    void saveResetPasswordOtp(Long userId, String otp, long expirationMinutes);
+    String getResetPasswordOtp(Long userId);
+    void deleteResetPasswordOtp(Long userId);
 }

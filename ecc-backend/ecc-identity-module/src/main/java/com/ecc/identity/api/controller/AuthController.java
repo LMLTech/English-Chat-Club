@@ -1,13 +1,17 @@
 package com.ecc.identity.api.controller;
 
 import com.ecc.common.dto.ApiResponse;
+import com.ecc.identity.api.dto.request.ForgotPasswordRequest;
 import com.ecc.identity.api.dto.request.LoginRequest;
 import com.ecc.identity.api.dto.request.RefreshTokenRequest;
 import com.ecc.identity.api.dto.request.RegisterRequest;
+import com.ecc.identity.api.dto.request.ResetPasswordOtpRequest;
+import com.ecc.identity.api.dto.request.ResetPasswordTokenRequest;
 import com.ecc.identity.api.dto.request.Verify2faLoginRequest;
 import com.ecc.identity.api.dto.request.Verify2faSetupRequest;
 import com.ecc.identity.api.dto.response.AuthResponse;
 import com.ecc.identity.api.dto.response.Setup2faResponse;
+import com.ecc.identity.application.port.in.ForgotPasswordUseCase;
 import com.ecc.identity.application.port.in.LogoutUseCase;
 import com.ecc.identity.application.port.in.RefreshTokenUseCase;
 
@@ -39,6 +43,7 @@ public class AuthController {
     private final TwoFactorAuthUseCase twoFactorAuthUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final LogoutUseCase logoutUseCase;
+    private final ForgotPasswordUseCase forgotPasswordUseCase;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<String>> register(@Valid @RequestBody RegisterRequest request) {
@@ -82,6 +87,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    // 1.5 refresh token
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(
             @Valid @RequestBody RefreshTokenRequest request) {
@@ -104,5 +110,30 @@ public class AuthController {
         logoutUseCase.logout(accessToken, refreshToken);
 
         return ResponseEntity.ok(ApiResponse.success("Đăng xuất thành công!"));
+    }
+
+    // Quên mật khẩu
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        forgotPasswordUseCase.requestPasswordReset(request.getEmail());
+        return ResponseEntity.ok(ApiResponse.success("Hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<String>> resetPasswordWithOtp(@Valid @RequestBody ResetPasswordOtpRequest request) {
+        forgotPasswordUseCase.resetPasswordWithOtp(request.getEmail(), request.getOtp(), request.getNewPassword());
+        return ResponseEntity.ok(ApiResponse.success("Đặt lại mật khẩu thành công!"));
+    }
+
+    @GetMapping("/reset-password")
+    public ResponseEntity<ApiResponse<String>> verifyResetToken(@RequestParam("token") String token) {
+        forgotPasswordUseCase.verifyResetToken(token);
+        return ResponseEntity.ok(ApiResponse.success("Token hợp lệ, vui lòng nhập mật khẩu mới."));
+    }
+
+    @PostMapping("/reset-password-confirm")
+    public ResponseEntity<ApiResponse<String>> resetPasswordWithToken(@Valid @RequestBody ResetPasswordTokenRequest request) {
+        forgotPasswordUseCase.resetPasswordWithToken(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok(ApiResponse.success("Đặt lại mật khẩu thành công!"));
     }
 }

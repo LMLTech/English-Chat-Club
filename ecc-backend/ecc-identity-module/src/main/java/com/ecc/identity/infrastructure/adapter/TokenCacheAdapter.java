@@ -47,4 +47,19 @@ public class TokenCacheAdapter implements TokenCachePort {
         String key = "blacklist:access:" + jti;
         return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
+
+    @Override
+    public void saveResetPasswordOtp(Long userId, String otp, long expirationMinutes) {
+        redisTemplate.opsForValue().set("reset:password:" + userId, otp, expirationMinutes, TimeUnit.MINUTES);
+    }
+
+    @Override
+    public String getResetPasswordOtp(Long userId) {
+        return (String) redisTemplate.opsForValue().get("reset:password:" + userId);
+    }
+
+    @Override
+    public void deleteResetPasswordOtp(Long userId) {
+        redisTemplate.delete("reset:password:" + userId);
+    }
 }
