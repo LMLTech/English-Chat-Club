@@ -5,6 +5,10 @@ import com.ecc.identity.api.dto.request.UpdateInterestsRequest;
 import com.ecc.identity.api.dto.request.UpdateProfileRequest;
 import com.ecc.identity.api.dto.response.UserProfileResponse;
 import com.ecc.identity.application.port.in.UserProfileUseCase;
+import com.ecc.identity.application.port.in.UserAddressUseCase;
+import com.ecc.identity.api.dto.request.AddressRequest;
+import com.ecc.identity.api.dto.response.AddressResponse;
+import java.util.List;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserProfileController {
 
     private final UserProfileUseCase userProfileUseCase;
+    private final UserAddressUseCase userAddressUseCase;
 
     // TODO: Khi hoàn thành Flow 1.14, sẽ lấy userId từ SecurityContextHolder thay vì @RequestParam
 
@@ -39,5 +44,37 @@ public class UserProfileController {
             @Valid @RequestBody UpdateInterestsRequest request) {
         userProfileUseCase.updateInterests(userId, request);
         return ResponseEntity.ok(ApiResponse.success("Cập nhật chủ đề quan tâm thành công."));
+    }
+
+    // --- FLOW 1.10: CRUD ĐỊA CHỈ NHẬN QUÀ ---
+    @PostMapping("/addresses")
+    public ResponseEntity<ApiResponse<AddressResponse>> addAddress(
+            @RequestParam("userId") Long userId,
+            @Valid @RequestBody AddressRequest request) {
+        AddressResponse response = userAddressUseCase.addAddress(userId, request);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/addresses")
+    public ResponseEntity<ApiResponse<List<AddressResponse>>> getAddresses(@RequestParam("userId") Long userId) {
+        List<AddressResponse> responses = userAddressUseCase.getUserAddresses(userId);
+        return ResponseEntity.ok(ApiResponse.success(responses));
+    }
+
+    @PutMapping("/addresses/{addressId}")
+    public ResponseEntity<ApiResponse<AddressResponse>> updateAddress(
+            @RequestParam("userId") Long userId,
+            @PathVariable Long addressId,
+            @Valid @RequestBody AddressRequest request) {
+        AddressResponse response = userAddressUseCase.updateAddress(userId, addressId, request);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @DeleteMapping("/addresses/{addressId}")
+    public ResponseEntity<ApiResponse<String>> deleteAddress(
+            @RequestParam("userId") Long userId,
+            @PathVariable Long addressId) {
+        userAddressUseCase.deleteAddress(userId, addressId);
+        return ResponseEntity.ok(ApiResponse.success("Xóa địa chỉ thành công."));
     }
 }
