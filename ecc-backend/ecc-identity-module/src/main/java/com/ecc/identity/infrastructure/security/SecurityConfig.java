@@ -38,7 +38,8 @@ public class SecurityConfig {
 
                         // MỞ TẠM CHO PROFILE ĐỂ TEST FLOW 1.9 (Sẽ xóa dòng này ở Flow 1.14)
                         .requestMatchers("/api/profile/**").permitAll()
-
+                        // Đặt lịch
+                        .requestMatchers("/callback").permitAll()
                         // Bắt buộc xác thực với các API còn lại
                         .anyRequest().authenticated()
                 );
