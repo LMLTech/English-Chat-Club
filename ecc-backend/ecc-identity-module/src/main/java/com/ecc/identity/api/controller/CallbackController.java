@@ -9,7 +9,6 @@ public class CallbackController {
 
     @GetMapping("/callback")
     public String handleGoogleCallback(@RequestParam(name = "code") String code) {
-        // Chỉ cần trả về chuỗi này, bạn copy cái chuỗi code này đi là xong!
         return "Mã authCode của bạn đây: " + code;
     }
 }
