@@ -35,6 +35,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         // Mở khóa giao diện Swagger UI và API Docs
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                        // MỞ TẠM CHO PROFILE ĐỂ TEST FLOW 1.9 (Sẽ xóa dòng này ở Flow 1.14)
+                        .requestMatchers("/api/profile/**").permitAll()
+
                         // Bắt buộc xác thực với các API còn lại
                         .anyRequest().authenticated()
                 );
