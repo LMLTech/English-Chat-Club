@@ -2,6 +2,7 @@ package com.ecc.identity.application.service;
 
 import com.ecc.common.exception.BadRequestException;
 import com.ecc.common.exception.UnauthorizedException;
+import com.ecc.identity.api.dto.request.Disable2faRequest;
 import com.ecc.identity.api.dto.request.Verify2faLoginRequest;
 import com.ecc.identity.api.dto.request.Verify2faSetupRequest;
 import com.ecc.identity.api.dto.response.AuthResponse;
@@ -12,10 +13,12 @@ import com.ecc.identity.application.port.out.TokenRepositoryPort;
 import com.ecc.identity.application.port.out.UserRepositoryPort;
 import com.ecc.identity.domain.model.RefreshToken;
 import com.ecc.identity.domain.model.User;
+import com.ecc.identity.infrastructure.security.AesEncryptionUtil;
 import com.ecc.identity.infrastructure.security.JwtTokenProvider;
 import com.ecc.identity.infrastructure.security.TotpManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,26 +37,24 @@ public class TwoFactorAuthService implements TwoFactorAuthUseCase {
     private final TokenRepositoryPort tokenRepositoryPort;
     private final TotpManager totpManager;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AesEncryptionUtil aesEncryptionUtil;
+    private final PasswordEncoder passwordEncoder;
 
-    @Value("${app.jwt.refresh-token-expiration}")
+    @Value("${app.jwt.refresh-token-expiration:10080}")
     private long refreshTokenExpirationMinutes;
 
     @Override
     public Setup2faResponse initiateSetup(Long userId) {
-
         User user = userRepositoryPort.findById(userId)
                 .orElseThrow(() -> new BadRequestException("User not found"));
 
-        // Sinh Secret Key
+        if (Boolean.TRUE.equals(user.getIs2faEnabled())) {
+            throw new BadRequestException("Tài khoản này đã bật bảo mật 2 lớp rồi.");
+        }
+
         String secretKey = totpManager.generateSecretKey();
-
-        // Sinh chuỗi otpauth://...
-        String qrCodeUrl =
-                totpManager.getQrCodeUrl(secretKey, user.getEmail());
-
-        // Sinh ảnh QR Code Base64
-        String qrCodeBase64 =
-                totpManager.getQrCodeImageBase64(qrCodeUrl);
+        String qrCodeUrl = totpManager.getQrCodeUrl(secretKey, user.getEmail());
+        String qrCodeBase64 = totpManager.getQrCodeImageBase64(qrCodeUrl);
 
         return Setup2faResponse.builder()
                 .secretKey(secretKey)
@@ -67,14 +68,14 @@ public class TwoFactorAuthService implements TwoFactorAuthUseCase {
         User user = userRepositoryPort.findById(userId)
                 .orElseThrow(() -> new BadRequestException("User not found"));
 
-        // Xác thực mã OTP nhập vào có tương thích với SecretKey mới sinh không
         boolean isValid = totpManager.verifyCode(request.getSecretKey(), request.getTotpCode());
         if (!isValid) {
-            throw new BadRequestException("Mã xác thực không chính xác. Vui lòng quét lại và kiểm tra.");
+            throw new BadRequestException("Mã xác thực không chính xác. Vui lòng thử lại.");
         }
 
-        // Lưu Secret Key vĩnh viễn vào DB và bật cờ kích hoạt 2FA
-        user.setTwoFactorSecret(request.getSecretKey());
+        // MÃ HÓA AES TRƯỚC KHI LƯU VÀO DATABASE
+        String encryptedSecret = aesEncryptionUtil.encrypt(request.getSecretKey());
+        user.setTwoFactorSecret(encryptedSecret);
         user.setIs2faEnabled(true);
         userRepositoryPort.save(user);
     }
@@ -82,7 +83,6 @@ public class TwoFactorAuthService implements TwoFactorAuthUseCase {
     @Override
     @Transactional
     public AuthResponse verifyLogin(Verify2faLoginRequest request) {
-        // 1. Kiểm tra tính hợp lệ của Temp Token trong Redis Cache
         Long userId = tokenCachePort.getUserIdByTemp2faToken(request.getTempToken());
         if (userId == null) {
             throw new UnauthorizedException("Phiên xác thực đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.");
@@ -91,18 +91,18 @@ public class TwoFactorAuthService implements TwoFactorAuthUseCase {
         User user = userRepositoryPort.findById(userId)
                 .orElseThrow(() -> new UnauthorizedException("User not found"));
 
-        // 2. Kiểm tra mã OTP gửi lên với Secret Key nằm trong DB
-        boolean isValid = totpManager.verifyCode(user.getTwoFactorSecret(), request.getTotpCode());
+        // GIẢI MÁ AES TRƯỚC KHI XÁC THỰC OTP
+        String decryptedSecret = aesEncryptionUtil.decrypt(user.getTwoFactorSecret());
+        boolean isValid = totpManager.verifyCode(decryptedSecret, request.getTotpCode());
+
         if (!isValid) {
             throw new UnauthorizedException("Mã OTP bảo mật 2 lớp không chính xác.");
         }
 
-        // 3. Sinh Token Kép chính thức giống như Flow 1.3
         List<String> permissions = List.of("room:join", "profile:read");
         String accessToken = jwtTokenProvider.generateAccessToken(user, permissions);
-
-        String rawRefreshToken = jwtTokenProvider.generateRefreshToken(user); // Tạo chuỗi JWT
-        String tokenId = jwtTokenProvider.getJtiFromToken(rawRefreshToken); // Trích xuất JTI từ JWT
+        String rawRefreshToken = jwtTokenProvider.generateRefreshToken(user);
+        String tokenId = jwtTokenProvider.getJtiFromToken(rawRefreshToken);
 
         RefreshToken refreshTokenEntity = RefreshToken.builder()
                 .user(user)
@@ -112,7 +112,6 @@ public class TwoFactorAuthService implements TwoFactorAuthUseCase {
                 .revoked(false)
                 .build();
         tokenRepositoryPort.saveRefreshToken(refreshTokenEntity);
-
         tokenCachePort.saveRefreshToken(user.getId(), tokenId, refreshTokenExpirationMinutes);
 
         user.setLastLoginAt(LocalDateTime.now());
@@ -123,6 +122,27 @@ public class TwoFactorAuthService implements TwoFactorAuthUseCase {
                 .accessToken(accessToken)
                 .refreshToken(rawRefreshToken)
                 .build();
+    }
+
+    // HÀM TẮT 2FA
+    @Override
+    @Transactional
+    public void disable2fa(Long userId, Disable2faRequest request) {
+        User user = userRepositoryPort.findById(userId)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+
+        if (Boolean.FALSE.equals(user.getIs2faEnabled())) {
+            throw new BadRequestException("Bảo mật 2 lớp hiện đang tắt.");
+        }
+
+        // Xác minh mật khẩu trước khi cho phép tắt
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("Mật khẩu không chính xác.");
+        }
+
+        user.setIs2faEnabled(false);
+        user.setTwoFactorSecret(null); // Xóa trắng Secret trong DB
+        userRepositoryPort.save(user);
     }
 
     private String hashString(String input) {
