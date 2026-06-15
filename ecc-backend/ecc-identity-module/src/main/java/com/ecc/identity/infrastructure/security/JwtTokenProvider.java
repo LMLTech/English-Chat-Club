@@ -43,7 +43,7 @@ public class JwtTokenProvider {
                 .id(UUID.randomUUID().toString()) // THÊM JTI: Bắt buộc để đưa vào Blacklist
                 .subject(user.getId().toString())
                 .claim("email", user.getEmail())
-                .claim("role", "MEMBER") // Tạm fix cứng
+                .claim("role", user.getRole())
                 .claim("permissions", permissions)
                 .issuedAt(now)
                 .expiration(expiryDate)

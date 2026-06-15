@@ -49,6 +49,10 @@ public class User {
     @Column(nullable = false, length = 20)
     private String status;
 
+    @Builder.Default
+    @Column(nullable = false, length = 20, columnDefinition = "VARCHAR(20) DEFAULT 'MEMBER'")
+    private String role = "MEMBER";
+
     @Column(name = "google_id", unique = true)
     private String googleId;
 
