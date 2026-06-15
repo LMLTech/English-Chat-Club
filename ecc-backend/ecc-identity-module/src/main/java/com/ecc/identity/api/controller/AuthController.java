@@ -9,6 +9,7 @@ import com.ecc.identity.api.dto.request.ResetPasswordOtpRequest;
 import com.ecc.identity.api.dto.request.ResetPasswordTokenRequest;
 import com.ecc.identity.api.dto.request.Verify2faLoginRequest;
 import com.ecc.identity.api.dto.request.Verify2faSetupRequest;
+import com.ecc.identity.api.dto.request.Disable2faRequest;
 import com.ecc.identity.api.dto.response.AuthResponse;
 import com.ecc.identity.api.dto.response.Setup2faResponse;
 import com.ecc.identity.application.port.in.ForgotPasswordUseCase;
@@ -135,5 +136,14 @@ public class AuthController {
     public ResponseEntity<ApiResponse<String>> resetPasswordWithToken(@Valid @RequestBody ResetPasswordTokenRequest request) {
         forgotPasswordUseCase.resetPasswordWithToken(request.getToken(), request.getNewPassword());
         return ResponseEntity.ok(ApiResponse.success("Đặt lại mật khẩu thành công!"));
+    }
+
+    // API Tắt 2FA
+    @PostMapping("/2fa/disable")
+    public ResponseEntity<ApiResponse<String>> disable2fa(
+            @RequestParam("userId") Long userId,
+            @Valid @RequestBody Disable2faRequest request) {
+        twoFactorAuthUseCase.disable2fa(userId, request);
+        return ResponseEntity.ok(ApiResponse.success("Đã tắt bảo mật 2 lớp thành công."));
     }
 }

@@ -5,9 +5,7 @@ import com.ecc.common.exception.UnauthorizedException;
 import com.ecc.identity.application.port.in.ForgotPasswordUseCase;
 import com.ecc.identity.application.port.out.TokenCachePort;
 import com.ecc.identity.application.port.out.UserRepositoryPort;
-
 import com.ecc.identity.application.port.out.PasswordResetTokenRepositoryPort;
-
 import com.ecc.identity.domain.model.PasswordResetToken;
 import com.ecc.identity.domain.model.User;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +27,6 @@ public class ForgotPasswordService implements ForgotPasswordUseCase {
     private final TokenCachePort tokenCachePort;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
-
-    // Đã mở comment: Cần có Port này để thao tác với bảng password_reset_tokens
     private final PasswordResetTokenRepositoryPort resetTokenPort;
 
     @Override
@@ -46,7 +42,6 @@ public class ForgotPasswordService implements ForgotPasswordUseCase {
         // 2. Tạo Token Link
         String rawToken = UUID.randomUUID().toString();
 
-        // ĐÃ SỬA: Lưu rawToken (đã hash) vào bảng password_reset_tokens qua Port
         PasswordResetToken resetToken = PasswordResetToken.builder()
                 .user(user)
                 .tokenHash(hashString(rawToken))
@@ -54,7 +49,7 @@ public class ForgotPasswordService implements ForgotPasswordUseCase {
                 .build();
         resetTokenPort.save(resetToken);
 
-        // 3. Gửi Email thật
+        // 3. Gửi Email
         String subject = "[English Chat Club] Yêu cầu đặt lại mật khẩu";
         String body = "Chào bạn,\n\n" +
                 "Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.\n" +
@@ -83,10 +78,14 @@ public class ForgotPasswordService implements ForgotPasswordUseCase {
 
     @Override
     public void verifyResetToken(String token) {
-        // ĐÃ SỬA: Tìm tokenHash trong DB, kiểm tra expiresAt. Ném lỗi nếu sai hoặc hết hạn.
         String tokenHash = hashString(token);
         PasswordResetToken resetToken = resetTokenPort.findByTokenHash(tokenHash)
-                .orElseThrow(() -> new BadRequestException("Đường dẫn đặt lại mật khẩu không hợp lệ hoặc đã từng được sử dụng."));
+                .orElseThrow(() -> new BadRequestException("Đường dẫn đặt lại mật khẩu không hợp lệ."));
+
+        // KIỂM TRA ĐÃ SỬ DỤNG CHƯA
+        if (resetToken.getUsedAt() != null) {
+            throw new BadRequestException("Đường dẫn này đã được sử dụng để đổi mật khẩu trước đó.");
+        }
 
         if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Đường dẫn đặt lại mật khẩu đã hết hạn. Vui lòng yêu cầu lại.");
@@ -96,10 +95,14 @@ public class ForgotPasswordService implements ForgotPasswordUseCase {
     @Override
     @Transactional
     public void resetPasswordWithToken(String token, String newPassword) {
-        // ĐÃ SỬA: Lấy User từ DB thông qua tokenHash, cập nhật mật khẩu và xóa token
         String tokenHash = hashString(token);
         PasswordResetToken resetToken = resetTokenPort.findByTokenHash(tokenHash)
                 .orElseThrow(() -> new BadRequestException("Token đặt lại mật khẩu không hợp lệ."));
+
+        // KIỂM TRA ĐÃ SỬ DỤNG CHƯA
+        if (resetToken.getUsedAt() != null) {
+            throw new BadRequestException("Token này đã được sử dụng.");
+        }
 
         if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Token đặt lại mật khẩu đã hết hạn.");
@@ -108,8 +111,9 @@ public class ForgotPasswordService implements ForgotPasswordUseCase {
         User user = resetToken.getUser();
         updatePasswordAndCleanUp(user, newPassword);
 
-        // Xóa token này khỏi DB để không thể dùng lại được nữa
-        resetTokenPort.delete(resetToken);
+        // THAY VÌ XÓA (DELETE), TA CẬP NHẬT TRẠNG THÁI (SOFT DELETE / USED)
+        resetToken.setUsedAt(LocalDateTime.now());
+        resetTokenPort.save(resetToken);
     }
 
     private void updatePasswordAndCleanUp(User user, String newPassword) {
