@@ -8,7 +8,7 @@ import com.ecc.identity.application.port.out.GoogleOAuthPort;
 import com.ecc.identity.application.port.out.UserRepositoryPort;
 import com.ecc.identity.domain.model.User;
 import com.ecc.identity.domain.model.UserCalendarIntegration;
-import com.ecc.identity.domain.service.AESEncryptionService;
+import com.ecc.identity.infrastructure.security.AesEncryptionUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,7 @@ public class GoogleCalendarService implements GoogleCalendarUseCase {
     private final GoogleOAuthPort googleOAuthPort;
     private final CalendarIntegrationRepositoryPort calendarRepoPort;
     private final UserRepositoryPort userRepositoryPort;
-    private final AESEncryptionService aesEncryptionService; // Xử lý mã hóa AES-256
+    private final AesEncryptionUtil aesEncryptionUtil; // Inject đúng class ở tầng Infrastructure
 
     @Override
     @Transactional
@@ -35,9 +35,9 @@ public class GoogleCalendarService implements GoogleCalendarUseCase {
         GoogleTokenResponse tokenResponse = googleOAuthPort.exchangeCodeForToken(authCode);
 
         // 3. Mã hóa Token bằng AES-256
-        String encryptedAccessToken = aesEncryptionService.encrypt(tokenResponse.getAccessToken());
+        String encryptedAccessToken = aesEncryptionUtil.encrypt(tokenResponse.getAccessToken());
         String encryptedRefreshToken = tokenResponse.getRefreshToken() != null
-                ? aesEncryptionService.encrypt(tokenResponse.getRefreshToken())
+                ? aesEncryptionUtil.encrypt(tokenResponse.getRefreshToken())
                 : null;
 
         // 4. Lưu hoặc Cập nhật vào Database

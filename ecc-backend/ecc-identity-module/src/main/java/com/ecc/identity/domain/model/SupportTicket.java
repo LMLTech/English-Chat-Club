@@ -9,6 +9,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+
+import java.util.UUID;
 import java.time.LocalDateTime;
 
 @Entity
@@ -22,8 +24,8 @@ public class SupportTicket {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, updatable = false, length = 36)
-    private String uuid;
+    @Column(nullable = false, unique = true, updatable = false, columnDefinition = "BINARY(16)")
+    private UUID uuid;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
@@ -54,4 +56,5 @@ public class SupportTicket {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
 }
