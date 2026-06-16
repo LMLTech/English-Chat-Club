@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class TicketRepositoryAdapter implements TicketRepositoryPort {
 
     @Override
     public Optional<SupportTicket> findTicketByUuid(String uuid) {
-        return ticketRepository.findByUuid(uuid);
+        return ticketRepository.findByUuid(UUID.fromString(uuid));
     }
 
     @Override
@@ -40,7 +41,6 @@ public class TicketRepositoryAdapter implements TicketRepositoryPort {
 
     @Override
     public List<SupportTicket> findTicketsByStatus(String status) {
-        // Cần thêm hàm findByStatus(String status) vào interface SupportTicketRepository của JPA
         return ticketRepository.findByStatus(status);
     }
 }

@@ -42,12 +42,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         // Mở khóa giao diện Swagger UI và API Docs
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-
-                        // MỞ TẠM CHO PROFILE ĐỂ TEST FLOW 1.9 (Sẽ xóa dòng này ở Flow 1.14)
-                        .requestMatchers("/api/profile/**").permitAll()
-                        // Lấy mã đặt lịch
+                        // Lấy mã đặt lịch (Callback cho Google Calendar)
                         .requestMatchers("/callback").permitAll()
-                        // Bắt buộc xác thực với các API còn lại
+                        // Bắt buộc xác thực với các API còn lại (Bao gồm cả /api/profile/**)
                         .anyRequest().authenticated()
                 )
                 // Thêm JwtAuthenticationFilter TRƯỚC UsernamePasswordAuthenticationFilter

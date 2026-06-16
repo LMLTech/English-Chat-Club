@@ -50,3 +50,8 @@ app:
     refresh-secret: ${JWT_REFRESH_SECRET}
     access-token-expiration: 15
     refresh-token-expiration: 10080
+
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${GOOGLE_REDIRECT_URI}

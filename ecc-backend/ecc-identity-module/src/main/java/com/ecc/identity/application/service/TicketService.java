@@ -31,7 +31,8 @@ public class TicketService implements ManageTicketUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
 
         SupportTicket ticket = new SupportTicket();
-        ticket.setUuid(UUID.randomUUID().toString());
+        // Bỏ .toString() để lưu dưới dạng đối tượng UUID chuẩn (BINARY 16)
+        ticket.setUuid(UUID.randomUUID());
         ticket.setUser(user);
         ticket.setSubject(request.getSubject());
         ticket.setCategory(request.getCategory() != null ? request.getCategory() : "OTHER");
