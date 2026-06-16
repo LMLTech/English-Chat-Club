@@ -32,6 +32,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGlobalException(Exception ex) {
+        // Xử lý AccessDeniedException (403) - không import trực tiếp để tránh phụ thuộc Spring Security
+        if (ex.getClass().getSimpleName().equals("AccessDeniedException")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error(403, "Bạn không có quyền thực hiện hành động này"));
+        }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error(500, "Internal Server Error: " + ex.getMessage()));
     }
