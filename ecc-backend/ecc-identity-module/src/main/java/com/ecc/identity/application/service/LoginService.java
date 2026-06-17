@@ -9,7 +9,9 @@ import com.ecc.identity.application.port.out.LoginAttemptRepositoryPort;
 import com.ecc.identity.application.port.out.TokenCachePort;
 import com.ecc.identity.application.port.out.TokenRepositoryPort;
 import com.ecc.identity.application.port.out.UserRepositoryPort;
+import com.ecc.identity.domain.model.Permission;
 import com.ecc.identity.domain.model.RefreshToken;
+import com.ecc.identity.domain.model.Role;
 import com.ecc.identity.domain.model.User;
 import com.ecc.identity.infrastructure.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -82,13 +85,19 @@ public class LoginService implements LoginUseCase {
         }
 
         // 5. Sinh Token Kép (Access & Refresh)
-        List<String> permissions = List.of("room:join", "profile:read"); // Mock trước khi có RBAC
+        // ĐÃ SỬA: Lấy danh sách Permission động từ các Role của User (Không dùng Mock nữa)
+        List<String> permissions = user.getRoles().stream()
+                .flatMap(role -> role.getPermissions().stream())
+                .map(Permission::getName)
+                .distinct() // Loại bỏ các quyền trùng lặp nếu 2 Role có chung 1 quyền
+                .collect(Collectors.toList());
+
         String accessToken = jwtTokenProvider.generateAccessToken(user, permissions);
 
         String rawRefreshToken = jwtTokenProvider.generateRefreshToken(user); // Tạo chuỗi JWT
         String tokenId = jwtTokenProvider.getJtiFromToken(rawRefreshToken); // Trích xuất JTI từ JWT
 
-        // Đã sửa: Lưu MySQL (Sử dụng plusMinutes và lấy số liệu từ application.yml)
+        // Lưu MySQL (Sử dụng plusMinutes và lấy số liệu từ application.yml)
         RefreshToken refreshTokenEntity = RefreshToken.builder()
                 .user(user)
                 .tokenId(tokenId)

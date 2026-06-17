@@ -8,8 +8,10 @@ import com.ecc.identity.application.port.out.TokenRepositoryPort;
 import com.ecc.identity.application.port.out.UserRepositoryPort;
 import com.ecc.identity.domain.model.EmailVerificationToken;
 import com.ecc.identity.domain.model.ReferralHistory;
+import com.ecc.identity.domain.model.Role;
 import com.ecc.identity.domain.model.User;
 import com.ecc.identity.infrastructure.repository.ReferralHistoryRepository;
+import com.ecc.identity.infrastructure.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,7 @@ public class RegisterService implements RegisterUseCase {
     private final TokenRepositoryPort tokenRepositoryPort;
     private final EmailSenderPort emailSenderPort;
     private final ReferralHistoryRepository referralHistoryRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -48,6 +51,13 @@ public class RegisterService implements RegisterUseCase {
                 .is2faEnabled(false)
                 .referralCode(generateReferralCode())
                 .build();
+
+        // BỔ SUNG LOGIC GÁN QUYỀN MEMBER MẶC ĐỊNH
+        Role memberRole = roleRepository.findByName("MEMBER")
+                .orElseThrow(() -> new RuntimeException("Lỗi hệ thống: Chưa khởi tạo quyền MEMBER trong Database"));
+
+        newUser.addRole(memberRole);
+
 
         // 3. Xử lý Referral Code (Nếu có)
         if (request.getReferralCode() != null && !request.getReferralCode().isBlank()) {

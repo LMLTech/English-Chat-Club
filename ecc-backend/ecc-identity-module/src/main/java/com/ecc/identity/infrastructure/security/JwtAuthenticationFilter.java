@@ -20,8 +20,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -50,28 +50,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         .getPayload();
 
                 String userId = claims.getSubject();
-                String role = claims.get("role", String.class);
 
-                // Lấy danh sách permissions từ claims (nếu có)
+                // Đọc "roles" dạng mảng thay vì 1 chuỗi
+                List<?> roles = claims.get("roles", List.class);
                 List<?> rawPermissions = claims.get("permissions", List.class);
-                List<SimpleGrantedAuthority> authorities;
 
-                // Luôn thêm role vào authorities trước
-                if (StringUtils.hasText(role)) {
-                    authorities = new java.util.ArrayList<>();
-                    authorities.add(new SimpleGrantedAuthority(role));
-                    // Thêm permissions vào nếu có
-                    if (rawPermissions != null && !rawPermissions.isEmpty()) {
-                        rawPermissions.stream()
-                                .map(p -> new SimpleGrantedAuthority(p.toString()))
-                                .forEach(authorities::add);
-                    }
-                } else if (rawPermissions != null && !rawPermissions.isEmpty()) {
-                    authorities = rawPermissions.stream()
-                            .map(p -> new SimpleGrantedAuthority(p.toString()))
-                            .collect(Collectors.toList());
-                } else {
-                    authorities = List.of();
+                List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+
+                // Thêm toàn bộ các Role vào danh sách quyền hạn
+                if (roles != null) {
+                    roles.forEach(r -> authorities.add(new SimpleGrantedAuthority(r.toString())));
+                }
+
+                // Thêm toàn bộ các Permission vào danh sách quyền hạn
+                if (rawPermissions != null) {
+                    rawPermissions.forEach(p -> authorities.add(new SimpleGrantedAuthority(p.toString())));
                 }
 
                 UsernamePasswordAuthenticationToken authentication =
@@ -80,7 +73,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
             } catch (JwtException | IllegalArgumentException e) {
-                // Token không hợp lệ → không set Authentication, Spring Security sẽ trả 403
+                // Token không hợp lệ --> không set Authentication, Spring Security sẽ trả 403
                 SecurityContextHolder.clearContext();
             }
         }
