@@ -1,5 +1,6 @@
 package com.ecc.identity.infrastructure.security;
 
+import com.ecc.identity.domain.model.Role;
 import com.ecc.identity.domain.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -14,6 +15,7 @@ import java.security.MessageDigest;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors; // Thêm import Collectors
 
 @Component
 public class JwtTokenProvider {
@@ -38,12 +40,16 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + (accessTokenExpirationMinutes * 60 * 1000));
 
-        // Tạm thời mock ROLE và PERMISSION. Khi xong Role Module sẽ lấy từ user.getRoles()
+        // Chuyển Set<Role> thành List<String> chứa tên các quyền
+        List<String> roleNames = user.getRoles().stream()
+                .map(Role::getName)
+                .collect(Collectors.toList());
+
         return Jwts.builder()
                 .id(UUID.randomUUID().toString()) // THÊM JTI: Bắt buộc để đưa vào Blacklist
                 .subject(user.getId().toString())
                 .claim("email", user.getEmail())
-                .claim("role", user.getRole())
+                .claim("roles", roleNames) // Đổi từ "role" thành "roles" (dạng mảng)
                 .claim("permissions", permissions)
                 .issuedAt(now)
                 .expiration(expiryDate)

@@ -31,7 +31,6 @@ public class TicketService implements ManageTicketUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
 
         SupportTicket ticket = new SupportTicket();
-        // Bỏ .toString() để lưu dưới dạng đối tượng UUID chuẩn (BINARY 16)
         ticket.setUuid(UUID.randomUUID());
         ticket.setUser(user);
         ticket.setSubject(request.getSubject());
@@ -67,7 +66,9 @@ public class TicketService implements ManageTicketUseCase {
         message.setMessage(request.getMessage());
         ticketRepositoryPort.saveMessage(message);
 
-        boolean isAdmin = "ADMIN".equals(sender.getRole());
+        // Dùng Stream để kiểm tra user có role ADMIN không
+        boolean isAdmin = sender.getRoles().stream()
+                .anyMatch(r -> "ADMIN".equals(r.getName()));
 
         if (isAdmin && "OPEN".equals(ticket.getStatus())) {
             ticket.setStatus("IN_PROGRESS");

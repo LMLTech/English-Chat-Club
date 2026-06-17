@@ -6,7 +6,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -50,14 +52,20 @@ public class User {
     private String status;
 
     @Builder.Default
-    @Column(nullable = false, length = 20, columnDefinition = "VARCHAR(20) DEFAULT 'MEMBER'")
-    private String role = "MEMBER";
+    @ManyToMany(fetch = FetchType.EAGER) // Để EAGER để lúc tạo JWT lấy Role được ngay không bị lỗi Lazy
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
 
     @Column(name = "google_id", unique = true)
     private String googleId;
 
+    @Builder.Default
     @Column(name = "is_2fa_enabled", nullable = false)
-    private Boolean is2faEnabled;
+    private Boolean is2faEnabled = false;
 
     @Column(name = "two_factor_secret")
     private String twoFactorSecret;
@@ -80,15 +88,21 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserAddress> addresses;
+    private List<UserAddress> addresses = new java.util.ArrayList<>();
 
-    // Các phương thức nghiệp vụ theo thiết kế
+    // --- Các phương thức nghiệp vụ ---
     public void activate() {
         this.status = "ACTIVE";
     }
 
     public boolean isActive() {
         return "ACTIVE".equals(this.status);
+    }
+
+    // Helper method để thêm role nhanh chóng
+    public void addRole(Role role) {
+        this.roles.add(role);
     }
 }
