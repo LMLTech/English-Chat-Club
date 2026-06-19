@@ -40,7 +40,7 @@ public class SessionService implements ManageSessionUseCase {
     private static final int LATE_CANCEL_PENALTY_POINTS  = 5;
 
     // Người được promote có 1 phút để xác nhận (TEST MODE – đổi lại 10 khi deploy)
-    private static final int PROMOTE_CONFIRM_MINUTES = 1;
+    private static final int PROMOTE_CONFIRM_MINUTES = 10;
 
     private final SessionRepositoryPort sessionRepositoryPort;
     private final TopicRepositoryPort topicRepositoryPort;

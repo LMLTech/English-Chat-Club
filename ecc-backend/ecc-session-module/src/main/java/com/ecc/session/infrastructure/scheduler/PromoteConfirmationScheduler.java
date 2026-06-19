@@ -21,8 +21,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PromoteConfirmationScheduler {
 
-    // Đổi xuống 1 phút để test nhanh
-    private static final int PROMOTE_CONFIRM_MINUTES = 1;
+    // Đổi xuống 1 phút để test nhanh ( push lên chỉnh lại 10 (10 phút))
+    private static final int PROMOTE_CONFIRM_MINUTES = 10;
 
     private final WaitingListRepositoryPort waitingListRepositoryPort;
 
