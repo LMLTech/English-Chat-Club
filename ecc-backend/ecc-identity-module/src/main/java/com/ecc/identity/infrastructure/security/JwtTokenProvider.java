@@ -51,6 +51,9 @@ public class JwtTokenProvider {
                 .claim("email", user.getEmail())
                 .claim("roles", roleNames) // Đổi từ "role" thành "roles" (dạng mảng)
                 .claim("permissions", permissions)
+                // Thêm cefrLevel và status để các module khác đọc mà không cần query DB chéo module
+                .claim("cefrLevel", user.getCefrLevel())
+                .claim("status", user.getStatus())
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(getSigningKey())
