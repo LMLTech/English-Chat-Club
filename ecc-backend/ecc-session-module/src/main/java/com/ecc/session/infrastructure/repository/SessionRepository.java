@@ -23,6 +23,16 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
     int tryIncrementParticipants(@Param("sessionId") Long sessionId);
 
     /**
+     * Giảm current_participants xuống 1 một cách atomic (DB-level).
+     * Điều kiện: current_participants > 0 (để không bị âm).
+     * Trả về số dòng bị ảnh hưởng: 1 = thành công.
+     */
+    @Modifying
+    @Query("UPDATE Session s SET s.currentParticipants = s.currentParticipants - 1 " +
+           "WHERE s.id = :sessionId AND s.currentParticipants > 0")
+    int tryDecrementParticipants(@Param("sessionId") Long sessionId);
+
+    /**
      * Kiểm tra user có booking CONFIRMED nào trùng khung giờ (startTime, endTime) không.
      * Join với Booking để tìm session mà user đã đặt.
      * excludeSessionId: loại trừ chính session đang xét ra.

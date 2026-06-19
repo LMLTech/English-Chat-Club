@@ -20,6 +20,11 @@ public class BookingRepositoryAdapter implements BookingRepositoryPort {
     }
 
     @Override
+    public Optional<Booking> findById(Long bookingId) {
+        return bookingRepository.findById(bookingId);
+    }
+
+    @Override
     public Optional<Booking> findActiveByMemberIdAndSessionId(Long memberId, Long sessionId) {
         return bookingRepository.findActiveByMemberIdAndSessionId(memberId, sessionId);
     }

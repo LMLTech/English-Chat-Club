@@ -9,6 +9,9 @@ public interface BookingRepositoryPort {
     /** Lưu hoặc cập nhật booking */
     Booking save(Booking booking);
 
-    /** Kiểm tra user đã có booking CONFIRMED trong session này chưa */
+    /** Tìm booking theo internal ID */
+    Optional<Booking> findById(Long bookingId);
+
+    /** Tìm booking CONFIRMED của một member trong một session */
     Optional<Booking> findActiveByMemberIdAndSessionId(Long memberId, Long sessionId);
 }

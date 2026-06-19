@@ -8,4 +8,6 @@ public interface ManageSessionUseCase {
     Session createSession(Long moderatorId, SessionRequest request);
     Session approveSession(Long sessionId);
     BookingResponse bookSession(Long memberId, Long sessionId, String memberStatus, String memberCefrLevel);
-}
+    BookingResponse cancelBooking(Long memberId, Long sessionId);
+    BookingResponse confirmPromotion(Long memberId, Long sessionId);
+}

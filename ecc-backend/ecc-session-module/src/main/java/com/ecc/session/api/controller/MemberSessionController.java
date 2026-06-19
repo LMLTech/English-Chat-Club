@@ -11,9 +11,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Controller dành cho Member: đặt chỗ session.
+ * Controller dành cho Member: đặt chỗ, hủy chỗ, xác nhận promote.
  * cefrLevel và status được đọc từ request attribute (đã được JwtAuthenticationFilter set).
- * Không cần import JJWT vào session-module, giữ đúng module boundary.
  */
 @RestController
 @RequestMapping("/api/sessions")
@@ -24,8 +23,7 @@ public class MemberSessionController {
 
     /**
      * POST /api/sessions/{id}/book
-     * Member đặt chỗ vào một phòng hội thoại.
-     * Attributes "memberStatus" và "cefrLevel" được inject bởi JwtAuthenticationFilter.
+     * Flow 2.3 – Member đặt chỗ. Nếu đầy → vào Waiting List.
      */
     @PostMapping("/{id}/book")
     @PreAuthorize("hasAuthority('MEMBER')")
@@ -35,13 +33,43 @@ public class MemberSessionController {
             HttpServletRequest request) {
 
         Long memberId = Long.parseLong(authentication.getName());
-
-        // Đọc claims từ request attribute – không parse JWT lại, không cần JJWT dependency
         String memberStatus    = (String) request.getAttribute("memberStatus");
         String memberCefrLevel = (String) request.getAttribute("cefrLevel");
 
         BookingResponse response = manageSessionUseCase.bookSession(memberId, id, memberStatus, memberCefrLevel);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 
+    /**
+     * DELETE /api/sessions/{id}/book
+     * Flow 2.4 – Member hủy chỗ.
+     * - Nếu hủy muộn (< 2h trước giờ bắt đầu) → trừ 5 điểm.
+     * - Tự động promote người đầu hàng chờ lên PENDING_CONFIRM (10 phút để xác nhận).
+     */
+    @DeleteMapping("/{id}/book")
+    @PreAuthorize("hasAuthority('MEMBER')")
+    public ResponseEntity<ApiResponse<BookingResponse>> cancelBooking(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        Long memberId = Long.parseLong(authentication.getName());
+        BookingResponse response = manageSessionUseCase.cancelBooking(memberId, id);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
+     * POST /api/sessions/{id}/confirm-promote
+     * Flow 2.4 – Member được promote xác nhận slot trong vòng 10 phút.
+     * Nếu không xác nhận → scheduler sẽ chuyển EXPIRED và promote người kế tiếp.
+     */
+    @PostMapping("/{id}/confirm-promote")
+    @PreAuthorize("hasAuthority('MEMBER')")
+    public ResponseEntity<ApiResponse<BookingResponse>> confirmPromotion(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        Long memberId = Long.parseLong(authentication.getName());
+        BookingResponse response = manageSessionUseCase.confirmPromotion(memberId, id);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

@@ -31,7 +31,13 @@ public class SessionRepositoryAdapter implements SessionRepositoryPort {
     }
 
     @Override
+    public int tryDecrementParticipants(Long sessionId) {
+        return sessionRepository.tryDecrementParticipants(sessionId);
+    }
+
+    @Override
     public boolean hasConflictingBooking(Long memberId, LocalDateTime startTime, LocalDateTime endTime, Long excludeSessionId) {
         return sessionRepository.hasConflictingBooking(memberId, startTime, endTime, excludeSessionId);
     }
-}
+}
+

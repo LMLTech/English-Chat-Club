@@ -17,8 +17,16 @@ public interface SessionRepositoryPort {
     int tryIncrementParticipants(Long sessionId);
 
     /**
+     * Giảm current_participants xuống 1 theo cách atomic.
+     * Điều kiện: current_participants > 0 (không âm).
+     * @return số dòng bị ảnh hưởng: 1 = thành công
+     */
+    int tryDecrementParticipants(Long sessionId);
+
+    /**
      * Kiểm tra user đã có booking CONFIRMED nào trùng khung giờ với session hiện tại chưa.
      * Dùng để ngăn đặt chỗ trùng lịch.
      */
     boolean hasConflictingBooking(Long memberId, LocalDateTime startTime, LocalDateTime endTime, Long excludeSessionId);
-}
+}
+
