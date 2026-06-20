@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(
-    name = "waiting_lists",
+    name = "waiting_list",
     uniqueConstraints = @UniqueConstraint(columnNames = {"member_id", "session_id"})
 )
 @Getter
@@ -35,20 +35,10 @@ public class WaitingList {
     @Column(name = "position", nullable = false)
     private Integer position;
 
-    /**
-     * Trạng thái:
-     * WAITING         – Đang chờ trong hàng
-     * PENDING_CONFIRM – Được promote, đang chờ xác nhận (10 phút)
-     * PROMOTED        – Đã xác nhận → Booking CONFIRMED được tạo
-     * EXPIRED         – Hết thời gian xác nhận → chuyển sang người kế tiếp
-     */
+
     @Column(nullable = false, length = 20)
     private String status;
 
-    /**
-     * Deadline để xác nhận khi được promote (PENDING_CONFIRM → now + 10 phút).
-     * Null khi status = WAITING.
-     */
     @Column(name = "confirm_deadline")
     private LocalDateTime confirmDeadline;
 
