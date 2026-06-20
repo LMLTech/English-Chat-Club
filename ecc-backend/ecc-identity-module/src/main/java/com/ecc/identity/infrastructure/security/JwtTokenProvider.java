@@ -15,7 +15,7 @@ import java.security.MessageDigest;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors; // Thêm import Collectors
+import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenProvider {
@@ -116,6 +116,18 @@ public class JwtTokenProvider {
                 .parseSignedClaims(token)
                 .getPayload(); // Bản mới dùng getPayload() thay cho getBody()
         return claims.getId();
+    }
+
+    // THÊM MỚI HÀM NÀY CHO WEBSOCKET SỬ DỤNG
+    public Long getUserIdFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        // Subject chính là UserId mà ta đã truyền vào lúc tạo token
+        return Long.parseLong(claims.getSubject());
     }
 
     // Tính toán thời gian hết hạn còn lại (tính bằng giây) để set TTL cho Redis

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Chat Room Flow 2.5</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        #chatBox { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; background: #f9f9f9;}
+        .msg { padding: 5px; border-bottom: 1px dashed #ddd; }
+    </style>
+</head>
+<body>
+<h2>Kiểm tra WebSocket Phòng Chat (Có Lịch Sử)</h2>
+
+<div>
+    <label>Access Token (Bearer ...):</label><br>
+    <input type="text" id="token" placeholder="Dán JWT Token của Member/Moderator vào đây" style="width: 100%;"><br><br>
+
+    <label>Session ID (ID Phòng):</label>
+    <input type="number" id="sessionId" value="1"><br><br>
+
+    <button onclick="connect()">1. Kết nối & Tham gia phòng</button>
+    <button onclick="disconnect()" style="color: red;">Ngắt kết nối</button>
+</div>
+
+<hr>
+<div id="chatBox"></div>
+<input type="text" id="message" placeholder="Nhập tin nhắn..." style="width: 70%;">
+<button onclick="sendMessage()">2. Gửi tin nhắn</button>
+
+<script>
+    var stompClient = null;
+    var currentSessionId = null;
+    var token = null; // Khai báo token ở ngoài để hàm loadChatHistory xài ké được
+
+    function connect() {
+        token = document.getElementById('token').value;
+        currentSessionId = document.getElementById('sessionId').value;
+
+        if (!token || !currentSessionId) {
+            alert("Vui lòng nhập Token và Session ID!");
+            return;
+        }
+
+        // Xóa sạch khung chat cũ (nếu có) trước khi vào phòng mới
+        document.getElementById('chatBox').innerHTML = '';
+
+        // BƯỚC 1: Gọi REST API để tải lịch sử chat từ Redis trước
+        loadChatHistory();
+
+        // BƯỚC 2: Mở kết nối WebSocket để hứng tin nhắn mới
+        var socket = new SockJS('http://localhost:8080/ws');
+        stompClient = Stomp.over(socket);
+
+        var headers = {
+            'Authorization': 'Bearer ' + token
+        };
+
+        stompClient.connect(headers, function (frame) {
+            console.log('Connected: ' + frame);
+            document.getElementById('chatBox').innerHTML += "<div class='msg' style='color:green;'><b>[Hệ Thống]:</b> Đã kết nối Live WebSocket! Sẵn sàng chat.</div>";
+
+            // Đăng ký theo dõi (Subscribe) kênh của phòng này
+            stompClient.subscribe('/topic/chat/' + currentSessionId, function (response) {
+                showGreeting(JSON.parse(response.body));
+            });
+        }, function (error) {
+            alert("Lỗi kết nối! Xem F12 Console. (Khả năng sai Token hoặc không có quyền)");
+        });
+    }
+
+    // Dùng fetch (AJAX) để gọi API lịch sử
+    function loadChatHistory() {
+        document.getElementById('chatBox').innerHTML += "<div class='msg' style='color:blue;'><b>[Hệ Thống]:</b> Đang tải lịch sử chat...</div>";
+
+        fetch('http://localhost:8080/api/sessions/' + currentSessionId + '/messages', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Không thể tải lịch sử chat");
+                }
+                return response.json();
+            })
+            .then(apiResponse => {
+                // apiResponse.data chứa mảng các tin nhắn (Dựa theo chuẩn ApiResponse của bạn)
+                var messages = apiResponse.data;
+                if (messages && messages.length > 0) {
+                    messages.forEach(msg => {
+                        showGreeting(msg);
+                    });
+                    document.getElementById('chatBox').innerHTML += "<div class='msg' style='color:blue;'><b>[Hệ Thống]:</b> --- Hết tin nhắn cũ ---</div>";
+                } else {
+                    document.getElementById('chatBox').innerHTML += "<div class='msg' style='color:gray;'><b>[Hệ Thống]:</b> Phòng chưa có tin nhắn nào.</div>";
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi tải lịch sử:', error);
+            });
+    }
+
+    function disconnect() {
+        if (stompClient !== null) {
+            stompClient.disconnect();
+        }
+        console.log("Disconnected");
+        document.getElementById('chatBox').innerHTML += "<div class='msg' style='color:red'><b>[Hệ Thống]:</b> Đã ngắt kết nối.</div>";
+    }
+
+    function sendMessage() {
+        var messageContent = document.getElementById('message').value;
+        if(stompClient && messageContent) {
+            var chatMessage = {
+                content: messageContent,
+                type: 'TEXT'
+            };
+
+            // Bắn tin nhắn lên Server
+            stompClient.send("/app/chat.sendMessage/" + currentSessionId, {}, JSON.stringify(chatMessage));
+            document.getElementById('message').value = '';
+        } else {
+            alert("Chưa kết nối hoặc tin nhắn rỗng!");
+        }
+    }
+
+    function showGreeting(message) {
+        var chatBox = document.getElementById('chatBox');
+
+        // Render giờ đẹp hơn chút
+        var timeStr = "";
+        if(message.createdAt) {
+            // Định dạng lại giờ cho dễ nhìn
+            var dateObj = new Date(message.createdAt);
+            timeStr = ("0" + dateObj.getHours()).slice(-2) + ":" + ("0" + dateObj.getMinutes()).slice(-2);
+        }
+
+        chatBox.innerHTML += "<div class='msg'><b>Người gửi " + message.senderId + ":</b> " + message.content + " <br><small>(" + timeStr + ")</small></div>";
+        chatBox.scrollTop = chatBox.scrollHeight; // Auto scroll
+    }
+</script>
+</body>
+</html>

@@ -44,7 +44,11 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         // Lấy mã đặt lịch (Callback cho Google Calendar)
                         .requestMatchers("/callback").permitAll()
-                        // Bắt buộc xác thực với các API còn lại (Bao gồm cả /api/profile/**)
+
+                        // FIX LỖI 403: Mở khóa API thăm dò của SockJS / WebSocket
+                        .requestMatchers("/ws/**").permitAll()
+
+                        // Bắt buộc xác thực với các API còn lại
                         .anyRequest().authenticated()
                 )
                 // Thêm JwtAuthenticationFilter TRƯỚC UsernamePasswordAuthenticationFilter
@@ -52,13 +56,18 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // Cấu hình CORS cơ bản cho phép Frontend (Next.js) và Postman gọi API thoải mái
+    // Cấu hình CORS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*")); // Trong thực tế nên sửa "*" thành domain của Frontend
+
+        // Dùng Pattern thay vì AllowedOrigins để tương thích với AllowCredentials
+        configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
+
+        // BẮT BUỘC có dòng này thì SockJS mới chịu kết nối mà không văng lỗi CORS
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
