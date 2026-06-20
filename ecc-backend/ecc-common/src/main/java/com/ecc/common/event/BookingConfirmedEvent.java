@@ -12,5 +12,7 @@ public class BookingConfirmedEvent extends DomainEvent {
         this.memberId = memberId;
     }
 
-    // Getters...
-}
+    public Long getBookingId() { return bookingId; }
+    public Long getSessionId() { return sessionId; }
+    public Long getMemberId() { return memberId; }
+}

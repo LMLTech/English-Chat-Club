@@ -6,6 +6,7 @@ import com.ecc.session.infrastructure.repository.SessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Component
@@ -23,4 +24,20 @@ public class SessionRepositoryAdapter implements SessionRepositoryPort {
     public Optional<Session> findById(Long id) {
         return sessionRepository.findById(id);
     }
+
+    @Override
+    public int tryIncrementParticipants(Long sessionId) {
+        return sessionRepository.tryIncrementParticipants(sessionId);
+    }
+
+    @Override
+    public int tryDecrementParticipants(Long sessionId) {
+        return sessionRepository.tryDecrementParticipants(sessionId);
+    }
+
+    @Override
+    public boolean hasConflictingBooking(Long memberId, LocalDateTime startTime, LocalDateTime endTime, Long excludeSessionId) {
+        return sessionRepository.hasConflictingBooking(memberId, startTime, endTime, excludeSessionId);
+    }
 }
+

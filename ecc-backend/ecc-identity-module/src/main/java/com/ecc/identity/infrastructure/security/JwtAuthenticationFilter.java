@@ -72,6 +72,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
+                // Lưu claims bổ sung vào request attribute để các controller đọc mà không cần parse lại JWT
+                request.setAttribute("cefrLevel", claims.get("cefrLevel", String.class));
+                request.setAttribute("memberStatus", claims.get("status", String.class));
+
             } catch (JwtException | IllegalArgumentException e) {
                 // Token không hợp lệ --> không set Authentication, Spring Security sẽ trả 403
                 SecurityContextHolder.clearContext();
