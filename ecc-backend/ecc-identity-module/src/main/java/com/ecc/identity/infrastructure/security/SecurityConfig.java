@@ -20,7 +20,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // Bật @PreAuthorize trên các Controller
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -38,17 +38,20 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // Tắt CSRF vì mình dùng JWT
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Không dùng session cookie
                 .authorizeHttpRequests(auth -> auth
-                        // Mở khóa các API công khai
+                        // 1. Mở khóa các API công khai
                         .requestMatchers("/api/auth/**").permitAll()
-                        // Mở khóa giao diện Swagger UI và API Docs
+
+                        // 2. Mở khóa giao diện Swagger UI và API Docs
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        // Lấy mã đặt lịch (Callback cho Google Calendar)
+
+                        // 3. Mở khóa Callback (Dành cho Google Calendar / OAuth2)
                         .requestMatchers("/callback").permitAll()
 
-                        // FIX LỖI 403: Mở khóa API thăm dò của SockJS / WebSocket
+                        // 4. Mở khóa Endpoint WebSocket cho phép SockJS thăm dò trước khi kết nối STOMP
                         .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/files/**", "/uploads/**").permitAll()
 
-                        // Bắt buộc xác thực với các API còn lại
+                        // Bắt buộc xác thực với TẤT CẢ các API còn lại
                         .anyRequest().authenticated()
                 )
                 // Thêm JwtAuthenticationFilter TRƯỚC UsernamePasswordAuthenticationFilter
@@ -56,17 +59,17 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // Cấu hình CORS
+    // Cấu hình CORS chuẩn chỉ cho Frontend (Next.js/React/Vue) và Postman
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Dùng Pattern thay vì AllowedOrigins để tương thích với AllowCredentials
+        // Dùng Pattern thay vì AllowedOrigins để tương thích hoàn toàn với AllowCredentials
         configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
 
-        // BẮT BUỘC có dòng này thì SockJS mới chịu kết nối mà không văng lỗi CORS
+        // BẮT BUỘC có dòng này thì SockJS (WebSocket) mới chịu kết nối mà không văng lỗi CORS
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

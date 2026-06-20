@@ -2,39 +2,51 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Test Chat Room Flow 2.5</title>
+    <title>Test Chat Room</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
-        #chatBox { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; background: #f9f9f9;}
-        .msg { padding: 5px; border-bottom: 1px dashed #ddd; }
+        #chatBox { border: 1px solid #ccc; height: 400px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; background: #f9f9f9;}
+        .msg { padding: 8px; border-bottom: 1px dashed #ddd; margin-bottom: 5px; }
+        .voice-btn { background: #ff4757; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 5px; }
+        .voice-btn.recording { background: #2ed573; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
-<h2>Kiểm tra WebSocket Phòng Chat (Có Lịch Sử)</h2>
+<h2>Kiểm tra WebSocket Phòng Chat</h2>
 
 <div>
-    <label>Access Token (Bearer ...):</label><br>
-    <input type="text" id="token" placeholder="Dán JWT Token của Member/Moderator vào đây" style="width: 100%;"><br><br>
+    <label>Access Token:</label><br>
+    <input type="text" id="token" placeholder="Dán JWT Token vào đây" style="width: 100%;"><br><br>
 
-    <label>Session ID (ID Phòng):</label>
-    <input type="number" id="sessionId" value="1"><br><br>
+    <label>Session ID:</label>
+    <input type="number" id="sessionId" value="1" style="width: 50px;">
 
-    <button onclick="connect()">1. Kết nối & Tham gia phòng</button>
+    <button onclick="connect()">Kết nối</button>
     <button onclick="disconnect()" style="color: red;">Ngắt kết nối</button>
 </div>
 
 <hr>
 <div id="chatBox"></div>
-<input type="text" id="message" placeholder="Nhập tin nhắn..." style="width: 70%;">
-<button onclick="sendMessage()">2. Gửi tin nhắn</button>
+
+<div style="display: flex; gap: 10px; align-items: center;">
+    <input type="text" id="message" placeholder="Nhập tin nhắn chữ..." style="flex-grow: 1; padding: 8px;">
+    <button onclick="sendMessage()">Gửi Text</button>
+    <button id="recordBtn" class="voice-btn" onmousedown="startRecording()" onmouseup="stopRecording()">🎤 Nhấn giữ để Thu âm</button>
+</div>
 
 <script>
     var stompClient = null;
     var currentSessionId = null;
-    var token = null; // Khai báo token ở ngoài để hàm loadChatHistory xài ké được
+    var token = null;
 
+    // --- CÁC BIẾN CHO GHI ÂM ---
+    var mediaRecorder;
+    var audioChunks = [];
+
+    // --- 1. KẾT NỐI VÀ LOAD LỊCH SỬ (Giữ nguyên như cũ) ---
     function connect() {
         token = document.getElementById('token').value;
         currentSessionId = document.getElementById('sessionId').value;
@@ -44,104 +56,165 @@
             return;
         }
 
-        // Xóa sạch khung chat cũ (nếu có) trước khi vào phòng mới
         document.getElementById('chatBox').innerHTML = '';
-
-        // BƯỚC 1: Gọi REST API để tải lịch sử chat từ Redis trước
         loadChatHistory();
 
-        // BƯỚC 2: Mở kết nối WebSocket để hứng tin nhắn mới
         var socket = new SockJS('http://localhost:8080/ws');
         stompClient = Stomp.over(socket);
 
-        var headers = {
-            'Authorization': 'Bearer ' + token
-        };
+        var headers = { 'Authorization': 'Bearer ' + token };
 
         stompClient.connect(headers, function (frame) {
             console.log('Connected: ' + frame);
-            document.getElementById('chatBox').innerHTML += "<div class='msg' style='color:green;'><b>[Hệ Thống]:</b> Đã kết nối Live WebSocket! Sẵn sàng chat.</div>";
+            appendSystemMessage("Đã kết nối Live WebSocket! Sẵn sàng chat.", "green");
 
-            // Đăng ký theo dõi (Subscribe) kênh của phòng này
             stompClient.subscribe('/topic/chat/' + currentSessionId, function (response) {
                 showGreeting(JSON.parse(response.body));
             });
         }, function (error) {
-            alert("Lỗi kết nối! Xem F12 Console. (Khả năng sai Token hoặc không có quyền)");
+            alert("Lỗi kết nối! Kiểm tra lại Token.");
         });
     }
 
-    // Dùng fetch (AJAX) để gọi API lịch sử
     function loadChatHistory() {
-        document.getElementById('chatBox').innerHTML += "<div class='msg' style='color:blue;'><b>[Hệ Thống]:</b> Đang tải lịch sử chat...</div>";
-
+        appendSystemMessage("Đang tải lịch sử chat...", "blue");
         fetch('http://localhost:8080/api/sessions/' + currentSessionId + '/messages', {
             method: 'GET',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-            }
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
         })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Không thể tải lịch sử chat");
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(apiResponse => {
-                // apiResponse.data chứa mảng các tin nhắn (Dựa theo chuẩn ApiResponse của bạn)
                 var messages = apiResponse.data;
                 if (messages && messages.length > 0) {
-                    messages.forEach(msg => {
-                        showGreeting(msg);
-                    });
-                    document.getElementById('chatBox').innerHTML += "<div class='msg' style='color:blue;'><b>[Hệ Thống]:</b> --- Hết tin nhắn cũ ---</div>";
+                    messages.forEach(msg => showGreeting(msg));
+                    appendSystemMessage("--- Hết tin nhắn cũ ---", "blue");
                 } else {
-                    document.getElementById('chatBox').innerHTML += "<div class='msg' style='color:gray;'><b>[Hệ Thống]:</b> Phòng chưa có tin nhắn nào.</div>";
+                    appendSystemMessage("Phòng chưa có tin nhắn nào.", "gray");
                 }
-            })
-            .catch(error => {
-                console.error('Lỗi tải lịch sử:', error);
             });
     }
 
-    function disconnect() {
-        if (stompClient !== null) {
-            stompClient.disconnect();
-        }
-        console.log("Disconnected");
-        document.getElementById('chatBox').innerHTML += "<div class='msg' style='color:red'><b>[Hệ Thống]:</b> Đã ngắt kết nối.</div>";
-    }
-
+    // --- 2. GỬI TIN NHẮN TEXT ---
     function sendMessage() {
         var messageContent = document.getElementById('message').value;
         if(stompClient && messageContent) {
-            var chatMessage = {
-                content: messageContent,
-                type: 'TEXT'
-            };
-
-            // Bắn tin nhắn lên Server
+            var chatMessage = { content: messageContent, type: 'TEXT' };
             stompClient.send("/app/chat.sendMessage/" + currentSessionId, {}, JSON.stringify(chatMessage));
             document.getElementById('message').value = '';
-        } else {
-            alert("Chưa kết nối hoặc tin nhắn rỗng!");
         }
     }
 
+    // --- 3. TÍNH NĂNG GHI ÂM & UPLOAD ---
+    async function startRecording() {
+        if (!token) return alert("Vui lòng kết nối trước!");
+
+        const btn = document.getElementById('recordBtn');
+        btn.classList.add('recording');
+        btn.innerText = "🎙️ Đang thu âm... Buông ra để gửi";
+        audioChunks = [];
+
+        try {
+            // Xin quyền mở Mic của trình duyệt
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.start();
+        } catch (err) {
+            alert("Không thể truy cập Microphone: " + err);
+            btn.classList.remove('recording');
+            btn.innerText = "🎤 Nhấn giữ để Thu âm";
+        }
+    }
+
+    function stopRecording() {
+        const btn = document.getElementById('recordBtn');
+        btn.classList.remove('recording');
+        btn.innerText = "🎤 Nhấn giữ để Thu âm";
+
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+            mediaRecorder.onstop = () => {
+                // Đóng gói âm thanh thành 1 file WebM / Audio
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                uploadAndSendVoice(audioBlob);
+
+                // Tắt luồng mic để tiết kiệm pin
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            };
+        }
+    }
+
+    // Gọi API REST để upload, lấy URL về, rồi bắn WebSocket cho cả phòng nghe
+    function uploadAndSendVoice(blob) {
+        appendSystemMessage("Đang upload file ghi âm lên Server...", "orange");
+
+        var formData = new FormData();
+        // Đặt tên file giả định
+        formData.append("file", blob, "voice_message.webm");
+        formData.append("sessionId", currentSessionId);
+        formData.append("duration", 0); // Có thể tính thời gian nếu muốn
+
+        fetch('http://localhost:8080/api/voice/record', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(apiResponse => {
+                if(apiResponse.status === 200) {
+                    // apiResponse.data chính là fileUrl (VD: /files/voices/xxx.webm)
+                    var fileUrl = apiResponse.data;
+
+                    // Bắn tin nhắn WebSocket loại VOICE, content là đường dẫn URL
+                    var chatMessage = { content: fileUrl, type: 'VOICE' };
+                    stompClient.send("/app/chat.sendMessage/" + currentSessionId, {}, JSON.stringify(chatMessage));
+                } else {
+                    alert("Upload lỗi: " + apiResponse.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                appendSystemMessage("Upload thất bại", "red");
+            });
+    }
+
+    // --- 4. HIỂN THỊ TIN NHẮN (TEXT VÀ AUDIO) ---
     function showGreeting(message) {
         var chatBox = document.getElementById('chatBox');
+        var timeStr = message.createdAt ? new Date(message.createdAt).toLocaleTimeString() : "";
+        var htmlContent = "";
 
-        // Render giờ đẹp hơn chút
-        var timeStr = "";
-        if(message.createdAt) {
-            // Định dạng lại giờ cho dễ nhìn
-            var dateObj = new Date(message.createdAt);
-            timeStr = ("0" + dateObj.getHours()).slice(-2) + ":" + ("0" + dateObj.getMinutes()).slice(-2);
+        // Nếu là tin nhắn chữ
+        if(message.type === 'TEXT' || message.type == null) {
+            htmlContent = message.content;
+        }
+        // Nếu là tin nhắn giọng nói (Render ra cái máy phát nhạc)
+        else if(message.type === 'VOICE') {
+            htmlContent = `
+                <div style="margin-top: 5px;">
+                    <audio controls style="height: 35px;">
+                        <source src="http://localhost:8080${message.content}" type="audio/webm">
+                        Trình duyệt của bạn không hỗ trợ thẻ audio.
+                    </audio>
+                </div>
+            `;
         }
 
-        chatBox.innerHTML += "<div class='msg'><b>Người gửi " + message.senderId + ":</b> " + message.content + " <br><small>(" + timeStr + ")</small></div>";
-        chatBox.scrollTop = chatBox.scrollHeight; // Auto scroll
+        chatBox.innerHTML += `<div class='msg'><b>User ${message.senderId}</b> <small>(${timeStr})</small>:<br> ${htmlContent}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendSystemMessage(text, color) {
+        document.getElementById('chatBox').innerHTML += `<div class='msg' style='color:${color};'><b>[Hệ Thống]:</b> ${text}</div>`;
+    }
+
+    function disconnect() {
+        if (stompClient !== null) stompClient.disconnect();
+        appendSystemMessage("Đã ngắt kết nối.", "red");
     }
 </script>
 </body>
