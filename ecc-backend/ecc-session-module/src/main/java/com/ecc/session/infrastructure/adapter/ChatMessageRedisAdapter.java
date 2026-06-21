@@ -33,4 +33,10 @@ public class ChatMessageRedisAdapter {
         String key = CHAT_ROOM_PREFIX + sessionId + ":messages";
         return redisTemplate.opsForList().range(key, 0, -1);
     }
+
+    // Xóa toàn bộ cache của phòng chat
+    public void clearCache(Long sessionId) {
+        String key = CHAT_ROOM_PREFIX + sessionId + ":messages";
+        redisTemplate.delete(key);
+    }
 }
