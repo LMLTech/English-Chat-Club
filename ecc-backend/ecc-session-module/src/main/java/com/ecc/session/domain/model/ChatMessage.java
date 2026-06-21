@@ -41,6 +41,10 @@ public class ChatMessage {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Builder.Default
+    @Column(name = "is_pinned", nullable = false)
+    private Boolean isPinned = false;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

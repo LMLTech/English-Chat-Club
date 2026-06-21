@@ -59,11 +59,49 @@ public class ChatService {
                 .content(chatMessage.getContent())
                 .type(chatMessage.getType())
                 .createdAt(chatMessage.getCreatedAt())
+                .deletedAt(chatMessage.getDeletedAt())
+                .isPinned(chatMessage.getIsPinned())
                 .build();
 
         // 5. Lưu vào Redis Cache để lấy lịch sử siêu tốc
         chatMessageRedisAdapter.saveMessageToCache(sessionId, response);
 
         return response;
+    }
+
+    @Transactional
+    public void deleteMessage(Long messageId, Long requesterId) {
+        ChatMessage message = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new BadRequestException("Tin nhắn không tồn tại"));
+        
+        Session session = message.getSession();
+        if (!session.getModeratorId().equals(requesterId) && !message.getSenderId().equals(requesterId)) {
+            throw new BadRequestException("Bạn không có quyền xóa tin nhắn này");
+        }
+
+        message.setDeletedAt(java.time.LocalDateTime.now());
+        chatMessageRepository.save(message);
+
+        // Xóa cache của phòng này để API get lịch sử sẽ fallback về DB và loại bỏ tin nhắn này
+        chatMessageRedisAdapter.clearCache(session.getId());
+    }
+
+    @Transactional
+    public void pinMessage(Long messageId, Long requesterId) {
+        ChatMessage message = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new BadRequestException("Tin nhắn không tồn tại"));
+        
+        Session session = message.getSession();
+        if (!session.getModeratorId().equals(requesterId)) {
+            throw new BadRequestException("Chỉ Moderator mới có quyền ghim tin nhắn");
+        }
+
+        long pinnedCount = chatMessageRepository.countBySessionAndIsPinnedTrue(session);
+        if (pinnedCount >= 3 && !Boolean.TRUE.equals(message.getIsPinned())) {
+            throw new BadRequestException("Phòng đã đạt tối đa 3 tin nhắn ghim");
+        }
+
+        message.setIsPinned(true);
+        chatMessageRepository.save(message);
     }
 }

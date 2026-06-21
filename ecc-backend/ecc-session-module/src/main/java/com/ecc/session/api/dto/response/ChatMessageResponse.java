@@ -24,4 +24,8 @@ public class ChatMessageResponse {
     private String type;
 
     private LocalDateTime createdAt;
+
+    private LocalDateTime deletedAt;
+
+    private Boolean isPinned;
 }
