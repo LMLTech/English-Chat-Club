@@ -32,6 +32,7 @@ public class EventService {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .pointsRequired(request.getPointsRequired())
+                .rewardPoints(request.getRewardPoints())
                 .status("UPCOMING")
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
@@ -74,19 +75,18 @@ public class EventService {
                 .orElseThrow(() -> new BadRequestException("Sự kiện không tồn tại"));
 
         List<Long> attendedUserIds = request.getAttendedUserIds();
-        
+
         for (Long userId : attendedUserIds) {
             EventRegistration registration = eventRegistrationRepository.findByEventAndUserId(event, userId)
                     .orElse(null);
-            
+
             if (registration != null && "REGISTERED".equals(registration.getStatus())) {
                 registration.setStatus("ATTENDED");
                 eventRegistrationRepository.save(registration);
-                
-                // Cộng điểm thưởng sau khi tham gia (ví dụ sự kiện thưởng 50 điểm)
-                // TODO: Số điểm thưởng có thể lấy từ cấu hình hoặc entity Event
-                int rewardPoints = 50; 
-                pointsPort.addPoints(userId, rewardPoints, "Tham gia sự kiện: " + event.getTitle());
+                int rewardPoints = event.getRewardPoints() != null ? event.getRewardPoints() : 0;
+                if (rewardPoints > 0) {
+                    pointsPort.addPoints(userId, rewardPoints, "Tham gia sự kiện: " + event.getTitle());
+                }
             }
         }
 

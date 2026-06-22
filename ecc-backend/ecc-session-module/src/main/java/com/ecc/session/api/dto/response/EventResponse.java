@@ -13,6 +13,7 @@ public class EventResponse {
     private String title;
     private String description;
     private Integer pointsRequired;
+    private Integer rewardPoints; 
     private String status;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
@@ -23,6 +24,7 @@ public class EventResponse {
                 .title(event.getTitle())
                 .description(event.getDescription())
                 .pointsRequired(event.getPointsRequired())
+                .rewardPoints(event.getRewardPoints())
                 .status(event.getStatus())
                 .startTime(event.getStartTime())
                 .endTime(event.getEndTime())

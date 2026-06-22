@@ -4,6 +4,7 @@ import com.ecc.common.exception.BadRequestException;
 import com.ecc.session.api.dto.request.ChatMessageRequest;
 import com.ecc.session.api.dto.response.ChatMessageResponse;
 import com.ecc.session.application.port.out.BookingRepositoryPort;
+import com.ecc.session.application.port.out.IdentityPort;
 import com.ecc.session.domain.model.ChatMessage;
 import com.ecc.session.domain.model.Session;
 import com.ecc.session.infrastructure.adapter.ChatMessageRedisAdapter;
@@ -23,6 +24,7 @@ public class ChatService {
     private final SessionRepository sessionRepository;
     private final BookingRepositoryPort bookingRepositoryPort;
     private final ChatMessageRedisAdapter chatMessageRedisAdapter;
+    private final IdentityPort identityPort;
 
     @Transactional
     public ChatMessageResponse processAndSaveMessage(Long sessionId, Long senderId, ChatMessageRequest request) {
@@ -30,7 +32,12 @@ public class ChatService {
         Session session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new BadRequestException("Phòng không tồn tại"));
 
-        // 2. Kiểm tra quyền chat: Phải là Moderator hoặc có Booking CONFIRMED
+        // 2. Kiểm tra xem User có đang bị BANNED không
+        if (identityPort.isUserBanned(senderId)) {
+            throw new BadRequestException("Tài khoản của bạn đã bị khóa, không thể gửi tin nhắn!");
+        }
+
+        // 3. Kiểm tra quyền chat: Phải là Moderator hoặc có Booking CONFIRMED
         boolean isModerator = session.getModeratorId().equals(senderId);
         boolean isConfirmedMember = bookingRepositoryPort.findActiveByMemberIdAndSessionId(senderId, sessionId).isPresent();
 
@@ -40,7 +47,7 @@ public class ChatService {
 
         // TODO: Chèn logic gọi BadWordFilter ở đây (sẽ làm ở Phase 5) nha
 
-        // 3. Lưu MySQL
+        // 4. Lưu MySQL
         ChatMessage chatMessage = ChatMessage.builder()
                 .uuid(UUID.randomUUID())
                 .session(session)
@@ -51,7 +58,7 @@ public class ChatService {
 
         chatMessage = chatMessageRepository.save(chatMessage);
 
-        // 4. Map sang Response
+        // 5. Map sang Response
         ChatMessageResponse response = ChatMessageResponse.builder()
                 .uuid(chatMessage.getUuid().toString())
                 .sessionId(sessionId)
@@ -63,7 +70,7 @@ public class ChatService {
                 .isPinned(chatMessage.getIsPinned())
                 .build();
 
-        // 5. Lưu vào Redis Cache để lấy lịch sử siêu tốc
+        // 6. Lưu vào Redis Cache để lấy lịch sử siêu tốc
         chatMessageRedisAdapter.saveMessageToCache(sessionId, response);
 
         return response;
@@ -73,7 +80,7 @@ public class ChatService {
     public void deleteMessage(Long messageId, Long requesterId) {
         ChatMessage message = chatMessageRepository.findById(messageId)
                 .orElseThrow(() -> new BadRequestException("Tin nhắn không tồn tại"));
-        
+
         Session session = message.getSession();
         if (!session.getModeratorId().equals(requesterId) && !message.getSenderId().equals(requesterId)) {
             throw new BadRequestException("Bạn không có quyền xóa tin nhắn này");
@@ -90,7 +97,7 @@ public class ChatService {
     public void pinMessage(Long messageId, Long requesterId) {
         ChatMessage message = chatMessageRepository.findById(messageId)
                 .orElseThrow(() -> new BadRequestException("Tin nhắn không tồn tại"));
-        
+
         Session session = message.getSession();
         if (!session.getModeratorId().equals(requesterId)) {
             throw new BadRequestException("Chỉ Moderator mới có quyền ghim tin nhắn");

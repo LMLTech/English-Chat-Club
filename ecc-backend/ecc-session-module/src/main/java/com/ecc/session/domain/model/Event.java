@@ -29,6 +29,9 @@ public class Event {
     @Column(name = "points_required", nullable = false)
     private Integer pointsRequired;
 
+    @Column(name = "reward_points", nullable = false, columnDefinition = "INT DEFAULT 0")
+    private Integer rewardPoints;
+
     @Column(nullable = false, length = 20)
     private String status; // UPCOMING, ONGOING, COMPLETED
 

@@ -8,4 +8,11 @@ public interface IdentityPort {
      * @param reason Lý do khóa
      */
     void lockUser(Long userId, String duration, String reason);
+
+    /**
+     * Kiểm tra xem User có đang bị BANNED không
+     * @param userId ID của user
+     * @return true nếu đang bị BANNED, false nếu đang hoạt động bình thường
+     */
+    boolean isUserBanned(Long userId);
 }
