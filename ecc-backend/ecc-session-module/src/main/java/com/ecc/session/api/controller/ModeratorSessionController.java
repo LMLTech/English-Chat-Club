@@ -4,6 +4,7 @@ import com.ecc.common.dto.ApiResponse;
 import com.ecc.session.api.dto.request.SessionRequest;
 import com.ecc.session.api.dto.response.SessionResponse;
 import com.ecc.session.application.port.in.ManageSessionUseCase;
+import com.ecc.session.application.service.ModerationService;
 import com.ecc.session.domain.model.Session;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class ModeratorSessionController {
 
     private final ManageSessionUseCase manageSessionUseCase;
+    private final ModerationService moderationService;
 
     private Long getCurrentUserId(Authentication authentication) {
         return Long.parseLong(authentication.getName());
@@ -32,5 +34,16 @@ public class ModeratorSessionController {
         Long moderatorId = getCurrentUserId(authentication);
         Session session = manageSessionUseCase.createSession(moderatorId, request);
         return ResponseEntity.ok(ApiResponse.success(SessionResponse.fromEntity(session)));
+    }
+
+    @PostMapping("/{id}/summary")
+    public ResponseEntity<ApiResponse<Void>> createSessionSummary(
+            @PathVariable Long id,
+            @Valid @RequestBody com.ecc.session.api.dto.request.SessionSummaryRequest request,
+            Authentication authentication) {
+        
+        Long moderatorId = getCurrentUserId(authentication);
+        moderationService.createSessionSummary(id, moderatorId, request);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 }

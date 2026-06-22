@@ -46,8 +46,14 @@
     var mediaRecorder;
     var audioChunks = [];
 
-    // --- 1. KẾT NỐI VÀ LOAD LỊCH SỬ (Giữ nguyên như cũ) ---
+    // --- 1. KẾT NỐI VÀ LOAD LỊCH SỬ ---
     function connect() {
+        // FIX LỖI: Chặn người dùng spam nút Kết nối đẻ ra nhiều tin nhắn
+        if (stompClient !== null && stompClient.connected) {
+            alert("Bạn đã kết nối rồi, đừng bấm nữa nha!");
+            return;
+        }
+
         token = document.getElementById('token').value;
         currentSessionId = document.getElementById('sessionId').value;
 
@@ -153,10 +159,9 @@
         appendSystemMessage("Đang upload file ghi âm lên Server...", "orange");
 
         var formData = new FormData();
-        // Đặt tên file giả định
         formData.append("file", blob, "voice_message.webm");
         formData.append("sessionId", currentSessionId);
-        formData.append("duration", 0); // Có thể tính thời gian nếu muốn
+        formData.append("duration", 0);
 
         fetch('http://localhost:8080/api/voice/record', {
             method: 'POST',
@@ -166,10 +171,7 @@
             .then(response => response.json())
             .then(apiResponse => {
                 if(apiResponse.status === 200) {
-                    // apiResponse.data chính là fileUrl (VD: /files/voices/xxx.webm)
                     var fileUrl = apiResponse.data;
-
-                    // Bắn tin nhắn WebSocket loại VOICE, content là đường dẫn URL
                     var chatMessage = { content: fileUrl, type: 'VOICE' };
                     stompClient.send("/app/chat.sendMessage/" + currentSessionId, {}, JSON.stringify(chatMessage));
                 } else {
@@ -188,11 +190,9 @@
         var timeStr = message.createdAt ? new Date(message.createdAt).toLocaleTimeString() : "";
         var htmlContent = "";
 
-        // Nếu là tin nhắn chữ
         if(message.type === 'TEXT' || message.type == null) {
             htmlContent = message.content;
         }
-        // Nếu là tin nhắn giọng nói (Render ra cái máy phát nhạc)
         else if(message.type === 'VOICE') {
             htmlContent = `
                 <div style="margin-top: 5px;">
@@ -213,7 +213,10 @@
     }
 
     function disconnect() {
-        if (stompClient !== null) stompClient.disconnect();
+        if (stompClient !== null) {
+            stompClient.disconnect();
+            stompClient = null;
+        }
         appendSystemMessage("Đã ngắt kết nối.", "red");
     }
 </script>

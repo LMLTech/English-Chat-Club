@@ -20,4 +20,11 @@ public class NoOpPointsAdapter implements PointsPort {
         log.warn("[POINTS] Deduct {} points from memberId={}, reason={} (NoOp – gamification not implemented yet)",
                 points, memberId, reason);
     }
+
+    @Override
+    public void addPoints(Long memberId, int points, String reason) {
+        // TODO: Replace with actual gamification module call
+        log.warn("[POINTS] Add {} points to memberId={}, reason={} (NoOp – gamification not implemented yet)", 
+                 points, memberId, reason);
+    }
 }

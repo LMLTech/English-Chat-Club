@@ -17,4 +17,13 @@ public interface PointsPort {
      * @param reason   Lý do trừ điểm (ví dụ: "LATE_CANCEL")
      */
     void deductPoints(Long memberId, int points, String reason);
+
+    /**
+     * Cộng điểm cho member.
+     *
+     * @param memberId ID của member
+     * @param points   Số điểm được cộng
+     * @param reason   Lý do cộng điểm
+     */
+    void addPoints(Long memberId, int points, String reason);
 }
