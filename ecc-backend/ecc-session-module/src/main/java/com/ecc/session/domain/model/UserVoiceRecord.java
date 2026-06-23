@@ -41,7 +41,16 @@ public class UserVoiceRecord {
     @Column(columnDefinition = "TEXT")
     private String transcript;
 
+    // Ep cấu trúc MySQL phải có DEFAULT CURRENT_TIMESTAMP
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
+
+    // Tự động sinh UUID nếu chưa có trước khi lưu xuống DB
+    @PrePersist
+    public void prePersist() {
+        if (uuid == null) {
+            uuid = UUID.randomUUID();
+        }
+    }
 }

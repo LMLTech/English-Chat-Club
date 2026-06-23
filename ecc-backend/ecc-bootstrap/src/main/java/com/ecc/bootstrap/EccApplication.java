@@ -7,8 +7,10 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.context.annotation.Bean;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling                  // ĐÓNG VAI TRÒ NHƯ CHÌA KHÓA KHỞI ĐỘNG CRON JOB
 @ComponentScan("com.ecc")          // Quét tất cả package com.ecc.*
 @EntityScan("com.ecc")             // Tìm entity trong com.ecc.*.infrastructure.entity
 @EnableJpaRepositories("com.ecc")  // Tìm JPA repository trong com.ecc.*.infrastructure.repository
@@ -16,6 +18,7 @@ public class EccApplication {
     public static void main(String[] args) {
         SpringApplication.run(EccApplication.class, args);
     }
+
     @Bean
     CommandLineRunner startupMessage() {
         return args -> {
@@ -44,5 +47,3 @@ public class EccApplication {
         };
     }
 }
-
-
