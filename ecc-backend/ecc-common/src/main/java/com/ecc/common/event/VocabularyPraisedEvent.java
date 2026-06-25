@@ -14,5 +14,8 @@ public class VocabularyPraisedEvent extends DomainEvent {
         this.word = word;
     }
 
-
+    public Long getSessionId() { return sessionId; }
+    public Long getHighlightedByUserId() { return highlightedByUserId; }
+    public Long getPraisedUserId() { return praisedUserId; }
+    public String getWord() { return word; }
 }

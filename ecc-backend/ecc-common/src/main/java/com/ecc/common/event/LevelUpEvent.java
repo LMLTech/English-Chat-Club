@@ -10,5 +10,6 @@ public class LevelUpEvent extends DomainEvent {
         this.newLevel = newLevel;
     }
 
-    // Getters...
+    public Long getUserId() { return userId; }
+    public Integer getNewLevel() { return newLevel; }
 }

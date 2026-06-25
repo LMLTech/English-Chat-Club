@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Direct Message Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input[type="text"], textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        #log { margin-top: 20px; padding: 10px; border: 1px solid #ccc; height: 300px; overflow-y: auto; background-color: #f9f9f9; border-radius: 4px; }
+        .msg { margin-bottom: 10px; padding: 8px; border-radius: 5px; }
+        .msg.sent { background-color: #d1ecf1; text-align: right; }
+        .msg.received { background-color: #e2e3e5; }
+        .msg.system { background-color: #fff3cd; font-style: italic; font-size: 0.9em; text-align: center; }
+    </style>
+    <!-- SockJS và StompJS -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <h2>Mini Chat WebSocket Test</h2>
+
+    <div class="form-group">
+        <label for="token">Bearer Token của bạn (Copy từ API Login):</label>
+        <input type="text" id="token" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+    </div>
+
+    <div class="form-group">
+        <button id="connectBtn" onclick="connect()">1. Kết nối WebSocket</button>
+        <button id="disconnectBtn" onclick="disconnect()" disabled>Ngắt kết nối</button>
+    </div>
+
+    <hr>
+
+    <div class="form-group">
+        <label for="receiverId">ID Người Nhận (Friend ID):</label>
+        <input type="text" id="receiverId" placeholder="Ví dụ: 2">
+    </div>
+
+    <div class="form-group">
+        <label for="message">Nội dung tin nhắn:</label>
+        <textarea id="message" rows="3" placeholder="Nhập tin nhắn vào đây..."></textarea>
+    </div>
+
+    <div class="form-group">
+        <button id="sendBtn" onclick="sendMessage()" disabled>2. Gửi Tin Nhắn</button>
+    </div>
+
+    <div id="log"></div>
+</div>
+
+<script>
+    let stompClient = null;
+
+    function connect() {
+        const token = document.getElementById('token').value.trim();
+        if (!token) {
+            alert("Vui lòng nhập Bearer Token!");
+            return;
+        }
+
+        // Kết nối tới endpoint /ws của Spring Boot
+        const socket = new SockJS('http://localhost:8080/ws');
+        stompClient = Stomp.over(socket);
+
+        // Tắt log debug của STOMP nếu không cần thiết
+        // stompClient.debug = null;
+
+        logSystem("Đang kết nối...");
+
+        // Truyền Token qua headers
+        const headers = {
+            'Authorization': 'Bearer ' + token
+        };
+
+        stompClient.connect(headers, function (frame) {
+            document.getElementById('connectBtn').disabled = true;
+            document.getElementById('disconnectBtn').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+            document.getElementById('token').disabled = true;
+
+            logSystem("✅ Kết nối thành công! " + frame);
+
+            // Subscribe vào kênh nhận tin nhắn của mình
+            // Dù server định nghĩa là /queue/direct, nhưng theo cơ chế của Spring UserDestination, ta phải listen ở /user/queue/direct
+            stompClient.subscribe('/user/queue/direct', function (messageOutput) {
+                const body = JSON.parse(messageOutput.body);
+                logReceived(body.senderId, body.content);
+            });
+
+        }, function (error) {
+            logSystem("❌ Lỗi kết nối: " + error);
+        });
+    }
+
+    function disconnect() {
+        if (stompClient !== null) {
+            stompClient.disconnect();
+        }
+        document.getElementById('connectBtn').disabled = false;
+        document.getElementById('disconnectBtn').disabled = true;
+        document.getElementById('sendBtn').disabled = true;
+        document.getElementById('token').disabled = false;
+        logSystem("Đã ngắt kết nối.");
+    }
+
+    function sendMessage() {
+        const receiverId = document.getElementById('receiverId').value.trim();
+        const content = document.getElementById('message').value.trim();
+
+        if (!receiverId || !content) {
+            alert("Vui lòng nhập ID người nhận và nội dung tin nhắn!");
+            return;
+        }
+
+        if (stompClient && stompClient.connected) {
+            const payload = {
+                content: content,
+                attachmentUrl: null
+            };
+
+            // Gửi tới /app/direct/{receiverId}
+            stompClient.send("/app/direct/" + receiverId, {}, JSON.stringify(payload));
+            logSent(receiverId, content);
+
+            // Xoá ô nhập
+            document.getElementById('message').value = '';
+        } else {
+            alert("Bạn chưa kết nối WebSocket!");
+        }
+    }
+
+    function logSent(toId, message) {
+        const log = document.getElementById('log');
+        const div = document.createElement('div');
+        div.className = 'msg sent';
+        div.innerHTML = `<strong>Bạn ➜ User ${toId}:</strong> ${message}`;
+        log.appendChild(div);
+        log.scrollTop = log.scrollHeight;
+    }
+
+    function logReceived(fromId, message) {
+        const log = document.getElementById('log');
+        const div = document.createElement('div');
+        div.className = 'msg received';
+        div.innerHTML = `<strong>User ${fromId} ➜ Bạn:</strong> ${message}`;
+        log.appendChild(div);
+        log.scrollTop = log.scrollHeight;
+    }
+
+    function logSystem(message) {
+        const log = document.getElementById('log');
+        const div = document.createElement('div');
+        div.className = 'msg system';
+        div.textContent = message;
+        log.appendChild(div);
+        log.scrollTop = log.scrollHeight;
+    }
+</script>
+
+</body>
+</html>
+

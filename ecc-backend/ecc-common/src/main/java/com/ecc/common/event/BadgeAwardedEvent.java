@@ -10,5 +10,6 @@ public class BadgeAwardedEvent extends DomainEvent {
         this.badgeId = badgeId;
     }
 
-    // Getters...
+    public Long getUserId() { return userId; }
+    public Long getBadgeId() { return badgeId; }
 }
