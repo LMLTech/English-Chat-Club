@@ -1,11 +1,11 @@
 package com.ecc.community.api.controller;
 
 import com.ecc.common.dto.ApiResponse;
-import com.ecc.community.api.dto.request.friend.FriendRequestDto;
-import com.ecc.community.api.dto.response.friend.FriendRequestResponse;
+import com.ecc.community.api.dto.request.FriendRequestDto;
+import com.ecc.community.api.dto.response.FriendRequestResponse;
 import com.ecc.community.application.service.FriendshipService;
-import com.ecc.community.domain.model.friend.FriendRequest;
-import com.ecc.community.domain.model.friend.Friendship;
+import com.ecc.community.domain.model.FriendRequest;
+import com.ecc.community.domain.model.Friendship;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

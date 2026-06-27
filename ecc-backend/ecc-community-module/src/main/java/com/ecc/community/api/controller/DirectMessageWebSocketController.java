@@ -1,9 +1,8 @@
 package com.ecc.community.api.controller;
 
-import com.ecc.community.api.dto.request.friend.DirectMessageRequest;
-import com.ecc.community.api.dto.response.friend.DirectMessageResponse;
+import com.ecc.community.api.dto.request.DirectMessageRequest;
 import com.ecc.community.application.service.DirectMessageService;
-import com.ecc.community.domain.model.friend.DirectMessage;
+import com.ecc.community.domain.model.DirectMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;

@@ -1,13 +1,13 @@
 package com.ecc.community.application.service;
 
 import com.ecc.common.event.ForumPostLikedEvent;
-import com.ecc.community.domain.model.forum.ContentStatus;
-import com.ecc.community.domain.model.forum.ForumPost;
-import com.ecc.community.domain.model.forum.PostLike;
-import com.ecc.community.domain.model.forum.SavedPost;
-import com.ecc.community.infrastructure.repository.ForumPostRepository;
-import com.ecc.community.infrastructure.repository.PostLikeRepository;
-import com.ecc.community.infrastructure.repository.SavedPostRepository;
+import com.ecc.community.application.port.out.ForumPostPort;
+import com.ecc.community.application.port.out.PostLikePort;
+import com.ecc.community.application.port.out.SavedPostPort;
+import com.ecc.community.domain.model.ContentStatus;
+import com.ecc.community.domain.model.ForumPost;
+import com.ecc.community.domain.model.PostLike;
+import com.ecc.community.domain.model.SavedPost;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -23,27 +23,29 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ForumInteractionService {
 
-    private final ForumPostRepository postRepository;
-    private final PostLikeRepository postLikeRepository;
-    private final SavedPostRepository savedPostRepository;
+    // CHUẨN HEXAGONAL: Giao tiếp qua Port
+    private final ForumPostPort forumPostPort;
+    private final PostLikePort postLikePort;
+    private final SavedPostPort savedPostPort;
+
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public boolean toggleLike(Long userId, Long postId) {
         ForumPost post = getActivePost(postId);
-        Optional<PostLike> existingLike = postLikeRepository.findByPostIdAndUserId(postId, userId);
+        Optional<PostLike> existingLike = postLikePort.findByPostIdAndUserId(postId, userId);
 
         if (existingLike.isPresent()) {
-            postLikeRepository.delete(existingLike.get());
+            postLikePort.delete(existingLike.get());
             post.setLikeCount(Math.max(0, post.getLikeCount() - 1));
-            postRepository.save(post);
+            forumPostPort.save(post);
             return false; // unliked
         } else {
             PostLike newLike = PostLike.builder().post(post).userId(userId).build();
-            postLikeRepository.save(newLike);
+            postLikePort.save(newLike);
             post.setLikeCount(post.getLikeCount() + 1);
-            postRepository.save(post);
-            
+            forumPostPort.save(post);
+
             // Publish event (TODO: notification later)
             eventPublisher.publishEvent(new ForumPostLikedEvent(postId, userId));
             return true; // liked
@@ -53,29 +55,25 @@ public class ForumInteractionService {
     @Transactional
     public boolean toggleSave(Long userId, Long postId) {
         ForumPost post = getActivePost(postId);
-        Optional<SavedPost> existingSave = savedPostRepository.findByPostIdAndUserId(postId, userId);
+        Optional<SavedPost> existingSave = savedPostPort.findByPostIdAndUserId(postId, userId);
 
         if (existingSave.isPresent()) {
-            savedPostRepository.delete(existingSave.get());
+            savedPostPort.delete(existingSave.get());
             return false; // unsaved
         } else {
             SavedPost newSave = SavedPost.builder().post(post).userId(userId).build();
-            savedPostRepository.save(newSave);
+            savedPostPort.save(newSave);
             return true; // saved
         }
     }
 
     @Transactional(readOnly = true)
     public Page<SavedPost> getSavedPosts(Long userId, Pageable pageable) {
-        return savedPostRepository.findByUserId(userId, pageable);
+        return savedPostPort.findByUserId(userId, pageable);
     }
 
     private ForumPost getActivePost(Long postId) {
-        ForumPost post = postRepository.findById(postId)
+        return forumPostPort.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Bài viết không tồn tại"));
-        if (post.getStatus() != ContentStatus.PUBLISHED) {
-            throw new IllegalStateException("Bài viết không khả dụng");
-        }
-        return post;
     }
 }

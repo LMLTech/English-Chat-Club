@@ -1,10 +1,10 @@
 package com.ecc.community.api.controller;
 
 import com.ecc.common.dto.ApiResponse;
-import com.ecc.community.api.dto.request.forum.ForumCommentRequest;
-import com.ecc.community.api.dto.response.forum.ForumCommentResponse;
+import com.ecc.community.api.dto.request.ForumCommentRequest;
+import com.ecc.community.api.dto.response.ForumCommentResponse;
 import com.ecc.community.application.service.ForumCommentService;
-import com.ecc.community.domain.model.forum.ForumComment;
+import com.ecc.community.domain.model.ForumComment;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

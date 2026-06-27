@@ -1,7 +1,7 @@
 package com.ecc.community.api.controller;
 
 import com.ecc.common.dto.ApiResponse;
-import com.ecc.community.api.dto.response.forum.ForumCategoryResponse;
+import com.ecc.community.api.dto.response.ForumCategoryResponse;
 import com.ecc.community.infrastructure.repository.ForumCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

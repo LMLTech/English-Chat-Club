@@ -1,8 +1,8 @@
 package com.ecc.community.application.service;
 
-import com.ecc.community.domain.model.forum.ContentStatus;
-import com.ecc.community.domain.model.forum.ForumComment;
-import com.ecc.community.domain.model.forum.ForumPost;
+import com.ecc.community.domain.model.ContentStatus;
+import com.ecc.community.domain.model.ForumComment;
+import com.ecc.community.domain.model.ForumPost;
 import com.ecc.community.infrastructure.repository.ForumCommentRepository;
 import com.ecc.community.infrastructure.repository.ForumPostRepository;
 import lombok.RequiredArgsConstructor;

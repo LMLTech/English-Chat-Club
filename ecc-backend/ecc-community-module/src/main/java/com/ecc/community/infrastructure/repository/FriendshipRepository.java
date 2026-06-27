@@ -1,12 +1,10 @@
 package com.ecc.community.infrastructure.repository;
 
-import com.ecc.community.domain.model.friend.Friendship;
+import com.ecc.community.domain.model.Friendship;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 @Repository
 public interface FriendshipRepository extends JpaRepository<Friendship, Long> {

@@ -1,9 +1,10 @@
 package com.ecc.community.application.service;
 
 import com.ecc.common.event.DirectMessageSentEvent;
-import com.ecc.community.domain.model.friend.DirectMessage;
-import com.ecc.community.infrastructure.repository.DirectMessageRepository;
-import com.ecc.community.infrastructure.repository.FriendshipRepository;
+import com.ecc.community.application.port.out.DirectMessagePort;
+import com.ecc.community.application.port.out.FriendshipPort;
+import com.ecc.community.domain.model.DirectMessage;
+import com.ecc.community.domain.model.MessageType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -21,15 +22,17 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class DirectMessageService {
 
-    private final DirectMessageRepository messageRepository;
-    private final FriendshipRepository friendshipRepository;
+    private final DirectMessagePort directMessagePort;
+    private final FriendshipPort friendshipPort;
+
     private final SimpMessagingTemplate messagingTemplate;
     private final SimpUserRegistry simpUserRegistry;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public DirectMessage sendDirectMessage(Long senderId, Long receiverId, String content, String attachmentUrl) {
-        if (!friendshipRepository.existsByUserIdAndFriendId(senderId, receiverId)) {
+        // Sử dụng friendshipPort
+        if (!friendshipPort.existsByUserIdAndFriendId(senderId, receiverId)) {
             throw new SecurityException("Chỉ có thể nhắn tin với bạn bè");
         }
 
@@ -37,12 +40,14 @@ public class DirectMessageService {
                 .senderId(senderId)
                 .receiverId(receiverId)
                 .content(content)
-                .attachmentUrl(attachmentUrl)
+                .messageType(MessageType.DIRECT)
+                .isRead(false)
                 .build();
 
-        DirectMessage savedMessage = messageRepository.save(message);
+        DirectMessage savedMessage = directMessagePort.save(message);
 
-        // Send via WebSocket if online
+        // TODO: Xử lý lưu attachmentUrl vào bảng message_attachments sau nếu có file đính kèm
+
         boolean isReceiverOnline = simpUserRegistry.getUser(receiverId.toString()) != null;
         if (isReceiverOnline) {
             messagingTemplate.convertAndSendToUser(
@@ -50,11 +55,8 @@ public class DirectMessageService {
                     "/queue/direct",
                     savedMessage
             );
-            savedMessage.setDeliveredAt(LocalDateTime.now());
-            messageRepository.save(savedMessage);
         } else {
-            // Publish event if offline
-            String preview = content.length() > 50 ? content.substring(0, 50) + "..." : content;
+            String preview = content != null && content.length() > 50 ? content.substring(0, 50) + "..." : content;
             eventPublisher.publishEvent(new DirectMessageSentEvent(savedMessage.getId(), senderId, receiverId, preview));
         }
 
@@ -63,32 +65,34 @@ public class DirectMessageService {
 
     @Transactional
     public void recallMessage(Long senderId, Long messageId) {
-        DirectMessage message = messageRepository.findById(messageId)
+        DirectMessage message = directMessagePort.findById(messageId)
                 .orElseThrow(() -> new IllegalArgumentException("Tin nhắn không tồn tại"));
 
         if (!message.getSenderId().equals(senderId)) {
             throw new SecurityException("Không có quyền thu hồi tin nhắn này");
         }
 
-        message.setDeleted(true);
-        messageRepository.save(message);
+        // Ghi nhận thời gian xóa mềm đúng chuẩn DB
+        message.setDeletedAt(LocalDateTime.now());
 
-        // Notify receiver about recall via WS if online
+        directMessagePort.save(message);
+
         boolean isReceiverOnline = simpUserRegistry.getUser(message.getReceiverId().toString()) != null;
         if (isReceiverOnline) {
             messagingTemplate.convertAndSendToUser(
                     message.getReceiverId().toString(),
                     "/queue/direct",
-                    message // Client will see isDeleted = true and update UI
+                    message
             );
         }
     }
 
     @Transactional(readOnly = true)
     public Page<DirectMessage> getChatHistory(Long userId, Long friendId, Pageable pageable) {
-        if (!friendshipRepository.existsByUserIdAndFriendId(userId, friendId)) {
+        // Sử dụng friendshipPort
+        if (!friendshipPort.existsByUserIdAndFriendId(userId, friendId)) {
             throw new SecurityException("Chỉ có thể xem lịch sử với bạn bè");
         }
-        return messageRepository.findConversationHistory(userId, friendId, pageable);
+        return directMessagePort.findConversationHistory(userId, friendId, pageable);
     }
 }

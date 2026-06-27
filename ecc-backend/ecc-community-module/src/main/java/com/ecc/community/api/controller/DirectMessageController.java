@@ -1,7 +1,7 @@
 package com.ecc.community.api.controller;
 
 import com.ecc.common.dto.ApiResponse;
-import com.ecc.community.api.dto.response.friend.DirectMessageResponse;
+import com.ecc.community.api.dto.response.DirectMessageResponse;
 import com.ecc.community.application.service.DirectMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

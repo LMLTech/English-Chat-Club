@@ -1,7 +1,7 @@
 package com.ecc.community.infrastructure.repository;
 
-import com.ecc.community.domain.model.forum.ContentStatus;
-import com.ecc.community.domain.model.forum.ForumComment;
+import com.ecc.community.domain.model.ContentStatus;
+import com.ecc.community.domain.model.ForumComment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

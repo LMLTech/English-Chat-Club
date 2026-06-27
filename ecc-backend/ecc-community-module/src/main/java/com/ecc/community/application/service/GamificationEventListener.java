@@ -35,10 +35,6 @@ public class GamificationEventListener {
 
     private final PointsCalculatorService pointsCalculatorService;
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Flow 3.1 – Lắng nghe SessionCompletedEvent
-    // ─────────────────────────────────────────────────────────────────────────
-
     @EventListener
     @Async
     public void onSessionCompleted(SessionCompletedEvent event) {
@@ -63,10 +59,6 @@ public class GamificationEventListener {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Flow 3.1 – Lắng nghe VocabularyPraisedEvent → +5đ cho người được khen
-    // ─────────────────────────────────────────────────────────────────────────
-
     @EventListener
     @Async
     public void onVocabularyPraised(VocabularyPraisedEvent event) {
@@ -81,10 +73,6 @@ public class GamificationEventListener {
                 "VOCABULARY_PRAISED",
                 desc);
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Flow 3.1 – Lắng nghe ReferralRewardEligibleEvent → +50đ cho cả 2 bên
-    // ─────────────────────────────────────────────────────────────────────────
 
     @EventListener
     @Async
@@ -106,10 +94,6 @@ public class GamificationEventListener {
                 "REFERRAL_REWARD",
                 "Được giới thiệu bởi userId=" + event.getReferrerId());
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Flow 3.1 – Lắng nghe BadgeAwardedEvent và LevelUpEvent → chỉ log
-    // ─────────────────────────────────────────────────────────────────────────
 
     @EventListener
     public void onBadgeAwarded(BadgeAwardedEvent event) {

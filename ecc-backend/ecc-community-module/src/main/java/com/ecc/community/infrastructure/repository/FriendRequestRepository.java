@@ -1,7 +1,7 @@
 package com.ecc.community.infrastructure.repository;
 
-import com.ecc.community.domain.model.friend.FriendRequest;
-import com.ecc.community.domain.model.friend.FriendRequestStatus;
+import com.ecc.community.domain.model.FriendRequest;
+import com.ecc.community.domain.model.FriendRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

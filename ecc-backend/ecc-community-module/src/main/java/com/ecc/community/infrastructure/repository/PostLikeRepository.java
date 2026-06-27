@@ -1,6 +1,6 @@
 package com.ecc.community.infrastructure.repository;
 
-import com.ecc.community.domain.model.forum.PostLike;
+import com.ecc.community.domain.model.PostLike;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

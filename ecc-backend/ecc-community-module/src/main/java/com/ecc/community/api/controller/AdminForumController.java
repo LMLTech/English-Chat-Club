@@ -1,11 +1,11 @@
 package com.ecc.community.api.controller;
 
 import com.ecc.common.dto.ApiResponse;
-import com.ecc.community.api.dto.response.forum.ForumCommentResponse;
-import com.ecc.community.api.dto.response.forum.ForumPostResponse;
+import com.ecc.community.api.dto.response.ForumCommentResponse;
+import com.ecc.community.api.dto.response.ForumPostResponse;
 import com.ecc.community.application.service.AdminForumModerationService;
-import com.ecc.community.domain.model.forum.ForumComment;
-import com.ecc.community.domain.model.forum.ForumPost;
+import com.ecc.community.domain.model.ForumComment;
+import com.ecc.community.domain.model.ForumPost;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

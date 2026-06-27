@@ -1,6 +1,6 @@
 package com.ecc.community.infrastructure.repository;
 
-import com.ecc.community.domain.model.forum.ForumCategory;
+import com.ecc.community.domain.model.ForumCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
