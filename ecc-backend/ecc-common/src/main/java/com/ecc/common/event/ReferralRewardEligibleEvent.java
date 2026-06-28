@@ -10,5 +10,6 @@ public class ReferralRewardEligibleEvent extends DomainEvent {
         this.referredUserId = referredUserId;
     }
 
-    // Getters...
+    public Long getReferrerId() { return referrerId; }
+    public Long getReferredUserId() { return referredUserId; }
 }
