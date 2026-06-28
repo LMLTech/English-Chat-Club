@@ -7,6 +7,7 @@ import com.ecc.common.event.ReferralRewardEligibleEvent;
 import com.ecc.community.application.service.BadgeEvaluatorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -17,22 +18,17 @@ import java.util.Map;
 /**
  * Controller TEST – Chỉ dùng để test thủ công trong môi trường dev.
  * Cho phép trigger các DomainEvent để kiểm tra luồng Gamification.
- *
- * TODO: Xóa hoặc comment lại trước khi deploy production.
+ * Đã được khóa an toàn bằng @Profile("dev").
  */
 @RestController
 @RequestMapping("/api/community/test")
 @RequiredArgsConstructor
+@Profile("dev")
 public class GamificationTestController {
 
     private final ApplicationEventPublisher eventPublisher;
     private final BadgeEvaluatorService badgeEvaluatorService;
 
-    /**
-     * POST /api/community/test/session-completed
-     * Giả lập hoàn thành 1 session: user hiện tại nói 120s, gửi 15 tin nhắn.
-     * Dự kiến cộng: 5 (base) + 2 (120s/60) + 1 (15msg/10) = 8 điểm
-     */
     @PostMapping("/session-completed")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<String>> testSessionCompleted(
@@ -43,9 +39,9 @@ public class GamificationTestController {
         Long userId = Long.parseLong(authentication.getName());
 
         SessionCompletedEvent event = new SessionCompletedEvent(
-                999L,                                    // sessionId test
-                Map.of(userId, speakingSeconds),         // userSpeakingSeconds
-                Map.of(userId, messageCount)             // userMessageCounts
+                999L,
+                Map.of(userId, speakingSeconds),
+                Map.of(userId, messageCount)
         );
         eventPublisher.publishEvent(event);
 
@@ -55,10 +51,6 @@ public class GamificationTestController {
                         userId, 5 + bonus, bonus)));
     }
 
-    /**
-     * POST /api/community/test/vocabulary-praised?praisedUserId=2
-     * Giả lập khen từ vựng → +5 điểm cho praisedUserId.
-     */
     @PostMapping("/vocabulary-praised")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<String>> testVocabularyPraised(
@@ -68,10 +60,10 @@ public class GamificationTestController {
         Long myId = Long.parseLong(authentication.getName());
 
         VocabularyPraisedEvent event = new VocabularyPraisedEvent(
-                999L,        // sessionId
-                myId,        // người khen (highlightedByUserId)
-                praisedUserId, // người được khen
-                "excellent"  // từ được khen
+                999L,
+                myId,
+                praisedUserId,
+                "excellent"
         );
         eventPublisher.publishEvent(event);
 
@@ -79,10 +71,6 @@ public class GamificationTestController {
                 "✅ Đã publish VocabularyPraisedEvent → +5 điểm cho userId=" + praisedUserId));
     }
 
-    /**
-     * POST /api/community/test/referral?referredUserId=2
-     * Giả lập referral thành công → +50 điểm cho cả 2 bên.
-     */
     @PostMapping("/referral")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<String>> testReferral(
@@ -99,10 +87,6 @@ public class GamificationTestController {
                         referrerId, referredUserId)));
     }
 
-    /**
-     * POST /api/community/test/evaluate-badges
-     * Trigger BadgeEvaluator thủ công cho user hiện tại.
-     */
     @PostMapping("/evaluate-badges")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<String>> testEvaluateBadges(Authentication authentication) {
