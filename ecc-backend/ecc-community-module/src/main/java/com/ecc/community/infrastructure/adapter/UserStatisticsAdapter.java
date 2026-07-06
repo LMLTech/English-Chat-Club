@@ -30,4 +30,11 @@ public class UserStatisticsAdapter implements UserStatisticsPort {
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId, start, end);
         return count != null ? count : 0;
     }
+
+    @Override
+    public int countTotalAttendedSessions(Long userId) {
+        String sql = "SELECT COUNT(*) FROM bookings WHERE member_id = ? AND status = 'ATTENDED'";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId);
+        return count != null ? count : 0;
+    }
 }

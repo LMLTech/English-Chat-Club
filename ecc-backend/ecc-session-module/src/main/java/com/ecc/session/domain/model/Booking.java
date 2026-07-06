@@ -10,8 +10,8 @@ import java.util.UUID;
 
 @Entity
 @Table(
-    name = "bookings",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"member_id", "session_id"})
+        name = "bookings",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"member_id", "session_id"})
 )
 @Getter
 @Setter
@@ -24,27 +24,30 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // UUID để expose ra public URL thay vì internal ID
     @Column(nullable = false, unique = true, updatable = false, columnDefinition = "BINARY(16)")
     private UUID uuid;
 
-    // LƯU Ý KIẾN TRÚC: Lưu ID thay vì @ManyToOne để không bị phụ thuộc module chéo
     @Column(name = "member_id", nullable = false)
     private Long memberId;
 
-    // Nối với Session trong cùng module → dùng @ManyToOne được
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id", nullable = false)
     private Session session;
 
-    // CONFIRMED | CANCELLED
     @Column(nullable = false, length = 20)
     private String status;
 
-    // @Version dùng để bảo vệ Booking khỏi double-booking cùng 1 user (Optimistic Lock)
     @Version
     @Column(nullable = false)
     private Long version;
+
+    // === ĐÃ THÊM 2 CỘT NÀY CHO ĐÚNG THIẾT KẾ ===
+    @CreationTimestamp
+    @Column(name = "booked_at", nullable = false, updatable = false)
+    private LocalDateTime bookedAt;
+
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
