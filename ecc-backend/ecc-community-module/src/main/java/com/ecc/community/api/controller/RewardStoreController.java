@@ -1,5 +1,6 @@
 package com.ecc.community.api.controller;
 
+import com.ecc.common.audit.Auditable;
 import com.ecc.common.dto.ApiResponse;
 import com.ecc.community.api.dto.request.RedeemRequest;
 import com.ecc.community.api.dto.response.RedemptionOrderResponse;
@@ -79,6 +80,7 @@ public class RewardStoreController {
 
     @PutMapping("/admin/orders/{orderId}/status")
     @PreAuthorize("hasAuthority('ADMIN')")
+    @Auditable(action = "UPDATE_ORDER_STATUS", description = "Cập nhật trạng thái đơn đổi quà")
     public ResponseEntity<ApiResponse<RedemptionOrderResponse>> updateOrderStatus(
             @PathVariable Long orderId,
             @RequestParam String status,

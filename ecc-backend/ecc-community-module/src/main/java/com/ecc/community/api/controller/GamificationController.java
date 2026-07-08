@@ -1,5 +1,6 @@
 package com.ecc.community.api.controller;
 
+import com.ecc.common.audit.Auditable;
 import com.ecc.common.dto.ApiResponse;
 import com.ecc.community.api.dto.response.BadgeResponse;
 import com.ecc.community.api.dto.response.MemberPointsResponse;
@@ -112,6 +113,7 @@ public class GamificationController {
      */
     @PostMapping("/admin/badges/evaluate/{userId}")
     @PreAuthorize("hasAuthority('ADMIN')")
+    @Auditable(action = "EVALUATE_BADGE", description = "Đánh giá badge cho user")
     public ResponseEntity<ApiResponse<String>> triggerBadgeEvaluation(@PathVariable Long userId) {
         int awarded = badgeEvaluatorService.evaluateForUser(userId);
         return ResponseEntity.ok(ApiResponse.success("Trao " + awarded + " badge mới cho userId=" + userId));
