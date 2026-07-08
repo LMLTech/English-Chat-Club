@@ -17,7 +17,7 @@ public class ReferralController {
 
     // API dành cho Member tự ấn kiểm tra (hoặc hệ thống gọi)
     @PostMapping("/check-reward")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<String>> checkReferralReward(Authentication authentication) {
         Long userId = Long.parseLong(authentication.getName());
 

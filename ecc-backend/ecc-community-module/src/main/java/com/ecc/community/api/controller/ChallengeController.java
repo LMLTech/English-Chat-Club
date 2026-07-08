@@ -44,7 +44,7 @@ public class ChallengeController {
 
     // Member bấm tham gia
     @PostMapping("/{challengeId}/join")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<String>> joinChallenge(
             Authentication authentication,
             @PathVariable Long challengeId) {

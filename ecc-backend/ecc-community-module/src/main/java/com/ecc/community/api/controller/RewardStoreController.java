@@ -42,7 +42,7 @@ public class RewardStoreController {
     }
 
     @GetMapping("/my-orders")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<Page<RedemptionOrderResponse>>> getMyOrders(
             Authentication authentication,
             @RequestParam(defaultValue = "0") int page,
@@ -65,7 +65,7 @@ public class RewardStoreController {
     }
 
     @PostMapping("/redeem")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<String>> redeemItem(
             Authentication authentication,
             @Valid @RequestBody RedeemRequest request) {

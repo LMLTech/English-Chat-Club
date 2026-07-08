@@ -39,7 +39,7 @@ public class GamificationController {
      * GET /api/community/me/points
      */
     @GetMapping("/me/points")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<MemberPointsResponse>> getMyPoints(Authentication authentication) {
         Long userId = Long.parseLong(authentication.getName());
         MemberPoints points = gamificationUseCase.getMyPoints(userId);
@@ -64,7 +64,7 @@ public class GamificationController {
      * GET /api/community/me/transactions
      */
     @GetMapping("/me/transactions")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<List<PointTransactionResponse>>> getMyTransactions(
             Authentication authentication) {
 
@@ -88,7 +88,7 @@ public class GamificationController {
      * GET /api/community/me/badges
      */
     @GetMapping("/me/badges")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<List<BadgeResponse>>> getMyBadges(Authentication authentication) {
         Long userId = Long.parseLong(authentication.getName());
         List<UserBadge> userBadges = gamificationUseCase.getMyBadges(userId);
