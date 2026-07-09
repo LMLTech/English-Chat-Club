@@ -1,5 +1,6 @@
 package com.ecc.session.api.controller;
 
+import com.ecc.common.audit.Auditable;
 import com.ecc.common.dto.ApiResponse;
 import com.ecc.session.api.dto.request.CreateEventRequest;
 import com.ecc.session.api.dto.request.UpdateAttendanceRequest;
@@ -20,6 +21,7 @@ public class AdminEventController {
     private final EventService eventService;
 
     @PostMapping
+    @Auditable(action = "CREATE_EVENT", description = "Tạo sự kiện")
     public ResponseEntity<ApiResponse<EventResponse>> createEvent(
             @Valid @RequestBody CreateEventRequest request) {
         EventResponse response = eventService.createEvent(request);
@@ -27,6 +29,7 @@ public class AdminEventController {
     }
 
     @PutMapping("/{id}/attendances")
+    @Auditable(action = "UPDATE_ATTENDANCE", description = "Cập nhật điểm danh")
     public ResponseEntity<ApiResponse<Void>> updateAttendances(
             @PathVariable Long id,
             @Valid @RequestBody UpdateAttendanceRequest request) {

@@ -1,5 +1,6 @@
 package com.ecc.identity.api.controller;
 
+import com.ecc.common.audit.Auditable;
 import com.ecc.common.dto.ApiResponse;
 import com.ecc.identity.application.port.in.AssignRoleUseCase;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ public class AdminUserController {
 
     @PutMapping("/{userId}/role")
     @PreAuthorize("hasAuthority('ADMIN')")
+    @Auditable(action = "ASSIGN_ROLE", description = "Admin thay đổi role của user")
     public ResponseEntity<ApiResponse<String>> assignRole(
             @PathVariable Long userId,
             @RequestParam String roleName) {

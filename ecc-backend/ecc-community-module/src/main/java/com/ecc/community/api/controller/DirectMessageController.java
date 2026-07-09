@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/direct-messages")
 @RequiredArgsConstructor
-@PreAuthorize("hasAuthority('MEMBER')")
+@PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
 public class DirectMessageController {
 
     private final DirectMessageService directMessageService;

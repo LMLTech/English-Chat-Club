@@ -5,6 +5,7 @@ import com.ecc.community.application.port.out.ForumPostPort;
 import com.ecc.community.domain.model.ContentStatus;
 import com.ecc.community.domain.model.ForumCategory;
 import com.ecc.community.domain.model.ForumPost;
+import com.ecc.common.util.BadWordFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,7 @@ public class ForumPostService {
     // CHUẨN HEXAGONAL: Chỉ giao tiếp qua Port Out, tuyệt đối không dùng JPA Repository ở đây
     private final ForumPostPort forumPostPort;
     private final ForumCategoryPort forumCategoryPort;
+    private final BadWordFilter badWordFilter; // Port: Bộ lọc từ cấm
 
     @Transactional
     public ForumPost createPost(Long authorId, Long categoryId, String title, String content, boolean requireApproval) {
@@ -32,15 +34,19 @@ public class ForumPostService {
 
         ContentStatus status = requireApproval ? ContentStatus.PENDING : ContentStatus.PUBLISHED;
 
-        // LOGIC DB: Tạo slug duy nhất từ title
+        // Lọc từ cấm trong tiêu đề và nội dung bài viết
+        String filteredTitle = badWordFilter.filter(title);
+        String filteredContent = badWordFilter.filter(content);
+
+        // LOGIC DB: Tạo slug duy nhất từ title gốc (không dùng title đã filter để giữ slug sạch)
         String slug = generateSlug(title);
 
         ForumPost post = ForumPost.builder()
                 .category(category)
                 .authorId(authorId)
-                .title(title)
+                .title(filteredTitle)
                 .slug(slug)
-                .content(content)
+                .content(filteredContent)
                 .status(status)
                 .build();
 
@@ -57,8 +63,8 @@ public class ForumPostService {
             throw new IllegalStateException("Không thể sửa bài viết đã bị xoá hoặc ẩn");
         }
 
-        post.setTitle(title);
-        post.setContent(content);
+        post.setTitle(badWordFilter.filter(title));
+        post.setContent(badWordFilter.filter(content));
         // Lưu ý: Thông thường khi update bài viết, ta giữ nguyên slug để không làm hỏng URL đã được index
         return forumPostPort.save(post);
     }

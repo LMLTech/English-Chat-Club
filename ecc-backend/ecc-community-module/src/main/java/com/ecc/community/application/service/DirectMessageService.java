@@ -1,6 +1,7 @@
 package com.ecc.community.application.service;
 
 import com.ecc.common.event.DirectMessageSentEvent;
+import com.ecc.common.util.BadWordFilter;
 import com.ecc.community.application.port.out.DirectMessagePort;
 import com.ecc.community.application.port.out.FriendshipPort;
 import com.ecc.community.domain.model.DirectMessage;
@@ -24,6 +25,7 @@ public class DirectMessageService {
 
     private final DirectMessagePort directMessagePort;
     private final FriendshipPort friendshipPort;
+    private final BadWordFilter badWordFilter; // Port: Bộ lọc từ cấm
 
     private final SimpMessagingTemplate messagingTemplate;
     private final SimpUserRegistry simpUserRegistry;
@@ -36,10 +38,13 @@ public class DirectMessageService {
             throw new SecurityException("Chỉ có thể nhắn tin với bạn bè");
         }
 
+        // Lọc từ cấm trong nội dung tin nhắn
+        String filteredContent = badWordFilter.filter(content);
+
         DirectMessage message = DirectMessage.builder()
                 .senderId(senderId)
                 .receiverId(receiverId)
-                .content(content)
+                .content(filteredContent)
                 .messageType(MessageType.DIRECT)
                 .isRead(false)
                 .build();

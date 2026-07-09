@@ -50,7 +50,7 @@ public class ForumCommentController {
     }
 
     @PostMapping("/posts/{postId}/comments")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<ForumCommentResponse>> addComment(
             Authentication authentication,
             @PathVariable Long postId,
@@ -62,7 +62,7 @@ public class ForumCommentController {
     }
 
     @PostMapping("/comments/{commentId}/replies")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<ForumCommentResponse>> addReply(
             Authentication authentication,
             @PathVariable Long commentId,
@@ -74,7 +74,7 @@ public class ForumCommentController {
     }
 
     @DeleteMapping("/comments/{id}")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<String>> deleteComment(
             Authentication authentication,
             @PathVariable Long id

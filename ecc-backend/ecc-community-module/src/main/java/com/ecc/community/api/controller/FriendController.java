@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/friends")
 @RequiredArgsConstructor
-@PreAuthorize("hasAuthority('MEMBER')")
+@PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
 public class FriendController {
 
     private final FriendshipService friendshipService;
