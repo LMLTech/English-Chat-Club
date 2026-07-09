@@ -1,6 +1,7 @@
 package com.ecc.community.application.service;
 
 import com.ecc.common.event.ForumPostCommentedEvent;
+import com.ecc.common.util.BadWordFilter;
 import com.ecc.community.application.port.out.ForumCommentPort;
 import com.ecc.community.application.port.out.ForumPostPort;
 import com.ecc.community.domain.model.ContentStatus;
@@ -25,16 +26,20 @@ public class ForumCommentService {
     private final ForumCommentPort forumCommentPort;
     private final ForumPostPort forumPostPort;
     private final ApplicationEventPublisher eventPublisher;
+    private final BadWordFilter badWordFilter; // Port: Bộ lọc từ cấm
 
     @Transactional
     public ForumComment createRootComment(Long authorId, Long postId, String content) {
         ForumPost post = getActivePost(postId);
 
+        // Lọc từ cấm trong nội dung bình luận
+        String filteredContent = badWordFilter.filter(content);
+
         ForumComment comment = ForumComment.builder()
                 .post(post)
                 .parent(null)
                 .authorId(authorId)
-                .content(content)
+                .content(filteredContent)
                 .status(ContentStatus.PUBLISHED)
                 .build();
 
@@ -55,11 +60,14 @@ public class ForumCommentService {
 
         ForumComment actualParent = targetComment.getParent() == null ? targetComment : targetComment.getParent();
 
+        // Lọc từ cấm trong nội dung reply
+        String filteredContent = badWordFilter.filter(content);
+
         ForumComment reply = ForumComment.builder()
                 .post(post)
                 .parent(actualParent)
                 .authorId(authorId)
-                .content(content)
+                .content(filteredContent)
                 .status(ContentStatus.PUBLISHED)
                 .build();
 

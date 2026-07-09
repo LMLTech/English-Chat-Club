@@ -1,6 +1,7 @@
 package com.ecc.session.application.service;
 
 import com.ecc.common.exception.BadRequestException;
+import com.ecc.common.util.BadWordFilter;
 import com.ecc.session.api.dto.request.ChatMessageRequest;
 import com.ecc.session.api.dto.response.ChatMessageResponse;
 import com.ecc.session.application.port.out.BookingRepositoryPort;
@@ -11,11 +12,13 @@ import com.ecc.session.infrastructure.adapter.ChatMessageRedisAdapter;
 import com.ecc.session.infrastructure.repository.ChatMessageRepository;
 import com.ecc.session.infrastructure.repository.SessionRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -25,6 +28,7 @@ public class ChatService {
     private final BookingRepositoryPort bookingRepositoryPort;
     private final ChatMessageRedisAdapter chatMessageRedisAdapter;
     private final IdentityPort identityPort;
+    private final BadWordFilter badWordFilter; // Port: Bộ lọc từ cấm
 
     @Transactional
     public ChatMessageResponse processAndSaveMessage(Long sessionId, Long senderId, ChatMessageRequest request) {
@@ -45,20 +49,24 @@ public class ChatService {
             throw new BadRequestException("Bạn không có quyền chat trong phòng này");
         }
 
-        // TODO: Chèn logic gọi BadWordFilter ở đây (sẽ làm ở Phase 5) nha
+        // 4. Lọc từ cấm: Thay thế nội dung vi phạm bằng ***
+        String filteredContent = badWordFilter.filter(request.getContent());
+        if (!filteredContent.equals(request.getContent())) {
+            log.info("BadWordFilter đã lọc tin nhắn của User {} trong Session {}", senderId, sessionId);
+        }
 
-        // 4. Lưu MySQL
+        // 5. Lưu MySQL
         ChatMessage chatMessage = ChatMessage.builder()
                 .uuid(UUID.randomUUID())
                 .session(session)
                 .senderId(senderId)
-                .content(request.getContent())
+                .content(filteredContent)
                 .type(request.getType() != null ? request.getType() : "TEXT")
                 .build();
 
         chatMessage = chatMessageRepository.save(chatMessage);
 
-        // 5. Map sang Response
+        // 6. Map sang Response
         ChatMessageResponse response = ChatMessageResponse.builder()
                 .uuid(chatMessage.getUuid().toString())
                 .sessionId(sessionId)
@@ -70,7 +78,7 @@ public class ChatService {
                 .isPinned(chatMessage.getIsPinned())
                 .build();
 
-        // 6. Lưu vào Redis Cache để lấy lịch sử siêu tốc
+        // 7. Lưu vào Redis Cache để lấy lịch sử siêu tốc
         chatMessageRedisAdapter.saveMessageToCache(sessionId, response);
 
         return response;

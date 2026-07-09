@@ -1,5 +1,6 @@
 package com.ecc.community.api.controller;
 
+import com.ecc.common.audit.Auditable;
 import com.ecc.common.dto.ApiResponse;
 import com.ecc.community.api.dto.request.RedeemRequest;
 import com.ecc.community.api.dto.response.RedemptionOrderResponse;
@@ -42,7 +43,7 @@ public class RewardStoreController {
     }
 
     @GetMapping("/my-orders")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<Page<RedemptionOrderResponse>>> getMyOrders(
             Authentication authentication,
             @RequestParam(defaultValue = "0") int page,
@@ -65,7 +66,7 @@ public class RewardStoreController {
     }
 
     @PostMapping("/redeem")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<String>> redeemItem(
             Authentication authentication,
             @Valid @RequestBody RedeemRequest request) {
@@ -79,6 +80,7 @@ public class RewardStoreController {
 
     @PutMapping("/admin/orders/{orderId}/status")
     @PreAuthorize("hasAuthority('ADMIN')")
+    @Auditable(action = "UPDATE_ORDER_STATUS", description = "Cập nhật trạng thái đơn đổi quà")
     public ResponseEntity<ApiResponse<RedemptionOrderResponse>> updateOrderStatus(
             @PathVariable Long orderId,
             @RequestParam String status,

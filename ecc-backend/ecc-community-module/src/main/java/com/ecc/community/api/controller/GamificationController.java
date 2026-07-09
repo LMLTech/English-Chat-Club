@@ -1,5 +1,6 @@
 package com.ecc.community.api.controller;
 
+import com.ecc.common.audit.Auditable;
 import com.ecc.common.dto.ApiResponse;
 import com.ecc.community.api.dto.response.BadgeResponse;
 import com.ecc.community.api.dto.response.MemberPointsResponse;
@@ -39,7 +40,7 @@ public class GamificationController {
      * GET /api/community/me/points
      */
     @GetMapping("/me/points")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<MemberPointsResponse>> getMyPoints(Authentication authentication) {
         Long userId = Long.parseLong(authentication.getName());
         MemberPoints points = gamificationUseCase.getMyPoints(userId);
@@ -64,7 +65,7 @@ public class GamificationController {
      * GET /api/community/me/transactions
      */
     @GetMapping("/me/transactions")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<List<PointTransactionResponse>>> getMyTransactions(
             Authentication authentication) {
 
@@ -88,7 +89,7 @@ public class GamificationController {
      * GET /api/community/me/badges
      */
     @GetMapping("/me/badges")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<List<BadgeResponse>>> getMyBadges(Authentication authentication) {
         Long userId = Long.parseLong(authentication.getName());
         List<UserBadge> userBadges = gamificationUseCase.getMyBadges(userId);
@@ -112,6 +113,7 @@ public class GamificationController {
      */
     @PostMapping("/admin/badges/evaluate/{userId}")
     @PreAuthorize("hasAuthority('ADMIN')")
+    @Auditable(action = "EVALUATE_BADGE", description = "Đánh giá badge cho user")
     public ResponseEntity<ApiResponse<String>> triggerBadgeEvaluation(@PathVariable Long userId) {
         int awarded = badgeEvaluatorService.evaluateForUser(userId);
         return ResponseEntity.ok(ApiResponse.success("Trao " + awarded + " badge mới cho userId=" + userId));
