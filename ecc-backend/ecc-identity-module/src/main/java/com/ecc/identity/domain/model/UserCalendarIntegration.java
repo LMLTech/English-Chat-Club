@@ -21,11 +21,15 @@ public class UserCalendarIntegration {
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, unique = true)
     private User user;
 
+    // Thêm MÃ HÓA TỰ ĐỘNG Ở ĐÂY
+    @Convert(converter = com.ecc.common.security.AttributeEncryptor.class)
     @Column(name = "google_token_encrypted", columnDefinition = "TEXT")
-    private String googleTokenEncrypted; // Access token đã mã hóa AES
+    private String googleTokenEncrypted;
 
+    // THÊM MÃ HÓA TỰ ĐỘNG Ở ĐÂY
+    @Convert(converter = com.ecc.common.security.AttributeEncryptor.class)
     @Column(name = "google_refresh_token_encrypted", columnDefinition = "TEXT")
-    private String googleRefreshTokenEncrypted; // Refresh token đã mã hóa AES
+    private String googleRefreshTokenEncrypted;
 
     @Column(name = "token_expires_at")
     private LocalDateTime tokenExpiresAt;

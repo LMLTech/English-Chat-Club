@@ -52,7 +52,7 @@ public class User {
     private String status;
 
     @Builder.Default
-    @ManyToMany(fetch = FetchType.EAGER) // Để EAGER để lúc tạo JWT lấy Role được ngay không bị lỗi Lazy
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -67,6 +67,8 @@ public class User {
     @Column(name = "is_2fa_enabled", nullable = false)
     private Boolean is2faEnabled = false;
 
+    // ĐÃ THÊM MÃ HÓA TỰ ĐỘNG Ở ĐÂY
+    @Convert(converter = com.ecc.common.security.AttributeEncryptor.class)
     @Column(name = "two_factor_secret")
     private String twoFactorSecret;
 
@@ -92,7 +94,6 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserAddress> addresses = new java.util.ArrayList<>();
 
-    // --- Các phương thức nghiệp vụ ---
     public void activate() {
         this.status = "ACTIVE";
     }
@@ -101,7 +102,6 @@ public class User {
         return "ACTIVE".equals(this.status);
     }
 
-    // Helper method để thêm role nhanh chóng
     public void addRole(Role role) {
         this.roles.add(role);
     }

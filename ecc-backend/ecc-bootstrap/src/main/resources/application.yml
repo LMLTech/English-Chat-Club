@@ -55,3 +55,7 @@ app:
     client-id: ${GOOGLE_CLIENT_ID}
     client-secret: ${GOOGLE_CLIENT_SECRET}
     redirect-uri: ${GOOGLE_REDIRECT_URI}
+
+    # THÊM CẤU HÌNH MÃ HÓA Ở ĐÂY
+  encryption:
+    secret-key: ${ENCRYPTION_SECRET_KEY:EccSuperSecretKey123456789012345}
