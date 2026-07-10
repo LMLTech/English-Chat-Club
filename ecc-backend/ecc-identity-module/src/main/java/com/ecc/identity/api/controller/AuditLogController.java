@@ -1,6 +1,8 @@
-package com.ecc.common.audit;
+package com.ecc.identity.api.controller;
 
 import com.ecc.common.dto.ApiResponse;
+import com.ecc.identity.domain.model.AuditLog;
+import com.ecc.identity.infrastructure.repository.AuditLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,9 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
-/**
- * REST Controller cho Admin xem lịch sử Audit Log.
- */
 @RestController
 @RequestMapping("/api/admin/audit-logs")
 @RequiredArgsConstructor
@@ -22,7 +21,6 @@ public class AuditLogController {
 
     private final AuditLogRepository auditLogRepository;
 
-    /** Lấy tất cả audit log (phân trang). */
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<Page<AuditLog>>> getAllLogs(
@@ -30,11 +28,9 @@ public class AuditLogController {
             @RequestParam(defaultValue = "20") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(ApiResponse.success(
-                auditLogRepository.findAllByOrderByTimestampDesc(pageable)));
+        return ResponseEntity.ok(ApiResponse.success(auditLogRepository.findAllByOrderByTimestampDesc(pageable)));
     }
 
-    /** Lọc theo actorId (Admin nào đã thực hiện). */
     @GetMapping("/by-actor/{actorId}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<Page<AuditLog>>> getByActor(
@@ -43,11 +39,9 @@ public class AuditLogController {
             @RequestParam(defaultValue = "20") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(ApiResponse.success(
-                auditLogRepository.findByActorIdOrderByTimestampDesc(actorId, pageable)));
+        return ResponseEntity.ok(ApiResponse.success(auditLogRepository.findByActorIdOrderByTimestampDesc(actorId, pageable)));
     }
 
-    /** Lọc theo loại hành động (VD: APPROVE_POST, BAN_USER). */
     @GetMapping("/by-action/{action}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<Page<AuditLog>>> getByAction(
@@ -56,11 +50,9 @@ public class AuditLogController {
             @RequestParam(defaultValue = "20") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(ApiResponse.success(
-                auditLogRepository.findByActionOrderByTimestampDesc(action, pageable)));
+        return ResponseEntity.ok(ApiResponse.success(auditLogRepository.findByActionOrderByTimestampDesc(action, pageable)));
     }
 
-    /** Lọc theo khoảng thời gian. */
     @GetMapping("/by-time")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<Page<AuditLog>>> getByTimeRange(
@@ -70,7 +62,6 @@ public class AuditLogController {
             @RequestParam(defaultValue = "20") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(ApiResponse.success(
-                auditLogRepository.findByTimestampBetweenOrderByTimestampDesc(from, to, pageable)));
+        return ResponseEntity.ok(ApiResponse.success(auditLogRepository.findByTimestampBetweenOrderByTimestampDesc(from, to, pageable)));
     }
 }
