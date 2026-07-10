@@ -45,7 +45,7 @@ public class ForumPostController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<ForumPostResponse>> createPost(
             Authentication authentication,
             @Valid @RequestBody ForumPostRequest request
@@ -62,7 +62,7 @@ public class ForumPostController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<ForumPostResponse>> updatePost(
             Authentication authentication,
             @PathVariable Long id,
@@ -74,7 +74,7 @@ public class ForumPostController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<String>> deletePost(
             Authentication authentication,
             @PathVariable Long id
@@ -85,7 +85,7 @@ public class ForumPostController {
     }
 
     @PostMapping("/{id}/like")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<String>> toggleLike(
             Authentication authentication,
             @PathVariable Long id
@@ -96,7 +96,7 @@ public class ForumPostController {
     }
 
     @PostMapping("/{id}/save")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<String>> toggleSave(
             Authentication authentication,
             @PathVariable Long id
@@ -107,7 +107,7 @@ public class ForumPostController {
     }
 
     @GetMapping("/saved")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<Page<ForumPostResponse>>> getSavedPosts(
             Authentication authentication,
             @RequestParam(defaultValue = "0") int page,

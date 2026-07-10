@@ -1,5 +1,6 @@
 package com.ecc.community.api.controller;
 
+import com.ecc.common.audit.Auditable;
 import com.ecc.common.dto.ApiResponse;
 import com.ecc.community.api.dto.response.ForumCommentResponse;
 import com.ecc.community.api.dto.response.ForumPostResponse;
@@ -36,6 +37,7 @@ public class AdminForumController {
 
     @PostMapping("/posts/{id}/approve")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
+    @Auditable(action = "APPROVE_POST", description = "Duyệt bài viết forum")
     public ResponseEntity<ApiResponse<ForumPostResponse>> approvePost(
             @PathVariable Long id
     ) {
@@ -45,6 +47,7 @@ public class AdminForumController {
 
     @PostMapping("/posts/{id}/hide")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
+    @Auditable(action = "HIDE_POST", description = "Ẩn bài viết forum")
     public ResponseEntity<ApiResponse<ForumPostResponse>> hidePost(
             @PathVariable Long id,
             @RequestParam String reason
@@ -55,6 +58,7 @@ public class AdminForumController {
 
     @PostMapping("/comments/{id}/hide")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR')")
+    @Auditable(action = "HIDE_COMMENT", description = "Ẩn bình luận forum")
     public ResponseEntity<ApiResponse<ForumCommentResponse>> hideComment(
             @PathVariable Long id,
             @RequestParam String reason

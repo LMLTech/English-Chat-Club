@@ -1,5 +1,6 @@
 package com.ecc.community.api.controller;
 
+import com.ecc.common.audit.Auditable;
 import com.ecc.common.dto.ApiResponse;
 import com.ecc.community.api.dto.request.ChallengeCreateRequest;
 import com.ecc.community.api.dto.response.ChallengeResponse;
@@ -24,6 +25,7 @@ public class ChallengeController {
     // Admin tạo thử thách
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")
+    @Auditable(action = "CREATE_CHALLENGE", description = "Tạo thử thách mới")
     public ResponseEntity<ApiResponse<ChallengeResponse>> createChallenge(
             Authentication authentication,
             @Valid @RequestBody ChallengeCreateRequest request) {
@@ -44,7 +46,7 @@ public class ChallengeController {
 
     // Member bấm tham gia
     @PostMapping("/{challengeId}/join")
-    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('MEMBER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<String>> joinChallenge(
             Authentication authentication,
             @PathVariable Long challengeId) {

@@ -1,5 +1,6 @@
 package com.ecc.session.api.controller;
 
+import com.ecc.common.audit.Auditable;
 import com.ecc.common.dto.ApiResponse;
 import com.ecc.session.api.dto.response.SessionResponse;
 import com.ecc.session.application.port.in.ManageSessionUseCase;
@@ -18,6 +19,7 @@ public class AdminSessionController {
     private final ManageSessionUseCase manageSessionUseCase;
 
     @PutMapping("/{id}/approve")
+    @Auditable(action = "APPROVE_SESSION", description = "Duyệt phiên học")
     public ResponseEntity<ApiResponse<SessionResponse>> approveSession(@PathVariable Long id) {
         Session session = manageSessionUseCase.approveSession(id);
         return ResponseEntity.ok(ApiResponse.success(SessionResponse.fromEntity(session)));
