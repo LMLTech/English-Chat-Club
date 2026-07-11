@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type UserRole = 'MEMBER' | 'MODERATOR' | 'ADMIN' | null;
+export type UserRole = 'MEMBER' | 'MODERATOR' | 'ADMIN' | 'ROLE_MEMBER' | 'ROLE_MODERATOR' | 'ROLE_ADMIN' | null;
 
 interface UserInfo {
   userId: number;

@@ -9,19 +9,15 @@ export default function Header() {
   const { user } = useAuthStore();
 
   const getRoleColor = (role?: string) => {
-    switch (role) {
-      case "ADMIN": return "text-red-400 bg-red-500/10 border-red-500/20";
-      case "MODERATOR": return "text-amber-400 bg-amber-500/10 border-amber-500/20";
-      default: return "text-violet-400 bg-violet-500/10 border-violet-500/20";
-    }
+    if (role === 'ADMIN' || role === 'ROLE_ADMIN') return "text-red-400 bg-red-500/10 border-red-500/20";
+    if (role === 'MODERATOR' || role === 'ROLE_MODERATOR') return "text-amber-400 bg-amber-500/10 border-amber-500/20";
+    return "text-violet-400 bg-violet-500/10 border-violet-500/20";
   };
 
   const getRoleLabel = (role?: string) => {
-    switch (role) {
-      case "ADMIN": return "Admin";
-      case "MODERATOR": return "Moderator";
-      default: return "Member";
-    }
+    if (role === 'ADMIN' || role === 'ROLE_ADMIN') return "Admin";
+    if (role === 'MODERATOR' || role === 'ROLE_MODERATOR') return "Moderator";
+    return "Member";
   };
 
   const getInitials = (name?: string) => {

@@ -142,7 +142,7 @@ export default function Sidebar() {
               {user?.fullName || "Hồ sơ"}
             </p>
             {user?.role && (
-              <p className="text-[10px] uppercase font-bold text-violet-400 tracking-wider">{user.role}</p>
+              <p className="text-[10px] uppercase font-bold text-violet-400 tracking-wider">{user.role.replace('ROLE_', '')}</p>
             )}
           </div>
         </Link>

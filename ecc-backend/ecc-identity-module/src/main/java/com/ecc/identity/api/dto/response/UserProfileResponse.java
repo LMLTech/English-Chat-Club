@@ -16,6 +16,7 @@ public class UserProfileResponse {
     private String bio;
     private String cefrLevel;
     private String learningGoal;
+    private String role;
     private boolean is2faEnabled;
     private String referralCode;
     private LocalDateTime createdAt;

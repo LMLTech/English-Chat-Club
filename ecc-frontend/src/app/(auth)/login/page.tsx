@@ -8,6 +8,14 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
 import { Eye, EyeOff, LogIn, Sparkles } from "lucide-react";
 
+const parseJwt = (token: string) => {
+  try {
+    return JSON.parse(atob(token.split('.')[1]));
+  } catch (e) {
+    return null;
+  }
+};
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -44,20 +52,43 @@ export default function LoginPage() {
         try {
           const { profileService } = await import("@/features/profile/profileService");
           const profile = await profileService.getProfile();
+          
+          // Try to get role from profile, fallback to decoding JWT token
+          let userRole = profile.role;
+          if (!userRole) {
+            const decoded = parseJwt(data.accessToken);
+            userRole = decoded?.roles?.[0] || decoded?.role || 'MEMBER';
+          }
+          // Remove ROLE_ prefix if present for uniformity
+          if (userRole.startsWith('ROLE_')) {
+            userRole = userRole.replace('ROLE_', '');
+          }
+
           setUser({
             userId: profile.userId,
             email: profile.email,
             fullName: profile.fullName,
-            role: profile.role as any,
+            role: userRole as any,
             avatarUrl: profile.avatarUrl
           });
-          document.cookie = `ecc_role=${profile.role}; path=/; max-age=86400`;
+          document.cookie = `ecc_role=${userRole}; path=/; max-age=86400`;
+
+          toast.success("Đăng nhập thành công! Chào mừng bạn trở lại 🎉");
+          
+          // Redirect based on role
+          if (userRole === 'ADMIN' || userRole === 'ROLE_ADMIN') {
+            router.push("/admin/dashboard");
+          } else if (userRole === 'MODERATOR' || userRole === 'ROLE_MODERATOR') {
+            router.push("/moderator/dashboard");
+          } else {
+            router.push("/dashboard");
+          }
         } catch (err) {
           console.error("Failed to fetch profile after login", err);
+          // Fallback if profile fails
+          toast.success("Đăng nhập thành công! Chào mừng bạn trở lại 🎉");
+          router.push("/dashboard");
         }
-
-        toast.success("Đăng nhập thành công! Chào mừng bạn trở lại 🎉");
-        router.push("/dashboard");
       }
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Đăng nhập thất bại. Kiểm tra lại thông tin!");
