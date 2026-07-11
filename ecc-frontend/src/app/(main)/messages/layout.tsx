@@ -9,12 +9,8 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-// Mock data to make UI look good if friends list is empty or just IDs
-const MOCK_FRIENDS = [
-  { id: 1, name: "Alexander Wang", avatar: "https://i.pravatar.cc/150?img=11", status: "online", lastMessage: "Let's practice speaking today!", time: "10:30 AM", unread: 2 },
-  { id: 2, name: "Sarah Connor", avatar: "https://i.pravatar.cc/150?img=5", status: "offline", lastMessage: "Thanks for the materials", time: "Hôm qua", unread: 0 },
-  { id: 3, name: "David Chen", avatar: "https://i.pravatar.cc/150?img=33", status: "online", lastMessage: "I'll join the session later", time: "T2", unread: 0 },
-];
+
+
 
 export default function MessagesLayout({ children }: { children: React.ReactNode }) {
   const [friendIds, setFriendIds] = useState<number[]>([]);
@@ -31,16 +27,16 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
 
   if (loading) return <div className="h-full flex items-center justify-center"><LoadingSpinner size="lg" text="Đang tải tin nhắn..." /></div>;
 
-  // Use mock data for visual demonstration of "Ultra-Premium UI"
-  const displayFriends = friendIds.length > 0 ? friendIds.map(id => ({
+  // Only show real friends from API - no mock data
+  const displayFriends = friendIds.map(id => ({
     id, 
     name: `Người dùng #${id}`,
     avatar: `https://i.pravatar.cc/150?u=${id}`,
-    status: Math.random() > 0.5 ? "online" : "offline",
+    status: "offline" as string,
     lastMessage: "Nhấn để bắt đầu trò chuyện...",
     time: "",
     unread: 0
-  })) : MOCK_FRIENDS;
+  }));
 
   return (
     <div className="h-[calc(100vh-4rem)] flex overflow-hidden bg-black/20 rounded-tl-2xl border-t border-l border-white/5">

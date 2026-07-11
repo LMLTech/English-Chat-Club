@@ -28,21 +28,13 @@ export default function ModeratorDashboard() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    // In a real flow, fetch upcoming sessions from the moderator. We mock this since there's no GET API for it yet.
-    setSessions([
-      {
-        id: 1,
-        title: "IELTS Speaking Part 1",
-        cefrLevel: "B2",
-        status: "ACTIVE",
-        durationMinutes: 45,
-        maxParticipants: 5,
-        currentParticipants: 3,
-        moderatorId: 1,
-        scheduledAt: new Date(Date.now() + 86400000).toISOString()
-      }
-    ]);
-    setLoading(false);
+    sessionService.getSessions()
+      .then((data: any) => {
+        const list = Array.isArray(data) ? data : (data?.content || []);
+        setSessions(list);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
