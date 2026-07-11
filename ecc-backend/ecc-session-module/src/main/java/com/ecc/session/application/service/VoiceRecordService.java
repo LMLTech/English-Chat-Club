@@ -2,8 +2,9 @@ package com.ecc.session.application.service;
 
 import com.ecc.session.domain.model.Session;
 import com.ecc.session.domain.model.UserVoiceRecord;
-import com.ecc.session.infrastructure.repository.SessionRepository;
-import com.ecc.session.infrastructure.repository.UserVoiceRecordRepository;
+import com.ecc.session.application.port.out.SessionRepositoryPort;
+import com.ecc.session.application.port.out.UserVoiceRecordRepositoryPort;
+import com.ecc.session.application.port.in.ManageVoiceRecordUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,10 +21,10 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class VoiceRecordService {
+public class VoiceRecordService implements ManageVoiceRecordUseCase {
 
-    private final UserVoiceRecordRepository userVoiceRecordRepository;
-    private final SessionRepository sessionRepository;
+    private final UserVoiceRecordRepositoryPort userVoiceRecordRepository;
+    private final SessionRepositoryPort sessionRepository;
 
     // Cấu hình thư mục lưu file tạm thời ở Local (Sau này Phase 5 sẽ thay bằng AWS S3)
     @Value("${app.upload.voice-dir:uploads/voices/}")

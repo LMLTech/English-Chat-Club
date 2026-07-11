@@ -51,15 +51,7 @@ export default function ChatRoomPage() {
     setMessages(prev => [...prev, newMsg]);
     setNewMessage("");
 
-    // Mock auto-reply
-    setTimeout(() => {
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        senderId: friendId,
-        content: "I received your message!",
-        createdAt: new Date().toISOString()
-      }]);
-    }, 1500);
+    // Remove mock auto reply since backend should handle messages through WS or API
   };
 
   if (loading) return <div className="h-full flex items-center justify-center"><LoadingSpinner text="Đang kết nối..." /></div>;

@@ -116,6 +116,7 @@ E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\e
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-community-module\src\main\java\com\ecc\community\application\port\out\BadgePort.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-community-module\src\main\java\com\ecc\community\infrastructure\repository\PostLikeRepository.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-community-module\src\main\java\com\ecc\community\infrastructure\adapter\ForumDataInitializerAdapter.java
+E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-community-module\src\main\java\com\ecc\community\application\port\out\ForumPostRepositoryPort.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-community-module\src\main\java\com\ecc\community\application\port\out\PostLikePort.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-community-module\src\main\java\com\ecc\community\domain\model\PointTransaction.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-community-module\src\main\java\com\ecc\community\infrastructure\repository\PointTransactionRepository.java

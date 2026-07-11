@@ -1,15 +1,26 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Users, BookOpen, CalendarDays, ShieldCheck, Activity, TrendingUp } from "lucide-react";
+import { Users, BookOpen, CalendarDays, ShieldCheck, Activity, TrendingUp, AlertTriangle } from "lucide-react";
 import { staggerContainer, scaleUp } from "@/lib/utils";
 import Link from "next/link";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 const stats = [
   { title: "Tổng người dùng", value: "1,234", icon: Users, color: "text-blue-400", bg: "bg-blue-500/10" },
-  { title: "Topics đang active", value: "45", icon: BookOpen, color: "text-violet-400", bg: "bg-violet-500/10" },
-  { title: "Session chờ duyệt", value: "12", icon: ShieldCheck, color: "text-amber-400", bg: "bg-amber-500/10" },
+  { title: "Phòng đang hoạt động", value: "12", icon: Activity, color: "text-rose-400", bg: "bg-rose-500/10" },
   { title: "Sự kiện sắp tới", value: "3", icon: CalendarDays, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+  { title: "Báo cáo cần xử lý", value: "5", icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-500/10" },
+];
+
+const trafficData = [
+  { name: 'T2', users: 400, sessions: 240 },
+  { name: 'T3', users: 300, sessions: 139 },
+  { name: 'T4', users: 200, sessions: 980 },
+  { name: 'T5', users: 278, sessions: 390 },
+  { name: 'T6', users: 189, sessions: 480 },
+  { name: 'T7', users: 239, sessions: 380 },
+  { name: 'CN', users: 349, sessions: 430 },
 ];
 
 export default function AdminDashboard() {
@@ -56,34 +67,41 @@ export default function AdminDashboard() {
         {/* Animated Chart Section */}
         <div className="lg:col-span-2 glass-card rounded-2xl border border-white/5 p-6 relative overflow-hidden group">
           <div className="flex items-center justify-between mb-8 relative z-10">
-            <h2 className="text-lg font-bold text-white">Lưu lượng truy cập hệ thống</h2>
-            <select className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-red-500/50">
+            <div>
+              <h2 className="text-lg font-bold text-white">Lưu lượng truy cập hệ thống</h2>
+              <p className="text-xs text-muted-foreground mt-1">So với 7 ngày trước</p>
+            </div>
+            <select className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-blue-500/50 cursor-pointer">
               <option>7 ngày qua</option>
               <option>30 ngày qua</option>
             </select>
           </div>
           
-          {/* Fake SVG Chart Animation */}
-          <div className="h-48 relative w-full flex items-end justify-between px-2 z-10">
-            {[40, 65, 45, 80, 55, 90, 70].map((height, i) => (
-              <div key={i} className="w-[10%] group-hover:bg-white/5 rounded-t-lg transition-colors flex items-end justify-center h-full relative">
-                <motion.div 
-                  initial={{ height: 0 }}
-                  animate={{ height: `${height}%` }}
-                  transition={{ duration: 1, delay: i * 0.1, type: "spring" }}
-                  className="w-full bg-gradient-to-t from-red-600/20 to-orange-500 rounded-t-lg shadow-[0_0_15px_rgba(249,115,22,0.4)]"
+          <div className="h-72 w-full mt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={trafficData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                <XAxis dataKey="name" stroke="#ffffff50" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="#ffffff50" fontSize={12} tickLine={false} axisLine={false} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff' }}
+                  itemStyle={{ color: '#fff' }}
                 />
-                <div className="absolute -bottom-6 text-[10px] text-muted-foreground font-mono">
-                  {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'][i]}
-                </div>
-              </div>
-            ))}
+                <Area type="monotone" dataKey="users" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorUsers)" />
+                <Area type="monotone" dataKey="sessions" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorSessions)" />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
-          
-          {/* Background Grid Lines */}
-          <div className="absolute inset-0 z-0 pointer-events-none opacity-20"
-               style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '20px 20px' }}
-          />
         </div>
 
         {/* Quick Actions & Recent */}

@@ -3,7 +3,7 @@ package com.ecc.session.api.controller;
 import com.ecc.common.dto.ApiResponse;
 import com.ecc.session.api.dto.request.VocabularyHighlightRequest;
 import com.ecc.session.api.dto.request.WarnUserRequest;
-import com.ecc.session.application.service.ModerationService;
+import com.ecc.session.application.port.in.ManageModerationUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ModerationController {
 
-    private final ModerationService moderationService;
+    private final ManageModerationUseCase moderationService;
 
     @PostMapping("/warn")
     @PreAuthorize("isAuthenticated()") // Hoặc kiểm tra chi tiết quyền Moderator

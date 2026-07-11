@@ -1,7 +1,7 @@
 package com.ecc.session.api.controller;
 
 import com.ecc.common.dto.ApiResponse;
-import com.ecc.session.application.service.EventService;
+import com.ecc.session.application.port.in.ManageEventUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class EventController {
 
-    private final EventService eventService;
+    private final ManageEventUseCase eventService;
 
     @PostMapping("/{id}/register")
     @PreAuthorize("isAuthenticated()")

@@ -6,8 +6,19 @@ import { sessionService, SessionResponse } from "@/features/sessions/sessionServ
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Video, Calendar as CalendarIcon, Clock, Users, BookOpen, Search, X, Check, Star } from "lucide-react";
+import { Plus, Video, Calendar as CalendarIcon, Clock, Users, BookOpen, Search, X, Check, Star, Activity } from "lucide-react";
 import { slideIn, staggerContainer, cn } from "@/lib/utils";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+const teachingData = [
+  { name: 'T2', hours: 2.5 },
+  { name: 'T3', hours: 4 },
+  { name: 'T4', hours: 1.5 },
+  { name: 'T5', hours: 5 },
+  { name: 'T6', hours: 3.5 },
+  { name: 'T7', hours: 6 },
+  { name: 'CN', hours: 2 },
+];
 
 export default function ModeratorDashboard() {
   const [sessions, setSessions] = useState<SessionResponse[]>([]);
@@ -62,11 +73,11 @@ export default function ModeratorDashboard() {
     <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2 mb-1">
-            <Video className="w-6 h-6 text-amber-400" />
-            Moderator Dashboard
+          <h1 className="text-3xl font-bold text-white flex items-center gap-3 mb-2 tracking-tight">
+            <span className="bg-gradient-to-br from-amber-400 to-orange-500 text-transparent bg-clip-text">Moderator Dashboard</span>
+            <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_10px_rgba(251,191,36,0.8)]" />
           </h1>
-          <p className="text-sm text-muted-foreground">Quản lý và tạo các phòng hội thoại của bạn</p>
+          <p className="text-sm text-muted-foreground/80">Chào mừng trở lại! Bạn có <span className="text-amber-400 font-semibold">{sessions.length}</span> buổi học sắp diễn ra.</p>
         </div>
         
         <button
@@ -108,6 +119,55 @@ export default function ModeratorDashboard() {
             <p className="text-sm font-medium text-muted-foreground">Đánh giá trung bình</p>
           </div>
           <p className="text-3xl font-bold text-white">4.9<span className="text-sm text-muted-foreground font-normal">/5</span></p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 glass-card rounded-2xl border border-white/5 p-6 relative overflow-hidden">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <Activity className="w-5 h-5 text-amber-400" />
+              Thống kê giờ giảng dạy
+            </h2>
+            <select className="bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-xs text-white outline-none focus:border-amber-500/50 cursor-pointer">
+              <option>Tuần này</option>
+              <option>Tháng này</option>
+            </select>
+          </div>
+          <div className="h-56 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={teachingData} margin={{ top: 10, right: 10, left: -30, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff0a" vertical={false} />
+                <XAxis dataKey="name" stroke="#ffffff50" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="#ffffff50" fontSize={12} tickLine={false} axisLine={false} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '8px', color: '#fff' }}
+                  itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+                />
+                <Area type="monotone" dataKey="hours" name="Giờ dạy" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#colorHours)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="glass-card rounded-2xl border border-white/5 p-6 flex flex-col justify-between relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div>
+            <h2 className="text-lg font-bold text-white mb-2">Trung tâm điều phối</h2>
+            <p className="text-sm text-muted-foreground mb-6">Bạn đang là người điều phối cho <strong className="text-white">3</strong> phòng chat active hiện tại. Nhấn vào phòng để bắt đầu buổi nói chuyện.</p>
+          </div>
+          <button 
+            onClick={() => setIsCreating(true)}
+            className="w-full py-4 rounded-xl font-semibold text-black bg-amber-500 hover:bg-amber-400 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] hover:-translate-y-1"
+          >
+            + Lên lịch buổi học mới
+          </button>
         </div>
       </div>
 

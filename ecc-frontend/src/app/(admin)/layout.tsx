@@ -58,7 +58,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen bg-[#0a0a0f] overflow-hidden relative">
+      {/* Animated Dynamic Background */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-red-600/10 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '4s' }} />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-orange-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
+      </div>
+      
+      {/* Content wrapper */}
+      <div className="z-10 flex h-full w-full">
       {/* Admin Sidebar */}
       <aside className="w-64 flex-shrink-0 bg-[#12141c] border-r border-white/5 flex flex-col h-full z-20">
         <div className="px-5 py-5 border-b border-white/5">
@@ -160,6 +168,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 }

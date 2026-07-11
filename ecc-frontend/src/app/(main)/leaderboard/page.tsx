@@ -39,8 +39,9 @@ export default function LeaderboardPage() {
         ]);
         if (lb.length > 0) setLeaderboard(lb);
         setMyRank(rank);
-      } catch {
-        // Use mock data
+      } catch (error) {
+        setLeaderboard([]);
+        setMyRank(null);
       } finally {
         setLoading(false);
       }

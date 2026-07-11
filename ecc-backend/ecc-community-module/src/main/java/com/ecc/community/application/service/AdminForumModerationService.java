@@ -3,8 +3,8 @@ package com.ecc.community.application.service;
 import com.ecc.community.domain.model.ContentStatus;
 import com.ecc.community.domain.model.ForumComment;
 import com.ecc.community.domain.model.ForumPost;
-import com.ecc.community.infrastructure.repository.ForumCommentRepository;
-import com.ecc.community.infrastructure.repository.ForumPostRepository;
+import com.ecc.community.application.port.out.ForumCommentPort;
+import com.ecc.community.application.port.out.ForumPostPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -17,8 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AdminForumModerationService {
 
-    private final ForumPostRepository postRepository;
-    private final ForumCommentRepository commentRepository;
+    private final ForumPostPort postRepository;
+    private final ForumCommentPort commentRepository;
 
     @Transactional(readOnly = true)
     public Page<ForumPost> getPendingPosts(Pageable pageable) {

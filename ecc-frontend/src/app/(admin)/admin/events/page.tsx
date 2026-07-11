@@ -94,23 +94,10 @@ export default function AdminEventsPage() {
           </form>
         </motion.div>
 
-        {/* Dummy Event List */}
-        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-4">
-          {[1, 2, 3].map((_, i) => (
-            <motion.div key={i} variants={slideIn} className="glass-card p-5 rounded-xl border border-white/5 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                  <Activity className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-white text-sm">Thử thách {i + 1}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Kết thúc sau 5 ngày</p>
-                </div>
-              </div>
-              <span className="px-3 py-1 rounded bg-white/5 text-xs text-white">Đang diễn ra</span>
-            </motion.div>
-          ))}
-        </motion.div>
+        <div className="text-center py-10 border border-dashed border-white/10 rounded-xl mt-4">
+          <CalendarDays className="w-10 h-10 text-emerald-400/50 mx-auto mb-2" />
+          <p className="text-sm font-medium text-white">Danh sách sự kiện đang được cập nhật</p>
+        </div>
       </div>
     </div>
   );

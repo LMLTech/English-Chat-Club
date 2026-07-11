@@ -7,8 +7,9 @@ import com.ecc.session.api.dto.response.EventResponse;
 import com.ecc.session.application.port.out.PointsPort;
 import com.ecc.session.domain.model.Event;
 import com.ecc.session.domain.model.EventRegistration;
-import com.ecc.session.infrastructure.repository.EventRegistrationRepository;
-import com.ecc.session.infrastructure.repository.EventRepository;
+import com.ecc.session.application.port.out.EventRegistrationRepositoryPort;
+import com.ecc.session.application.port.out.EventRepositoryPort;
+import com.ecc.session.application.port.in.ManageEventUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,10 +21,10 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class EventService {
+public class EventService implements ManageEventUseCase {
 
-    private final EventRepository eventRepository;
-    private final EventRegistrationRepository eventRegistrationRepository;
+    private final EventRepositoryPort eventRepository;
+    private final EventRegistrationRepositoryPort eventRegistrationRepository;
     private final PointsPort pointsPort;
 
     @Transactional
@@ -40,6 +41,13 @@ public class EventService {
 
         event = eventRepository.save(event);
         return EventResponse.fromEntity(event);
+    }
+
+    @Transactional(readOnly = true)
+    public List<EventResponse> getAllEvents() {
+        return eventRepository.findAll().stream()
+                .map(EventResponse::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Transactional

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -23,6 +24,16 @@ public class SessionRepositoryAdapter implements SessionRepositoryPort {
     @Override
     public Optional<Session> findById(Long id) {
         return sessionRepository.findById(id);
+    }
+
+    @Override
+    public List<Session> findAll() {
+        return sessionRepository.findAll();
+    }
+
+    @Override
+    public List<Session> findByEndTimeBeforeAndStatusIn(LocalDateTime endTime, List<String> statuses) {
+        return sessionRepository.findByEndTimeBeforeAndStatusIn(endTime, statuses);
     }
 
     @Override

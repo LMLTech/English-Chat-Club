@@ -1,7 +1,7 @@
 package com.ecc.session.api.controller;
 
 import com.ecc.common.dto.ApiResponse;
-import com.ecc.session.application.service.VoiceRecordService;
+import com.ecc.session.application.port.in.ManageVoiceRecordUseCase;
 import com.ecc.session.domain.model.UserVoiceRecord;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class VoiceRecordRestController {
 
-    private final VoiceRecordService voiceRecordService;
+    private final ManageVoiceRecordUseCase voiceRecordService;
 
     @PostMapping("/record")
     @PreAuthorize("isAuthenticated()")

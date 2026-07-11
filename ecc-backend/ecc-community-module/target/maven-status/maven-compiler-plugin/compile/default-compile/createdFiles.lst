@@ -110,6 +110,7 @@ com\ecc\community\domain\model\LevelConfig$LevelConfigBuilder.class
 com\ecc\community\application\port\out\ReferralHistoryPort.class
 com\ecc\community\api\dto\request\ForumCommentRequest.class
 com\ecc\community\application\service\ForumPostService.class
+com\ecc\community\application\port\out\ForumPostRepositoryPort.class
 com\ecc\community\infrastructure\repository\ReferralHistoryRepository.class
 com\ecc\community\api\dto\response\FriendRequestResponse$FriendRequestResponseBuilder.class
 com\ecc\community\application\port\in\ChallengeUseCase.class

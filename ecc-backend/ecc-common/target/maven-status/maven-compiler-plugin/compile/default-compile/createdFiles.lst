@@ -2,11 +2,14 @@ com\ecc\common\event\BookingCancelledEvent.class
 com\ecc\common\event\DomainEvent.class
 com\ecc\common\event\LevelUpEvent.class
 com\ecc\common\exception\BaseException.class
+com\ecc\common\audit\Auditable.class
 com\ecc\common\exception\AccountLockedException.class
 com\ecc\common\event\UserRegisteredEvent.class
 com\ecc\common\exception\GlobalExceptionHandler.class
+com\ecc\common\security\AttributeEncryptor.class
 com\ecc\common\event\LateBookingCancelEvent.class
 com\ecc\common\dto\PageResponse.class
+com\ecc\common\infrastructure\BadWordFilterAdapter.class
 com\ecc\common\event\BookingConfirmedEvent.class
 com\ecc\common\event\DirectMessageSentEvent.class
 com\ecc\common\event\OrderPlacedEvent.class

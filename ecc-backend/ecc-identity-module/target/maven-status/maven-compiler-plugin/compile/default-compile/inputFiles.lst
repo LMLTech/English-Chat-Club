@@ -11,6 +11,7 @@ E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\e
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\api\dto\request\Disable2faRequest.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\api\dto\request\UpdateInterestsRequest.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\application\service\RegisterService.java
+E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\application\port\out\ReferralHistoryRepositoryPort.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\infrastructure\adapter\UserRepositoryAdapter.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\api\dto\request\TicketRequest.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\infrastructure\security\AesEncryptionUtil.java
@@ -18,6 +19,7 @@ E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\e
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\api\dto\request\Verify2faSetupRequest.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\application\port\out\LoginAttemptRepositoryPort.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\infrastructure\repository\AuditLogRepository.java
+E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\application\port\out\RoleRepositoryPort.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\infrastructure\repository\RefreshTokenRepository.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\infrastructure\adapter\TicketRepositoryAdapter.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\infrastructure\security\JwtAuthenticationFilter.java
@@ -27,6 +29,7 @@ E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\e
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\domain\model\ReferralHistory.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\application\service\RefreshTokenService.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\infrastructure\adapter\LoginAttemptAdapter.java
+E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\infrastructure\adapter\ReferralHistoryRepositoryAdapter.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\infrastructure\adapter\TokenRepositoryAdapter.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\domain\model\AuditLog.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\api\dto\response\GoogleTokenResponse.java
@@ -107,5 +110,6 @@ E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\e
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\api\controller\CallbackController.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\api\dto\request\LoginRequest.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\api\dto\response\AuthResponse.java
+E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\infrastructure\adapter\RoleRepositoryAdapter.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\application\port\in\RefreshTokenUseCase.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\api\dto\request\RefreshTokenRequest.java

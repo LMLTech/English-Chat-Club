@@ -10,8 +10,8 @@ import com.ecc.identity.domain.model.EmailVerificationToken;
 import com.ecc.identity.domain.model.ReferralHistory;
 import com.ecc.identity.domain.model.Role;
 import com.ecc.identity.domain.model.User;
-import com.ecc.identity.infrastructure.repository.ReferralHistoryRepository;
-import com.ecc.identity.infrastructure.repository.RoleRepository;
+import com.ecc.identity.application.port.out.ReferralHistoryRepositoryPort;
+import com.ecc.identity.application.port.out.RoleRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,8 +29,8 @@ public class RegisterService implements RegisterUseCase {
     private final UserRepositoryPort userRepositoryPort;
     private final TokenRepositoryPort tokenRepositoryPort;
     private final EmailSenderPort emailSenderPort;
-    private final ReferralHistoryRepository referralHistoryRepository;
-    private final RoleRepository roleRepository;
+    private final ReferralHistoryRepositoryPort referralHistoryRepository;
+    private final RoleRepositoryPort roleRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override

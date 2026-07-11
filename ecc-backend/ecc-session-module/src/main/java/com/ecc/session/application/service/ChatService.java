@@ -9,8 +9,8 @@ import com.ecc.session.application.port.out.IdentityPort;
 import com.ecc.session.domain.model.ChatMessage;
 import com.ecc.session.domain.model.Session;
 import com.ecc.session.infrastructure.adapter.ChatMessageRedisAdapter;
-import com.ecc.session.infrastructure.repository.ChatMessageRepository;
-import com.ecc.session.infrastructure.repository.SessionRepository;
+import com.ecc.session.application.port.out.ChatMessageRepositoryPort;
+import com.ecc.session.application.port.out.SessionRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,13 +18,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+import com.ecc.session.application.port.in.ManageChatUseCase;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ChatService {
+public class ChatService implements ManageChatUseCase {
 
-    private final ChatMessageRepository chatMessageRepository;
-    private final SessionRepository sessionRepository;
+    private final ChatMessageRepositoryPort chatMessageRepository;
+    private final SessionRepositoryPort sessionRepository;
     private final BookingRepositoryPort bookingRepositoryPort;
     private final ChatMessageRedisAdapter chatMessageRedisAdapter;
     private final IdentityPort identityPort;

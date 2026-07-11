@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { sessionService, SessionResponse } from "@/features/sessions/sessionService";
@@ -9,6 +9,37 @@ import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, Video, VideoOff, MessageSquare, Users, Settings, LogOut, PhoneOff, Hand, Share, Smile, MoreVertical, Disc, ShieldAlert, BookPlus, Send, Star, BookOpen } from "lucide-react";
+import { useWebRTC } from "@/hooks/useWebRTC";
+
+const VideoPlayer = ({ stream, isLocal, muted = false }: { stream: MediaStream | null, isLocal: boolean, muted?: boolean }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream]);
+
+  if (!stream) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-black/60">
+        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-xl text-white/40">
+          U
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <video 
+      ref={videoRef} 
+      autoPlay 
+      playsInline 
+      muted={isLocal || muted} 
+      className={`w-full h-full object-cover ${isLocal ? 'scale-x-[-1]' : ''}`} 
+    />
+  );
+};
 
 export default function SessionRoomPage() {
   const params = useParams();
@@ -18,9 +49,33 @@ export default function SessionRoomPage() {
   const [session, setSession] = useState<SessionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  
+  const handleChatMessage = useCallback((msg: any) => {
+    setChatMessages(prev => [...prev, msg]);
+  }, []);
+
+  const handleHandSignal = useCallback((msg: any) => {
+    toast(msg.message, { icon: "👋" });
+  }, []);
+
+  const {
+    localStream,
+    remoteStreams,
+    micOn,
+    videoOn,
+    toggleMic,
+    toggleVideo,
+    sendChatMessage,
+    sendHandSignal
+  } = useWebRTC({ 
+    sessionId: Number(params.id),
+    onChatMessageReceived: handleChatMessage,
+    onHandSignalReceived: handleHandSignal
+  });
+
   // Controls
-  const [micOn, setMicOn] = useState(false);
-  const [videoOn, setVideoOn] = useState(false);
   const [handRaised, setHandRaised] = useState(false);
   const [recording, setRecording] = useState(false);
   
@@ -150,12 +205,12 @@ export default function SessionRoomPage() {
 
       {/* Main Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Video Grid (Mock) */}
+        {/* Video Grid */}
         <div className="flex-1 p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 overflow-y-auto">
           {/* Main Speaker / You */}
           <div className="col-span-1 md:col-span-2 lg:col-span-2 row-span-2 relative rounded-2xl bg-black/60 border border-white/10 overflow-hidden flex items-center justify-center group">
             {videoOn ? (
-              <img src={user?.avatarUrl || "https://i.pravatar.cc/500?img=1"} alt="You" className="w-full h-full object-cover" />
+              <VideoPlayer stream={localStream} isLocal={true} />
             ) : (
               <div className="w-24 h-24 rounded-full bg-violet-500/20 flex items-center justify-center text-4xl text-violet-400 border border-violet-500/30">
                 {user?.fullName?.[0] || "U"}
@@ -174,19 +229,17 @@ export default function SessionRoomPage() {
           </div>
 
               {/* Other Participants */}
-          {[2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="relative rounded-2xl bg-black/40 border border-white/5 overflow-hidden flex items-center justify-center group/user">
-              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-xl text-white/40">
-                U{i}
-              </div>
+          {Object.entries(remoteStreams).map(([peerId, stream]) => (
+            <div key={peerId} className="relative rounded-2xl bg-black/40 border border-white/5 overflow-hidden flex items-center justify-center group/user">
+              <VideoPlayer stream={stream} isLocal={false} />
               <div className="absolute bottom-3 left-3">
                 <span className="px-2 py-1 rounded-md bg-black/60 backdrop-blur-md text-[10px] font-medium text-white">
-                  User {i}
+                  User {peerId}
                 </span>
               </div>
               {isModerator && (
                 <div className="absolute top-2 right-2 opacity-0 group-hover/user:opacity-100 transition-opacity">
-                  <button onClick={() => handleWarnUser(i)} className="w-8 h-8 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors shadow-lg">
+                  <button onClick={() => handleWarnUser(Number(peerId))} className="w-8 h-8 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors shadow-lg">
                     <ShieldAlert className="w-4 h-4" />
                   </button>
                 </div>
@@ -214,12 +267,18 @@ export default function SessionRoomPage() {
               <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
                 {activeSidebar === "chat" && (
                   <>
-                    <div className="text-xs text-center text-muted-foreground my-4">Phòng chat đã được mã hóa</div>
-                    {/* Message bubbles mock */}
-                    <div className="bg-white/5 rounded-2xl rounded-tl-sm p-3 max-w-[85%] border border-white/5">
-                      <p className="text-[10px] text-violet-400 mb-1 font-bold">Teacher Alex</p>
-                      <p className="text-sm text-white/90">Hello everyone! Let's start by introducing yourselves.</p>
-                    </div>
+                    {chatMessages.length === 0 ? (
+                      <div className="text-xs text-center text-muted-foreground my-4">Chưa có tin nhắn nào. Hãy nói lời chào!</div>
+                    ) : (
+                      chatMessages.map((msg, idx) => (
+                        <div key={idx} className={`flex flex-col gap-1 ${msg.senderId === user?.userId ? "items-end" : "items-start"}`}>
+                          <div className={`px-3 py-2 rounded-2xl max-w-[85%] text-sm ${msg.senderId === user?.userId ? "bg-violet-600 text-white rounded-tr-sm" : "bg-white/10 text-white rounded-tl-sm"}`}>
+                            {msg.content}
+                          </div>
+                          <span className="text-[10px] text-muted-foreground">{msg.senderId === user?.userId ? "Bạn" : `User ${msg.senderId}`}</span>
+                        </div>
+                      ))
+                    )}
                   </>
                 )}
 
@@ -234,8 +293,16 @@ export default function SessionRoomPage() {
                 <div className="p-4 border-t border-white/5">
                   <input 
                     type="text" 
-                    placeholder="Nhập tin nhắn..." 
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && chatInput.trim()) {
+                        sendChatMessage(chatInput);
+                        setChatInput("");
+                      }
+                    }}
+                    placeholder="Nhập tin nhắn..."
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500 transition-colors"
                   />
                 </div>
               )}
@@ -252,7 +319,7 @@ export default function SessionRoomPage() {
 
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => setMicOn(!micOn)}
+            onClick={toggleMic}
             className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
               micOn ? "bg-white/10 hover:bg-white/20 text-white" : "bg-red-500/20 text-red-400 hover:bg-red-500/30"
             }`}
@@ -261,7 +328,7 @@ export default function SessionRoomPage() {
           </button>
 
           <button 
-            onClick={() => setVideoOn(!videoOn)}
+            onClick={toggleVideo}
             className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
               videoOn ? "bg-white/10 hover:bg-white/20 text-white" : "bg-red-500/20 text-red-400 hover:bg-red-500/30"
             }`}
@@ -270,7 +337,11 @@ export default function SessionRoomPage() {
           </button>
 
           <button 
-            onClick={() => setHandRaised(!handRaised)}
+            onClick={() => {
+              const newHandRaised = !handRaised;
+              setHandRaised(newHandRaised);
+              sendHandSignal(newHandRaised ? "RAISE" : "LOWER");
+            }}
             className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
               handRaised ? "bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.5)]" : "bg-white/10 hover:bg-white/20 text-white"
             }`}

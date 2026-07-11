@@ -9,10 +9,11 @@ import com.ecc.session.application.port.out.IdentityPort;
 import com.ecc.session.domain.model.Session;
 import com.ecc.session.domain.model.UserWarning;
 import com.ecc.session.domain.model.VocabularyHighlight;
-import com.ecc.session.infrastructure.repository.SessionRepository;
-import com.ecc.session.infrastructure.repository.SessionSummaryRepository;
-import com.ecc.session.infrastructure.repository.UserWarningRepository;
-import com.ecc.session.infrastructure.repository.VocabularyHighlightRepository;
+import com.ecc.session.application.port.out.SessionRepositoryPort;
+import com.ecc.session.application.port.out.SessionSummaryRepositoryPort;
+import com.ecc.session.application.port.out.UserWarningRepositoryPort;
+import com.ecc.session.application.port.out.VocabularyHighlightRepositoryPort;
+import com.ecc.session.application.port.in.ManageModerationUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -26,12 +27,12 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ModerationService {
+public class ModerationService implements ManageModerationUseCase {
 
-    private final UserWarningRepository userWarningRepository;
-    private final VocabularyHighlightRepository vocabularyHighlightRepository;
-    private final SessionSummaryRepository sessionSummaryRepository;
-    private final SessionRepository sessionRepository; // Dùng để tìm thông tin phòng
+    private final UserWarningRepositoryPort userWarningRepository;
+    private final VocabularyHighlightRepositoryPort vocabularyHighlightRepository;
+    private final SessionSummaryRepositoryPort sessionSummaryRepository;
+    private final SessionRepositoryPort sessionRepository; // Dùng để tìm thông tin phòng
     private final IdentityPort identityPort;
     private final EmailPort emailPort; // Cổng gửi mail thật
     private final ApplicationEventPublisher eventPublisher;

@@ -4,8 +4,8 @@ import com.ecc.common.exception.ResourceNotFoundException;
 import com.ecc.identity.application.port.in.AssignRoleUseCase;
 import com.ecc.identity.domain.model.Role;
 import com.ecc.identity.domain.model.User;
-import com.ecc.identity.infrastructure.repository.RoleRepository;
-import com.ecc.identity.infrastructure.repository.UserRepository;
+import com.ecc.identity.application.port.out.RoleRepositoryPort;
+import com.ecc.identity.application.port.out.UserRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AssignRoleService implements AssignRoleUseCase {
 
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
+    private final UserRepositoryPort userRepository;
+    private final RoleRepositoryPort roleRepository;
 
     @Override
     @Transactional

@@ -5,9 +5,20 @@ import { contentService, MemberDashboardResponse } from "@/features/content/cont
 import { communityService, MemberPointsResponse, BadgeResponse } from "@/features/community/communityService";
 import StatsCard from "@/components/shared/StatsCard";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
-import { CalendarDays, Trophy, Zap, Star, Award, BookOpen, TrendingUp, Flame } from "lucide-react";
+import { CalendarDays, Trophy, Zap, Star, Award, BookOpen, TrendingUp, Flame, Activity } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import Link from "next/link";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+const studyActivityData = [
+  { name: 'T2', xp: 120 },
+  { name: 'T3', xp: 250 },
+  { name: 'T4', xp: 50 },
+  { name: 'T5', xp: 300 },
+  { name: 'T6', xp: 180 },
+  { name: 'T7', xp: 400 },
+  { name: 'CN', xp: 210 },
+];
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
@@ -43,15 +54,19 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Welcome */}
-      <div>
-        <div className="flex items-center gap-3 mb-1">
-          <h1 className="text-2xl font-bold text-white">
-            Xin chào, {user?.fullName?.split(" ").pop() || "bạn"} 👋
-          </h1>
+      <div className="relative overflow-hidden rounded-2xl p-8 glass-card border border-white/5">
+        <div className="absolute inset-0 bg-gradient-to-r from-violet-500/10 via-fuchsia-500/10 to-transparent opacity-50" />
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-violet-500/20 rounded-full blur-3xl animate-pulse" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-bold text-white tracking-tight">
+              Xin chào, <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 text-transparent bg-clip-text">{user?.fullName?.split(" ").pop() || "bạn"}</span> 👋
+            </h1>
+          </div>
+          <p className="text-muted-foreground">
+            Hôm nay là một ngày tuyệt vời để nâng cao kỹ năng giao tiếp tiếng Anh của bạn!
+          </p>
         </div>
-        <p className="text-muted-foreground text-sm">
-          Chào mừng trở lại với English Chat Club. Hãy tiếp tục hành trình học tiếng Anh hôm nay!
-        </p>
       </div>
 
       {/* Stats Grid */}
@@ -136,64 +151,84 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Upcoming Sessions (Lịch học đã đăng ký) */}
-          <div className="glass-card rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
+          {/* Study Activity Chart */}
+          <div className="glass-card rounded-xl p-6 relative overflow-hidden group">
+            <div className="flex items-center justify-between mb-6">
               <h2 className="font-semibold text-white flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-blue-400" />
-                Lịch học sắp tới của bạn
+                <Activity className="w-4 h-4 text-emerald-400" />
+                Hoạt động học tập (XP)
               </h2>
-              <button 
-                onClick={() => {
-                  alert("Đã gửi yêu cầu kết nối Google Calendar!");
-                }}
-                className="btn-ghost text-xs text-blue-400 border border-blue-500/20 px-3 py-1.5 hover:bg-blue-500/10 flex items-center gap-2 transition-colors"
-              >
-                📅 Kết nối Google Calendar
-              </button>
             </div>
             
-            {dashboard?.upcomingBookings === 0 ? (
-              <div className="text-center py-6 border border-dashed border-white/10 rounded-xl">
-                <CalendarDays className="w-10 h-10 text-muted-foreground/40 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">Bạn chưa đăng ký buổi học nào.</p>
-                <Link href="/sessions" className="text-violet-400 text-sm hover:underline mt-2 inline-block">
-                  Tìm buổi học ngay →
+            <div className="h-48 w-full mt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={studyActivityData} margin={{ top: 10, right: 10, left: -30, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorXp" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff0a" vertical={false} />
+                  <XAxis dataKey="name" stroke="#ffffff50" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#ffffff50" fontSize={12} tickLine={false} axisLine={false} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: '8px', color: '#fff' }}
+                    itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+                  />
+                  <Area type="monotone" dataKey="xp" name="XP Đạt được" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorXp)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          
+          {/* Upcoming Sessions (Lịch học đã đăng ký) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="glass-card rounded-xl p-6 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="flex items-center justify-between mb-4 relative z-10">
+                <h2 className="font-semibold text-white flex items-center gap-2">
+                  <CalendarDays className="w-4 h-4 text-blue-400" />
+                  Lịch học sắp tới của bạn
+                </h2>
+                <button 
+                  onClick={() => alert("Đã gửi yêu cầu kết nối Google Calendar!")}
+                  className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  Kết nối Google Calendar
+                </button>
+              </div>
+              
+              {dashboard?.upcomingBookings === 0 ? (
+                <div className="text-center py-6 border border-dashed border-white/10 rounded-xl relative z-10">
+                  <CalendarDays className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Bạn chưa đăng ký buổi học nào.</p>
+                  <Link href="/sessions" className="text-violet-400 text-sm hover:underline mt-2 inline-block font-medium">
+                    Tìm buổi học ngay →
+                  </Link>
+                </div>
+              ) : (
+                <div className="text-center py-6 border border-dashed border-white/10 rounded-xl bg-blue-500/5 relative z-10 border-blue-500/20">
+                  <CalendarDays className="w-10 h-10 text-blue-400 mx-auto mb-2 animate-bounce" />
+                  <p className="text-sm font-medium text-white">Bạn có {dashboard?.upcomingBookings} buổi học sắp tới.</p>
+                  <Link href="/sessions" className="text-blue-400 text-sm hover:underline mt-2 inline-block font-medium">
+                    Vào phòng chờ ngay →
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            <div className="glass-card rounded-xl p-6 flex flex-col justify-center items-center text-center relative overflow-hidden group border-amber-500/20">
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent" />
+              <div className="relative z-10">
+                <Trophy className="w-12 h-12 text-amber-400 mx-auto mb-3" />
+                <h3 className="text-lg font-bold text-white mb-2">Thử thách tuần!</h3>
+                <p className="text-sm text-muted-foreground mb-4">Tham gia 3 buổi học tuần này để nhận Badge "Ngôi sao chăm chỉ" và 500 XP.</p>
+                <Link href="/gamification" className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-semibold text-sm transition-colors shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+                  Xem nhiệm vụ
                 </Link>
               </div>
-            ) : (
-              <div className="space-y-3">
-                {/* Mock data for booked session */}
-                <div className="flex flex-col sm:flex-row gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:border-blue-500/30 transition-colors">
-                  <div className="w-16 h-16 rounded-xl bg-blue-500/10 flex flex-col items-center justify-center border border-blue-500/20 shrink-0">
-                    <span className="text-xs text-blue-400 font-medium">Hôm nay</span>
-                    <span className="text-xl font-bold text-white">20:00</span>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-white mb-1">IELTS Speaking Part 2 - Advanced</h3>
-                    <p className="text-sm text-muted-foreground mb-2 flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-violet-500/20 text-violet-400">C1</span>
-                      <span>Teacher Alex</span>
-                    </p>
-                    <div className="flex gap-2">
-                      <Link href="/sessions/1/room" className="px-4 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-colors">
-                        Vào phòng học
-                      </Link>
-                      <button 
-                        onClick={() => {
-                          if (confirm("Hủy trước 2h sẽ không bị phạt. Bạn có chắc muốn hủy phòng này?")) {
-                            alert("Hủy thành công!");
-                          }
-                        }}
-                        className="px-4 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-medium transition-colors border border-red-500/20"
-                      >
-                        Hủy đăng ký
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </div>
 
