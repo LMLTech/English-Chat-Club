@@ -7,88 +7,50 @@ import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import EmptyState from "@/components/shared/EmptyState";
 import { toast } from "sonner";
 import { CalendarDays, Filter, Search } from "lucide-react";
-
-const MOCK_SESSIONS: SessionResponse[] = [
-  {
-    id: 1,
-    title: "English Pronunciation Practice - Phụ âm khó",
-    description: "Luyện tập phát âm các âm khó trong tiếng Anh như /th/, /r/, /l/. Phù hợp cho người học cần cải thiện pronunciation.",
-    scheduledAt: new Date(Date.now() + 3600000 * 24).toISOString(),
-    durationMinutes: 60,
-    maxParticipants: 10,
-    currentParticipants: 7,
-    cefrLevel: "B1",
-    status: "SCHEDULED",
-    topicName: "Phát âm",
-    moderatorId: 1,
-    moderatorName: "Nguyễn Thị Lan",
-  },
-  {
-    id: 2,
-    title: "Business English - Job Interview Skills",
-    description: "Thực hành kỹ năng phỏng vấn tiếng Anh trong môi trường công sở. Học cách giới thiệu bản thân, trả lời câu hỏi khó.",
-    scheduledAt: new Date(Date.now() + 3600000 * 48).toISOString(),
-    durationMinutes: 90,
-    maxParticipants: 8,
-    currentParticipants: 3,
-    cefrLevel: "B2",
-    status: "SCHEDULED",
-    topicName: "Kinh doanh",
-    moderatorId: 2,
-    moderatorName: "Trần Văn Minh",
-  },
-  {
-    id: 3,
-    title: "Daily Conversation - At the Restaurant",
-    description: "Học cách gọi món, hỏi giá, than phiền và khen ngợi tại nhà hàng bằng tiếng Anh.",
-    scheduledAt: new Date(Date.now() + 3600000 * 72).toISOString(),
-    durationMinutes: 45,
-    maxParticipants: 12,
-    currentParticipants: 12,
-    cefrLevel: "A2",
-    status: "SCHEDULED",
-    topicName: "Hội thoại hằng ngày",
-    moderatorId: 3,
-    moderatorName: "Lê Thị Hoa",
-  },
-  {
-    id: 4,
-    title: "IELTS Reading Strategies",
-    description: "Các chiến thuật đọc hiểu trong kỳ thi IELTS: skimming, scanning, keyword matching.",
-    scheduledAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-    durationMinutes: 60,
-    maxParticipants: 10,
-    currentParticipants: 8,
-    cefrLevel: "C1",
-    status: "COMPLETED",
-    topicName: "IELTS",
-    moderatorId: 1,
-    moderatorName: "Nguyễn Thị Lan",
-  },
-];
+import { useAuthStore } from "@/store/useAuthStore";
+import { useRouter } from "next/navigation";
 
 const CEFR_LEVELS = ["Tất cả", "A1", "A2", "B1", "B2", "C1", "C2"];
 
 export default function SessionsPage() {
-  const [sessions, setSessions] = useState<SessionResponse[]>(MOCK_SESSIONS);
+  const { user } = useAuthStore();
+  const router = useRouter();
+  const [sessions, setSessions] = useState<SessionResponse[]>([]);
   const [topics, setTopics] = useState<DiscussionTopic[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [bookedIds, setBookedIds] = useState<Set<number>>(new Set());
   const [search, setSearch] = useState("");
   const [cefrFilter, setCefrFilter] = useState("Tất cả");
   const [statusFilter, setStatusFilter] = useState("SCHEDULED");
 
   useEffect(() => {
-    sessionService.getTopics()
-      .then(setTopics)
-      .catch(() => {});
+    Promise.all([
+      sessionService.getTopics(),
+      sessionService.getSessions()
+    ]).then(([topicsData, sessionsData]) => {
+      setTopics(topicsData);
+      setSessions(Array.isArray(sessionsData) ? sessionsData : (sessionsData?.content || []));
+    }).catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
   const handleBook = async (sessionId: number) => {
+    if (!user) {
+      toast.error("Vui lòng đăng nhập để đặt chỗ!");
+      router.push("/login");
+      return;
+    }
+
     try {
       await sessionService.bookSession(sessionId);
       setBookedIds((prev) => new Set(prev).add(sessionId));
-      toast.success("Đặt chỗ thành công! 🎉");
+      
+      const session = sessions.find(s => s.id === sessionId);
+      if (session && session.currentParticipants >= session.maxParticipants) {
+        toast.success("Phòng đã đầy. Bạn đã được xếp vào Danh sách chờ!");
+      } else {
+        toast.success("Đặt chỗ thành công! 🎉");
+      }
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Đặt chỗ thất bại. Vui lòng thử lại!");
     }

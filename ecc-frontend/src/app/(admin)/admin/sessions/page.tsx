@@ -7,15 +7,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheck, CheckCircle2, Clock } from "lucide-react";
 import { slideIn, staggerContainer } from "@/lib/utils";
 
-// Mock pending sessions since backend doesn't have getPendingSessions yet
-const MOCK_PENDING = [
-  { id: 1, title: "IELTS Speaking Part 3 Deep Dive", moderatorName: "Teacher Alex", time: "20:00 25/10/2023", level: "C1" },
-  { id: 2, title: "Basic Grammar Review", moderatorName: "Teacher Sarah", time: "18:00 26/10/2023", level: "A2" },
-];
-
 export default function AdminSessionsPage() {
-  const [sessions, setSessions] = useState(MOCK_PENDING);
+  const [sessions, setSessions] = useState<any[]>([]);
   const [approvingId, setApprovingId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    adminService.getPendingSessions()
+      .then(setSessions)
+      .catch(() => toast.error("Không thể tải danh sách session chờ duyệt"))
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleApprove = async (id: number) => {
     setApprovingId(id);
@@ -67,8 +69,8 @@ export default function AdminSessionsPage() {
                   <p className="text-sm text-amber-200/60 mb-4">{session.moderatorName}</p>
                   
                   <div className="space-y-1.5 mb-6">
-                    <p className="text-xs text-muted-foreground">Thời gian: <span className="text-white">{session.time}</span></p>
-                    <p className="text-xs text-muted-foreground">Trình độ: <span className="text-white font-bold">{session.level}</span></p>
+                    <p className="text-xs text-muted-foreground">Thời gian: <span className="text-white">{session.scheduledAt ? new Date(session.scheduledAt).toLocaleString() : ''}</span></p>
+                    <p className="text-xs text-muted-foreground">Trình độ: <span className="text-white font-bold">{session.cefrLevel}</span></p>
                   </div>
 
                   <button 

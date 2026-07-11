@@ -120,13 +120,29 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center gap-2.5 text-sm">
                 <Shield className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-muted-foreground">
-                  2FA: {profile?.twoFactorEnabled ? (
-                    <span className="text-green-400">Đã bật</span>
-                  ) : (
-                    <span className="text-red-400">Chưa bật</span>
-                  )}
-                </span>
+                <div className="flex-1 flex items-center justify-between">
+                  <span className="text-muted-foreground">
+                    2FA: {profile?.twoFactorEnabled ? (
+                      <span className="text-green-400 font-medium">Đã bật</span>
+                    ) : (
+                      <span className="text-red-400 font-medium">Chưa bật</span>
+                    )}
+                  </span>
+                  <button 
+                    onClick={() => {
+                      if (confirm(profile?.twoFactorEnabled ? "Tắt bảo mật 2 lớp?" : "Bật bảo mật 2 lớp?")) {
+                        alert("Đã cập nhật cấu hình 2FA (Chờ API Backend)!");
+                      }
+                    }}
+                    className={`text-[10px] px-2 py-0.5 rounded border font-medium transition-colors ${
+                      profile?.twoFactorEnabled 
+                        ? "text-red-400 border-red-500/20 hover:bg-red-500/10" 
+                        : "text-green-400 border-green-500/20 hover:bg-green-500/10"
+                    }`}
+                  >
+                    {profile?.twoFactorEnabled ? "Tắt 2FA" : "Bật 2FA"}
+                  </button>
+                </div>
               </div>
               {profile?.createdAt && (
                 <div className="flex items-center gap-2.5 text-sm">
@@ -236,6 +252,21 @@ export default function ProfilePage() {
                     placeholder="https://example.com/avatar.jpg"
                     className="ecc-input"
                   />
+                </div>
+              )}
+
+              {editing && (
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-foreground/80">Trình độ CEFR</label>
+                  <select
+                    value={form.cefrLevel || profile?.cefrLevel || "B1"}
+                    onChange={(e) => setForm({ ...form, cefrLevel: e.target.value })}
+                    className="ecc-input"
+                  >
+                    {CEFR_LEVELS.map(level => (
+                      <option key={level} value={level}>{level}</option>
+                    ))}
+                  </select>
                 </div>
               )}
             </div>

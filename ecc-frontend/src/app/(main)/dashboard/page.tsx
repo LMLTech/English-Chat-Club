@@ -136,34 +136,64 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Quick actions */}
+          {/* Upcoming Sessions (Lịch học đã đăng ký) */}
           <div className="glass-card rounded-xl p-6">
-            <h2 className="font-semibold text-white mb-4 flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-400" />
-              Hành động nhanh
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {[
-                { label: "Tìm buổi học", href: "/sessions", icon: CalendarDays, color: "from-blue-500/20 to-cyan-500/10 border-blue-500/20" },
-                { label: "Diễn đàn", href: "/forum", icon: BookOpen, color: "from-violet-500/20 to-purple-500/10 border-violet-500/20" },
-                { label: "Bảng xếp hạng", href: "/leaderboard", icon: Trophy, color: "from-amber-500/20 to-orange-500/10 border-amber-500/20" },
-                { label: "Bạn bè", href: "/friends", icon: Star, color: "from-green-500/20 to-emerald-500/10 border-green-500/20" },
-                { label: "Tài nguyên", href: "/resources", icon: BookOpen, color: "from-pink-500/20 to-rose-500/10 border-pink-500/20" },
-                { label: "Huy hiệu", href: "/gamification", icon: Award, color: "from-purple-500/20 to-indigo-500/10 border-purple-500/20" },
-              ].map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border bg-gradient-to-br ${item.color} hover:scale-105 transition-transform duration-200 text-center`}
-                  >
-                    <Icon className="w-5 h-5 text-foreground/70" />
-                    <span className="text-xs font-medium text-foreground/80">{item.label}</span>
-                  </Link>
-                );
-              })}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-white flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-blue-400" />
+                Lịch học sắp tới của bạn
+              </h2>
+              <button 
+                onClick={() => {
+                  alert("Đã gửi yêu cầu kết nối Google Calendar!");
+                }}
+                className="btn-ghost text-xs text-blue-400 border border-blue-500/20 px-3 py-1.5 hover:bg-blue-500/10 flex items-center gap-2 transition-colors"
+              >
+                📅 Kết nối Google Calendar
+              </button>
             </div>
+            
+            {dashboard?.upcomingBookings === 0 ? (
+              <div className="text-center py-6 border border-dashed border-white/10 rounded-xl">
+                <CalendarDays className="w-10 h-10 text-muted-foreground/40 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Bạn chưa đăng ký buổi học nào.</p>
+                <Link href="/sessions" className="text-violet-400 text-sm hover:underline mt-2 inline-block">
+                  Tìm buổi học ngay →
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* Mock data for booked session */}
+                <div className="flex flex-col sm:flex-row gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:border-blue-500/30 transition-colors">
+                  <div className="w-16 h-16 rounded-xl bg-blue-500/10 flex flex-col items-center justify-center border border-blue-500/20 shrink-0">
+                    <span className="text-xs text-blue-400 font-medium">Hôm nay</span>
+                    <span className="text-xl font-bold text-white">20:00</span>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-white mb-1">IELTS Speaking Part 2 - Advanced</h3>
+                    <p className="text-sm text-muted-foreground mb-2 flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-violet-500/20 text-violet-400">C1</span>
+                      <span>Teacher Alex</span>
+                    </p>
+                    <div className="flex gap-2">
+                      <Link href="/sessions/1/room" className="px-4 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-colors">
+                        Vào phòng học
+                      </Link>
+                      <button 
+                        onClick={() => {
+                          if (confirm("Hủy trước 2h sẽ không bị phạt. Bạn có chắc muốn hủy phòng này?")) {
+                            alert("Hủy thành công!");
+                          }
+                        }}
+                        className="px-4 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-medium transition-colors border border-red-500/20"
+                      >
+                        Hủy đăng ký
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

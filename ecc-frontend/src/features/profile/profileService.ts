@@ -18,6 +18,7 @@ export interface UpdateProfileRequest {
   fullName?: string;
   bio?: string;
   avatarUrl?: string;
+  cefrLevel?: string;
 }
 
 export interface UpdateInterestsRequest {

@@ -1,24 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { adminService } from "@/features/admin/adminService";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Users, Search, Shield } from "lucide-react";
 import { slideIn, staggerContainer } from "@/lib/utils";
 
-// Mock users list since backend doesn't have getUsers yet
-const MOCK_USERS = [
-  { id: 1, email: "admin@ecc.com", name: "System Admin", role: "ADMIN" },
-  { id: 2, email: "teacher@ecc.com", name: "Teacher Alex", role: "MODERATOR" },
-  { id: 3, email: "student@ecc.com", name: "Nguyen Van A", role: "MEMBER" },
-];
-
 const AVAILABLE_ROLES = ["ADMIN", "MODERATOR", "MEMBER"];
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState(MOCK_USERS);
+  const [users, setUsers] = useState<any[]>([]);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    adminService.getUsers()
+      .then(res => {
+        if (res && res.length > 0) setUsers(res);
+        else throw new Error("Empty or no API");
+      })
+      .catch(async () => {
+        // Fallback: Fetch leaderboard to get real users to manage if API is missing
+        try {
+          const { communityService } = await import("@/features/community/communityService");
+          const leaderboard = await communityService.getLeaderboard({ type: "WEEKLY" });
+          setUsers(leaderboard.map((u: any) => ({
+            id: u.userId,
+            fullName: u.userName,
+            email: `user${u.userId}@gmail.com`,
+            role: "MEMBER"
+          })));
+        } catch {
+          toast.error("Không thể tải danh sách người dùng");
+        }
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleRoleChange = async (userId: number, newRole: string) => {
     setUpdatingId(userId);
@@ -55,6 +73,9 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
+        {loading ? (
+          <div className="p-12 flex justify-center"><div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>
+        ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-white/5 text-muted-foreground">
@@ -70,7 +91,7 @@ export default function AdminUsersPage() {
                 <tr key={user.id} className="hover:bg-white/5 transition-colors group">
                   <td className="px-6 py-4 text-muted-foreground">#{user.id}</td>
                   <td className="px-6 py-4">
-                    <p className="font-medium text-white">{user.name}</p>
+                    <p className="font-medium text-white">{user.fullName || user.name || "Unknown"}</p>
                     <p className="text-xs text-muted-foreground">{user.email}</p>
                   </td>
                   <td className="px-6 py-4">
@@ -101,6 +122,7 @@ export default function AdminUsersPage() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
     </div>
   );

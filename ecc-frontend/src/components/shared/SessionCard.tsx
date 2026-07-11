@@ -122,14 +122,13 @@ export default function SessionCard({ session, onBook, onCancel, isBooked, isFul
           ) : (
             <button
               onClick={() => onBook?.(session.id)}
-              disabled={isFull}
               className={`w-full px-4 py-2 rounded-lg text-xs font-semibold transition-colors ${
                 isFull
-                  ? "text-muted-foreground bg-white/5 border border-white/5 cursor-not-allowed"
+                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
                   : "btn-primary"
               }`}
             >
-              {isFull ? "Đã hết chỗ" : "Đặt chỗ ngay"}
+              {isFull ? "Vào danh sách chờ" : "Đặt chỗ ngay"}
             </button>
           )}
         </div>

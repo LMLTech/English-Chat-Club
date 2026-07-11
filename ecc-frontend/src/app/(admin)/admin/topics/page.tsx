@@ -21,10 +21,6 @@ export default function AdminTopicsPage() {
   });
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchTopics();
-  }, []);
-
   const fetchTopics = async () => {
     try {
       const data = await adminService.getTopics();
@@ -35,6 +31,10 @@ export default function AdminTopicsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchTopics();
+  }, []);
 
   const openModal = (topic?: AdminTopicResponse) => {
     if (topic) {

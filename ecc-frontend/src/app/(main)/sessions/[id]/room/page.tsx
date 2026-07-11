@@ -8,10 +8,7 @@ import { moderatorService } from "@/features/moderator/moderatorService";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Mic, MicOff, Video, VideoOff, MessageSquare, Users, 
-  Settings, PhoneOff, Hand, Record, ShieldAlert, BookOpen, Star
-} from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, MessageSquare, Users, Settings, LogOut, PhoneOff, Hand, Share, Smile, MoreVertical, Disc, ShieldAlert, BookPlus, Send, Star, BookOpen } from "lucide-react";
 
 export default function SessionRoomPage() {
   const params = useParams();
@@ -32,21 +29,29 @@ export default function SessionRoomPage() {
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
 
   useEffect(() => {
-    // In a real app, fetch session details by ID. For now, we mock synchronously to avoid loading delays.
-    setSession({
-      id: Number(params.id),
-      title: "Advanced IELTS Speaking Practice",
-      cefrLevel: "C1",
-      status: "ACTIVE",
-      durationMinutes: 60,
-      maxParticipants: 10,
-      currentParticipants: 8,
-      moderatorId: 2,
-      moderatorName: "Teacher Alex",
-      scheduledAt: new Date().toISOString()
-    });
-    setLoading(false);
-  }, [params.id]);
+    if (!user) {
+      toast.error("Vui lòng đăng nhập để tham gia phòng học!");
+      router.push("/login");
+      return;
+    }
+
+    sessionService.getSessionById(Number(params.id))
+      .then((data) => {
+        setSession(data);
+      })
+      .catch((err) => {
+        toast.error("Không thể tải thông tin phòng học!");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [params.id, user, router]);
+
+  const [summaryModalOpen, setSummaryModalOpen] = useState(false);
+  const [summaryText, setSummaryText] = useState("");
+
+  // If redirecting, don't render room UI
+  if (!user) return null;
 
   const submitReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,9 +91,6 @@ export default function SessionRoomPage() {
       toast.error("Lỗi thêm từ vựng");
     }
   };
-
-  const [summaryModalOpen, setSummaryModalOpen] = useState(false);
-  const [summaryText, setSummaryText] = useState("");
 
   const handleLeave = () => {
     if (user?.role === "MEMBER") {
@@ -283,7 +285,7 @@ export default function SessionRoomPage() {
                 recording ? "bg-red-500 text-white animate-pulse" : "bg-white/10 hover:bg-white/20 text-white"
               }`}
             >
-              <Record className="w-5 h-5" />
+              <Disc className="w-5 h-5" />
             </button>
           )}
 

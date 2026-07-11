@@ -7,23 +7,6 @@ import Sidebar from "@/components/shared/Sidebar";
 import Header from "@/components/shared/Header";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
-  const { accessToken } = useAuthStore();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!accessToken) {
-      router.replace("/login");
-    }
-  }, [accessToken, router]);
-
-  if (!accessToken) {
-    return (
-      <div className="auth-bg min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar />

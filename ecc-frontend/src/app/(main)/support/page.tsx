@@ -21,22 +21,21 @@ export default function SupportPage() {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    loadTickets();
-  }, []);
-
   const loadTickets = async () => {
     setLoading(true);
     try {
       const data = await supportService.getTickets();
       setTickets(data || []);
-    } catch (err) {
-      console.error(err);
-      toast.error("Không thể tải danh sách ticket");
+    } catch {
+      toast.error("Không thể tải danh sách yêu cầu hỗ trợ");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadTickets();
+  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

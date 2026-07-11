@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Users, BookOpen, CalendarDays, ShieldCheck, Activity, TrendingUp } from "lucide-react";
 import { staggerContainer, scaleUp } from "@/lib/utils";
+import Link from "next/link";
 
 const stats = [
   { title: "Tổng người dùng", value: "1,234", icon: Users, color: "text-blue-400", bg: "bg-blue-500/10" },
@@ -90,20 +91,28 @@ export default function AdminDashboard() {
           <div className="glass-card rounded-2xl border border-white/5 p-6">
             <h2 className="text-lg font-bold text-white mb-4">Thao tác nhanh</h2>
             <div className="space-y-3">
-              <button className="w-full text-left px-4 py-3 rounded-xl bg-gradient-to-r from-blue-500/10 to-transparent hover:from-blue-500/20 border border-blue-500/20 transition-all text-sm text-blue-100 font-medium flex items-center gap-3 group/btn relative overflow-hidden">
+              <Link href="/admin/users" className="w-full text-left px-4 py-3 rounded-xl bg-gradient-to-r from-blue-500/10 to-transparent hover:from-blue-500/20 border border-blue-500/20 transition-all text-sm text-blue-100 font-medium flex items-center gap-3 group/btn relative overflow-hidden">
                 <div className="absolute inset-0 bg-blue-500/20 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 ease-in-out" />
                 <Users className="w-4 h-4 text-blue-400" />
                 Quản lý phân quyền Role
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-transparent hover:from-amber-500/20 border border-amber-500/20 transition-all text-sm text-amber-100 font-medium flex items-center gap-3 group/btn relative overflow-hidden">
+              </Link>
+              <Link href="/admin/sessions" className="w-full text-left px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-transparent hover:from-amber-500/20 border border-amber-500/20 transition-all text-sm text-amber-100 font-medium flex items-center gap-3 group/btn relative overflow-hidden">
                 <div className="absolute inset-0 bg-amber-500/20 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 ease-in-out" />
                 <ShieldCheck className="w-4 h-4 text-amber-400" />
                 Duyệt yêu cầu mở Session
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-xl bg-gradient-to-r from-violet-500/10 to-transparent hover:from-violet-500/20 border border-violet-500/20 transition-all text-sm text-violet-100 font-medium flex items-center gap-3 group/btn relative overflow-hidden">
+              </Link>
+              <Link href="/admin/topics" className="w-full text-left px-4 py-3 rounded-xl bg-gradient-to-r from-violet-500/10 to-transparent hover:from-violet-500/20 border border-violet-500/20 transition-all text-sm text-violet-100 font-medium flex items-center gap-3 group/btn relative overflow-hidden">
                 <div className="absolute inset-0 bg-violet-500/20 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 ease-in-out" />
                 <BookOpen className="w-4 h-4 text-violet-400" />
                 Thêm chủ đề học mới
+              </Link>
+              <button 
+                onClick={() => alert("Mở modal cấu hình hệ thống Gamification (Ví dụ: Chỉnh exp mỗi phiên)")}
+                className="w-full text-left px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-500/10 to-transparent hover:from-emerald-500/20 border border-emerald-500/20 transition-all text-sm text-emerald-100 font-medium flex items-center gap-3 group/btn relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-emerald-500/20 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 ease-in-out" />
+                <Activity className="w-4 h-4 text-emerald-400" />
+                Cấu hình Gamification
               </button>
             </div>
           </div>

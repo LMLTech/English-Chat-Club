@@ -6,19 +6,6 @@ import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { Trophy, Medal, Crown, TrendingUp } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 
-const MOCK_LEADERBOARD: LeaderboardEntryResponse[] = [
-  { rank: 1, userId: 10, username: "Nguyễn Thị Lan", totalPoints: 4250, cefrLevel: "C1", avatarUrl: undefined },
-  { rank: 2, userId: 11, username: "Trần Văn Minh", totalPoints: 3890, cefrLevel: "B2" },
-  { rank: 3, userId: 12, username: "Lê Thị Hoa", totalPoints: 3540, cefrLevel: "B2" },
-  { rank: 4, userId: 13, username: "Phạm Quốc Hùng", totalPoints: 3120, cefrLevel: "B1" },
-  { rank: 5, userId: 14, username: "Đặng Thị Mai", totalPoints: 2980, cefrLevel: "B1" },
-  { rank: 6, userId: 15, username: "Hoàng Văn An", totalPoints: 2750, cefrLevel: "B1" },
-  { rank: 7, userId: 16, username: "Vũ Thị Linh", totalPoints: 2540, cefrLevel: "A2" },
-  { rank: 8, userId: 17, username: "Bùi Quốc Dũng", totalPoints: 2320, cefrLevel: "A2" },
-  { rank: 9, userId: 18, username: "Đinh Thị Thảo", totalPoints: 2100, cefrLevel: "A2" },
-  { rank: 10, userId: 19, username: "Ngô Văn Đức", totalPoints: 1980, cefrLevel: "A1" },
-];
-
 type LeaderboardType = "weekly" | "monthly";
 
 const getRankIcon = (rank: number) => {
@@ -37,10 +24,10 @@ const getRankBg = (rank: number) => {
 
 export default function LeaderboardPage() {
   const { user } = useAuthStore();
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntryResponse[]>(MOCK_LEADERBOARD);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntryResponse[]>([]);
   const [myRank, setMyRank] = useState<number | null>(null);
   const [type, setType] = useState<LeaderboardType>("weekly");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {

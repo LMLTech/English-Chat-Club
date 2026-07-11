@@ -6,7 +6,7 @@ import { sessionService, SessionResponse } from "@/features/sessions/sessionServ
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Video, Calendar as CalendarIcon, Clock, Users, BookOpen, Search, X, Check } from "lucide-react";
+import { Plus, Video, Calendar as CalendarIcon, Clock, Users, BookOpen, Search, X, Check, Star } from "lucide-react";
 import { slideIn, staggerContainer, cn } from "@/lib/utils";
 
 export default function ModeratorDashboard() {
@@ -84,6 +84,39 @@ export default function ModeratorDashboard() {
           <Plus className="w-4 h-4" />
           Tạo Buổi học Mới
         </button>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="glass-card p-5 rounded-xl border border-amber-500/10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+              <Video className="w-5 h-5 text-amber-400" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground">Buổi đã dạy</p>
+          </div>
+          <p className="text-3xl font-bold text-white">42</p>
+        </div>
+
+        <div className="glass-card p-5 rounded-xl border border-blue-500/10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <Users className="w-5 h-5 text-blue-400" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground">Học viên tham gia</p>
+          </div>
+          <p className="text-3xl font-bold text-white">156</p>
+        </div>
+
+        <div className="glass-card p-5 rounded-xl border border-green-500/10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+              <Star className="w-5 h-5 text-green-400" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground">Đánh giá trung bình</p>
+          </div>
+          <p className="text-3xl font-bold text-white">4.9<span className="text-sm text-muted-foreground font-normal">/5</span></p>
+        </div>
       </div>
 
       <div className="flex items-center gap-4 border-b border-white/5 pb-4">

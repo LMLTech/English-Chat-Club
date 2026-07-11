@@ -9,87 +9,26 @@ import { toast } from "sonner";
 import { MessageSquare, Plus, Bookmark, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
-const MOCK_POSTS: ForumPostResponse[] = [
-  {
-    id: 1,
-    title: "Tips để cải thiện phát âm tiếng Anh nhanh nhất",
-    content: "Sau nhiều năm học tiếng Anh, mình đã tổng hợp được những tips hiệu quả nhất để cải thiện phát âm...",
-    authorId: 1,
-    authorName: "Nguyễn Văn A",
-    categoryId: 1,
-    categoryName: "Phát âm",
-    status: "PUBLISHED",
-    likeCount: 42,
-    commentCount: 15,
-    viewCount: 320,
-    createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-  },
-  {
-    id: 2,
-    title: "Chia sẻ kinh nghiệm thi IELTS đạt 7.5",
-    content: "Mình vừa nhận kết quả IELTS 7.5 sau 6 tháng luyện tập. Xin chia sẻ lộ trình và tài liệu đã sử dụng...",
-    authorId: 2,
-    authorName: "Trần Thị B",
-    categoryId: 2,
-    categoryName: "IELTS",
-    status: "PUBLISHED",
-    likeCount: 88,
-    commentCount: 34,
-    viewCount: 1250,
-    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-  },
-  {
-    id: 3,
-    title: "Hỏi về cách dùng 'Would' và 'Could' trong tiếng Anh",
-    content: "Mình hay nhầm lẫn giữa would và could trong các tình huống giả định. Mọi người có thể giải thích không ạ?",
-    authorId: 3,
-    authorName: "Lê Thị C",
-    categoryId: 3,
-    categoryName: "Ngữ pháp",
-    status: "PUBLISHED",
-    likeCount: 23,
-    commentCount: 8,
-    viewCount: 180,
-    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-  },
-  {
-    id: 4,
-    title: "Podcast tiếng Anh hay nhất cho người học trình độ B1-B2",
-    content: "Mình tổng hợp 10 podcast tiếng Anh chất lượng cao, phù hợp cho người học trình độ B1 đến B2...",
-    authorId: 4,
-    authorName: "Phạm Văn D",
-    categoryId: 4,
-    categoryName: "Tài nguyên",
-    status: "PUBLISHED",
-    likeCount: 65,
-    commentCount: 20,
-    viewCount: 890,
-    createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 48).toISOString(),
-  },
-];
-
 export default function ForumPage() {
-  const [posts, setPosts] = useState<ForumPostResponse[]>(MOCK_POSTS);
-  const [loading, setLoading] = useState(false);
+  const [posts, setPosts] = useState<ForumPostResponse[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"latest" | "saved">("latest");
 
   const fetchPosts = async () => {
     setLoading(true);
     try {
       const data = await forumService.getPosts({ page: 0, size: 10 });
-      if (data.content.length > 0) {
-        setPosts(data.content);
-      }
+      setPosts(data.content || data || []);
     } catch {
-      // Use mock data on error
+      toast.error("Không thể tải bài viết!");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchPosts();
+  }, [activeTab]);
 
   const handleLike = async (postId: number) => {
     try {

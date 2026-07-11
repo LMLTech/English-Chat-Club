@@ -37,9 +37,20 @@ export interface AdminEventRequest {
 
 export const adminService = {
   // Users
+  getUsers: async (): Promise<any[]> => {
+    const res = await axiosInstance.get('/api/admin/users');
+    return res.data.data?.content || res.data.data || [];
+  },
+
   updateUserRole: async (userId: number, roleName: string): Promise<string> => {
     const res = await axiosInstance.put(`/api/admin/users/${userId}/role`, null, { params: { roleName } });
     return res.data.data;
+  },
+
+  // Sessions
+  getPendingSessions: async (): Promise<any[]> => {
+    const res = await axiosInstance.get('/api/admin/sessions/pending');
+    return res.data.data?.content || res.data.data || [];
   },
 
   // Topics

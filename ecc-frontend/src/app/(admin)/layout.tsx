@@ -23,19 +23,24 @@ const adminNavItems = [
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, isHydrated, clearTokens, refreshToken } = useAuthStore();
+  const { user, clearTokens, refreshToken } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!isHydrated) return;
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     if (!user || user.role !== "ADMIN") {
       router.push("/dashboard");
     } else {
       setIsAuthorized(true);
     }
-  }, [user, isHydrated, router]);
+  }, [user, mounted, router]);
 
   const handleLogout = async () => {
     try {
@@ -48,7 +53,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   };
 
-  if (!isHydrated || !isAuthorized) {
+  if (!mounted || !isAuthorized) {
     return <LoadingSpinner size="lg" text="Đang xác thực quyền Admin..." />;
   }
 

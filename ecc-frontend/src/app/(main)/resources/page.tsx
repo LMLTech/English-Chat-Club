@@ -8,15 +8,6 @@ import { Library, ExternalLink, Search, BookOpen, Video, FileText, Globe } from 
 
 const CATEGORIES = ["Tất cả", "GRAMMAR", "VOCABULARY", "SPEAKING", "LISTENING", "READING", "WRITING", "IELTS", "TOEIC"];
 
-const MOCK_RESOURCES: LearningResourceResponse[] = [
-  { id: 1, title: "BBC Learning English - 6 Minute English", type: "PODCAST", url: "https://www.bbc.co.uk/learningenglish", category: "LISTENING", createdAt: new Date().toISOString() },
-  { id: 2, title: "Cambridge Dictionary Online", type: "WEBSITE", url: "https://dictionary.cambridge.org", category: "VOCABULARY", createdAt: new Date().toISOString() },
-  { id: 3, title: "IELTS Liz - Official IELTS Tips", type: "WEBSITE", url: "https://ieltsliz.com", category: "IELTS", createdAt: new Date().toISOString() },
-  { id: 4, title: "Grammarly Blog - English Grammar", type: "WEBSITE", url: "https://www.grammarly.com/blog", category: "GRAMMAR", createdAt: new Date().toISOString() },
-  { id: 5, title: "TED Talks - English Listening Practice", type: "VIDEO", url: "https://www.ted.com", category: "LISTENING", createdAt: new Date().toISOString() },
-  { id: 6, title: "Merriam-Webster Word of the Day", type: "WEBSITE", url: "https://www.merriam-webster.com", category: "VOCABULARY", createdAt: new Date().toISOString() },
-];
-
 const getTypeIcon = (type: string) => {
   switch (type?.toUpperCase()) {
     case "VIDEO": return Video;
@@ -36,15 +27,16 @@ const getTypeColor = (type: string) => {
 };
 
 export default function ResourcesPage() {
-  const [resources, setResources] = useState<LearningResourceResponse[]>(MOCK_RESOURCES);
-  const [loading, setLoading] = useState(false);
+  const [resources, setResources] = useState<LearningResourceResponse[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Tất cả");
 
   useEffect(() => {
     contentService.getResources({ page: 0, size: 20 })
-      .then((data) => { if (data.content.length > 0) setResources(data.content); })
-      .catch(() => {});
+      .then((data) => { setResources(data.content || data || []); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const filtered = resources.filter((r) => {

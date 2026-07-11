@@ -20,6 +20,12 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email.toLowerCase())) {
+      toast.error("Hệ thống chỉ hỗ trợ tài khoản @gmail.com!");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -45,6 +51,7 @@ export default function LoginPage() {
             role: profile.role as any,
             avatarUrl: profile.avatarUrl
           });
+          document.cookie = `ecc_role=${profile.role}; path=/; max-age=86400`;
         } catch (err) {
           console.error("Failed to fetch profile after login", err);
         }

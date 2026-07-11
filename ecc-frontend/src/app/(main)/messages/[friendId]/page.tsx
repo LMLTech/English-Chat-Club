@@ -12,15 +12,6 @@ import {
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { cn } from "@/lib/utils";
 
-// Mock messages for UI demonstration
-const MOCK_MESSAGES = [
-  { id: 1, senderId: 1, text: "Hi there! How are you?", createdAt: new Date(Date.now() - 3600000).toISOString() },
-  { id: 2, senderId: 'me', text: "I'm doing great, thanks for asking! Are we still on for the practice session later?", createdAt: new Date(Date.now() - 3500000).toISOString() },
-  { id: 3, senderId: 1, text: "Yes, definitely. I've prepared some IELTS Speaking Part 2 topics for us to go through.", createdAt: new Date(Date.now() - 3400000).toISOString() },
-  { id: 4, senderId: 'me', text: "Awesome! I'll share a Google Doc with some vocabulary notes I made.", createdAt: new Date(Date.now() - 3300000).toISOString() },
-  { id: 5, senderId: 1, text: "Perfect. See you in an hour!", createdAt: new Date(Date.now() - 50000).toISOString() },
-];
-
 export default function ChatRoomPage() {
   const params = useParams();
   const friendId = Number(params.friendId);
@@ -32,12 +23,14 @@ export default function ChatRoomPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // In a real app, fetch messages
-    setMessages(MOCK_MESSAGES.map(m => ({
-      ...m,
-      senderId: m.senderId === 'me' ? user?.userId || 999 : friendId
-    })));
-    setLoading(false);
+    communityService.getChatHistory(friendId, { page: 0, size: 50 })
+      .then(data => {
+        const msgs = data.content || data || [];
+        // Sort ascending by time for display
+        setMessages(msgs.reverse());
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [friendId, user?.userId]);
 
   useEffect(() => {
@@ -51,7 +44,7 @@ export default function ChatRoomPage() {
     const newMsg = {
       id: Date.now(),
       senderId: user?.userId || 999,
-      text: newMessage,
+      content: newMessage,
       createdAt: new Date().toISOString()
     };
 
@@ -63,7 +56,7 @@ export default function ChatRoomPage() {
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         senderId: friendId,
-        text: "I received your message!",
+        content: "I received your message!",
         createdAt: new Date().toISOString()
       }]);
     }, 1500);
@@ -139,7 +132,7 @@ export default function ChatRoomPage() {
                       ? "bg-violet-600 text-white rounded-tr-sm shadow-[0_4px_20px_rgba(124,58,237,0.2)]" 
                       : "bg-[#1e1f29] border border-white/5 text-white/90 rounded-tl-sm"
                   )}>
-                    <p>{msg.text}</p>
+                    <p>{msg.content}</p>
                     <div className={cn("flex items-center gap-1 mt-1.5 text-[10px] opacity-70", isMe ? "justify-end text-violet-200" : "text-muted-foreground")}>
                       {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       {isMe && <CheckCheck className="w-3 h-3" />}

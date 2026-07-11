@@ -18,6 +18,10 @@ export default function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email.toLowerCase())) {
+      toast.error("Hệ thống chỉ hỗ trợ tài khoản @gmail.com!");
+      return;
+    }
     if (password !== confirmPassword) {
       toast.error("Mật khẩu xác nhận không khớp!");
       return;

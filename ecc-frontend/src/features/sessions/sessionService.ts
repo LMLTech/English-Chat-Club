@@ -60,6 +60,16 @@ export const sessionService = {
     return res.data.data;
   },
 
+  getSessions: async (params?: any): Promise<any> => {
+    const res = await axiosInstance.get('/api/sessions', { params });
+    return res.data.data;
+  },
+
+  getSessionById: async (sessionId: number): Promise<SessionResponse> => {
+    const res = await axiosInstance.get(`/api/sessions/${sessionId}`);
+    return res.data.data;
+  },
+
   bookSession: async (sessionId: number): Promise<BookingResponse> => {
     const res = await axiosInstance.post(`/api/sessions/${sessionId}/book`);
     return res.data.data;

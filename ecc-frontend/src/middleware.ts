@@ -23,11 +23,10 @@ export function middleware(request: NextRequest) {
   }
 
   // Protect Main Routes (Must be logged in)
-  // If user tries to access /dashboard, /sessions, etc. without ANY role, redirect to /login
-  const protectedPaths = ['/dashboard', '/sessions', '/forum', '/messages', '/profile', '/rewards', '/support', '/friends', '/leaderboard'];
+  const protectedPaths = ['/dashboard', '/messages', '/profile', '/rewards', '/support', '/friends', '/sessions', '/forum', '/leaderboard', '/gamification', '/resources'];
   const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
   
-  if (isProtectedPath && !role) {
+  if ((isProtectedPath || pathname.match(/^\/sessions\/\d+\/room/)) && !role) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
