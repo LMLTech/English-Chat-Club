@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: english-chat-club
+
+  config:
+    import: optional:file:ecc-backend/application-env.properties
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${MYSQL_PORT}/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: ${MYSQL_ROOT_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+    show-sql: false
+
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+
+    properties:
+      mail:
+        smtp:
+          auth: true
+
+          starttls:
+            enable: true
+
+server:
+  port: ${APP_PORT:8080}
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    refresh-secret: ${JWT_REFRESH_SECRET}
+    access-token-expiration: 15
+    refresh-token-expiration: 10080
+
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${GOOGLE_REDIRECT_URI}
+
+    # THÊM CẤU HÌNH MÃ HÓA Ở ĐÂY
+  encryption:
+    secret-key: ${ENCRYPTION_SECRET_KEY:EccSuperSecretKey123456789012345}
