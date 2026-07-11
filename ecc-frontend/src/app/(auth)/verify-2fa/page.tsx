@@ -11,6 +11,7 @@ export default function Verify2faPage() {
   const [totpCode, setTotpCode] = useState("");
   const [loading, setLoading] = useState(false);
   const setTokens = useAuthStore((state) => state.setTokens);
+  const setUser = useAuthStore((state) => state.setUser);
   const router = useRouter();
 
   const handleVerify = async (e: React.FormEvent) => {
@@ -27,6 +28,24 @@ export default function Verify2faPage() {
       if (data.accessToken && data.refreshToken) {
         setTokens(data.accessToken, data.refreshToken);
         sessionStorage.removeItem("tempToken");
+
+        // Wait briefly for token to be persisted before profile request
+        await new Promise(r => setTimeout(r, 100));
+
+        try {
+          const { profileService } = await import("@/features/profile/profileService");
+          const profile = await profileService.getProfile();
+          setUser({
+            userId: profile.userId,
+            email: profile.email,
+            fullName: profile.fullName,
+            role: profile.role as any,
+            avatarUrl: profile.avatarUrl
+          });
+        } catch (err) {
+          console.error("Failed to fetch profile after 2fa", err);
+        }
+
         toast.success("Xác thực thành công! Chào mừng bạn trở lại 🎉");
         router.push("/dashboard");
       }

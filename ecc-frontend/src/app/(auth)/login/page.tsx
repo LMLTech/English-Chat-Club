@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const setTokens = useAuthStore((state) => state.setTokens);
+  const setUser = useAuthStore((state) => state.setUser);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -30,6 +31,24 @@ export default function LoginPage() {
         router.push("/verify-2fa");
       } else if (data.accessToken && data.refreshToken) {
         setTokens(data.accessToken, data.refreshToken);
+        
+        // Wait briefly for token to be persisted before profile request
+        await new Promise(r => setTimeout(r, 100));
+
+        try {
+          const { profileService } = await import("@/features/profile/profileService");
+          const profile = await profileService.getProfile();
+          setUser({
+            userId: profile.userId,
+            email: profile.email,
+            fullName: profile.fullName,
+            role: profile.role as any,
+            avatarUrl: profile.avatarUrl
+          });
+        } catch (err) {
+          console.error("Failed to fetch profile after login", err);
+        }
+
         toast.success("Đăng nhập thành công! Chào mừng bạn trở lại 🎉");
         router.push("/dashboard");
       }

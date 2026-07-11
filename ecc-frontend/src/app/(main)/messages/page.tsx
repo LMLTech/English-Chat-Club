@@ -1,71 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { communityService, DirectMessageResponse } from "@/features/community/communityService";
-import LoadingSpinner from "@/components/shared/LoadingSpinner";
-import EmptyState from "@/components/shared/EmptyState";
-import { MessageCircle, Send, Users, RotateCcw } from "lucide-react";
-import { useAuthStore } from "@/store/useAuthStore";
-import { toast } from "sonner";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { MessageSquareDashed } from "lucide-react";
+import { motion } from "framer-motion";
 
-// Messages index page - show friend list to start chatting
-export default function MessagesPage() {
-  const [friendIds, setFriendIds] = useState<number[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    communityService.getFriends()
-      .then(setFriendIds)
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) return <LoadingSpinner size="lg" text="Đang tải tin nhắn..." />;
-
+export default function MessagesIndexPage() {
   return (
-    <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2 mb-1">
-          <MessageCircle className="w-6 h-6 text-blue-400" />
-          Tin nhắn
-        </h1>
-        <p className="text-muted-foreground text-sm">Nhắn tin riêng với bạn bè của bạn</p>
-      </div>
+    <div className="h-full flex flex-col items-center justify-center bg-[#0a0a0f] text-center p-8 relative overflow-hidden">
+      {/* Decorative ambient light */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-violet-500/5 blur-[120px] rounded-full pointer-events-none" />
 
-      {friendIds.length === 0 ? (
-        <EmptyState
-          icon={Users}
-          title="Chưa có bạn bè"
-          description="Hãy kết bạn với các thành viên khác để bắt đầu nhắn tin!"
-        />
-      ) : (
-        <div className="glass-card rounded-xl overflow-hidden">
-          <div className="px-5 py-3 border-b border-white/5">
-            <h2 className="text-sm font-semibold text-foreground">Chọn người để nhắn tin</h2>
-          </div>
-          <div className="divide-y divide-white/5">
-            {friendIds.map((id) => (
-              <a
-                key={id}
-                href={`/messages/${id}`}
-                className="flex items-center gap-3 px-5 py-3.5 hover:bg-white/5 transition-colors"
-              >
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/60 to-cyan-500/60 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
-                  U
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground">Người dùng #{id}</p>
-                  <p className="text-xs text-muted-foreground">Nhấn để nhắn tin</p>
-                </div>
-                <MessageCircle className="w-4 h-4 text-muted-foreground" />
-              </a>
-            ))}
-          </div>
+      <motion.div 
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5, type: "spring", bounce: 0.4 }}
+        className="relative z-10 flex flex-col items-center"
+      >
+        <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-2xl shadow-violet-500/10">
+          <MessageSquareDashed className="w-10 h-10 text-violet-400 opacity-50" />
         </div>
-      )}
+        <h2 className="text-xl font-bold text-white mb-2">Chưa chọn cuộc trò chuyện</h2>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          Chọn một người bạn từ danh sách bên trái hoặc bắt đầu một cuộc trò chuyện mới để kết nối ngay.
+        </p>
+      </motion.div>
     </div>
   );
 }

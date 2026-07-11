@@ -35,10 +35,17 @@ export const useAuthStore = create<AuthState>()(
 
       setUser: (user) => {
         set({ user });
+        // Sync role to cookie for Next.js Middleware
+        if (typeof document !== 'undefined') {
+          document.cookie = `ecc_role=${user.role}; path=/; max-age=86400; SameSite=Lax`;
+        }
       },
 
       clearTokens: () => {
         set({ accessToken: null, refreshToken: null, user: null });
+        if (typeof document !== 'undefined') {
+          document.cookie = "ecc_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        }
       },
 
       isAuthenticated: () => {
