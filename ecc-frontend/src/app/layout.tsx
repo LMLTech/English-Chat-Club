@@ -24,6 +24,8 @@ export const metadata: Metadata = {
   },
 };
 
+import AnimatedBackground from "@/components/shared/AnimatedBackground";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -32,6 +34,7 @@ export default function RootLayout({
   return (
     <html lang="vi" className="dark">
       <body className={`${inter.variable} font-sans antialiased`}>
+        <AnimatedBackground />
         {children}
         <Toaster
           position="top-right"

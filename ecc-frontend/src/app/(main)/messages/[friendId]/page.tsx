@@ -33,13 +33,11 @@ export default function ChatRoomPage() {
 
   useEffect(() => {
     // In a real app, fetch messages
-    setTimeout(() => {
-      setMessages(MOCK_MESSAGES.map(m => ({
-        ...m,
-        senderId: m.senderId === 'me' ? user?.userId || 999 : friendId
-      })));
-      setLoading(false);
-    }, 500);
+    setMessages(MOCK_MESSAGES.map(m => ({
+      ...m,
+      senderId: m.senderId === 'me' ? user?.userId || 999 : friendId
+    })));
+    setLoading(false);
   }, [friendId, user?.userId]);
 
   useEffect(() => {
