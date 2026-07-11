@@ -2,7 +2,7 @@ package com.ecc.session.application.service;
 
 import com.ecc.common.event.SessionCompletedEvent;
 import com.ecc.session.domain.model.Session;
-import com.ecc.session.infrastructure.repository.SessionRepository;
+import com.ecc.session.application.port.out.SessionRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -21,7 +21,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SessionCompletionJob {
 
-    private final SessionRepository sessionRepository;
+    private final SessionRepositoryPort sessionRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final JdbcTemplate jdbcTemplate;
 

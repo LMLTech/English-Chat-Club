@@ -22,6 +22,15 @@ public class MemberSessionController {
     private final ManageSessionUseCase manageSessionUseCase;
 
     /**
+     * GET /api/sessions
+     * Lấy danh sách các session
+     */
+    @GetMapping
+    public ResponseEntity<ApiResponse<java.util.List<com.ecc.session.domain.model.Session>>> getAllSessions() {
+        return ResponseEntity.ok(ApiResponse.success(manageSessionUseCase.getAvailableSessions()));
+    }
+
+    /**
      * POST /api/sessions/{id}/book
      * Flow 2.3 – Member đặt chỗ. Nếu đầy → vào Waiting List.
      */

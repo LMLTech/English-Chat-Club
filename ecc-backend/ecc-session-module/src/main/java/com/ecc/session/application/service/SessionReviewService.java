@@ -4,8 +4,9 @@ import com.ecc.common.exception.BadRequestException;
 import com.ecc.session.api.dto.request.CreateReviewRequest;
 import com.ecc.session.domain.model.Session;
 import com.ecc.session.domain.model.SessionReview;
-import com.ecc.session.infrastructure.repository.SessionRepository;
-import com.ecc.session.infrastructure.repository.SessionReviewRepository;
+import com.ecc.session.application.port.out.SessionRepositoryPort;
+import com.ecc.session.application.port.out.SessionReviewRepositoryPort;
+import com.ecc.session.application.port.in.ManageSessionReviewUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,10 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SessionReviewService {
+public class SessionReviewService implements ManageSessionReviewUseCase {
 
-    private final SessionReviewRepository sessionReviewRepository;
-    private final SessionRepository sessionRepository;
+    private final SessionReviewRepositoryPort sessionReviewRepository;
+    private final SessionRepositoryPort sessionRepository;
     private final JdbcTemplate jdbcTemplate;
 
     @Transactional

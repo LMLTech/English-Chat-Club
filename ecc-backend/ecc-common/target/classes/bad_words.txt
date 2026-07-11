@@ -1,0 +1,64 @@
+# ============================================================
+# DANH SÁCH TỪ CẤM – English Chat Club
+# ============================================================
+# Mỗi dòng 1 từ/cụm từ cấm. Hệ thống sẽ tự normalize (bỏ dấu, lowercase).
+# Hệ thống dùng WORD BOUNDARY matching → "ngu" chỉ match từ "ngu" đứng riêng,
+# KHÔNG match "người", "ngủ", v.v.
+# Dòng bắt đầu bằng # là comment, dòng trống bị bỏ qua.
+# ============================================================
+
+# --- Tiếng Việt: Chửi thề / Xúc phạm ---
+đụ
+địt
+đéo
+đĩ
+lồn
+buồi
+cặc
+đù má
+đụ má
+đm
+vcl
+vkl
+clgt
+cmm
+dcm
+dkm
+đkm
+ngu
+đần
+khốn nạn
+mất dạy
+chó
+súc vật
+thằng chó
+con chó
+đồ chó
+chết mẹ
+chết cha
+cứt
+đái
+
+# --- Tiếng Anh: Profanity ---
+fuck
+shit
+bitch
+asshole
+bastard
+damn
+dick
+pussy
+cunt
+motherfucker
+wtf
+stfu
+nigger
+nigga
+retard
+slut
+whore
+
+# --- Biến thể bypass phổ biến ---
+fck
+fuk
+phak

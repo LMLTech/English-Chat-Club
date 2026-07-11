@@ -3,11 +3,14 @@ package com.ecc.session.application.port.out;
 import com.ecc.session.domain.model.Session;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface SessionRepositoryPort {
     Session save(Session session);
     Optional<Session> findById(Long id);
+    List<Session> findAll();
+    List<Session> findByEndTimeBeforeAndStatusIn(LocalDateTime endTime, List<String> statuses);
 
     /**
      * Tăng current_participants lên 1 theo cách atomic (tránh race condition).

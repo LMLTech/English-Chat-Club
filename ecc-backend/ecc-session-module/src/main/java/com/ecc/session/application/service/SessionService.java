@@ -320,4 +320,38 @@ public class SessionService implements ManageSessionUseCase {
                 .createdAt(booking.getCreatedAt())
                 .build();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Session> getAvailableSessions() {
+        return sessionRepositoryPort.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public com.ecc.session.api.dto.response.HandSignalResponse handleHandSignal(Long sessionId, Long senderId, com.ecc.session.api.dto.request.HandSignalRequest request) {
+        Session session = sessionRepositoryPort.findById(sessionId)
+                .orElseThrow(() -> new BadRequestException("Phòng không tồn tại"));
+
+        boolean isModerator = session.getModeratorId().equals(senderId);
+        Long affectedUserId = senderId;
+        String displayMessage = "";
+
+        if (request.getAction().equals("APPROVE") || request.getAction().equals("REJECT") || request.getAction().equals("MUTE")) {
+            if (!isModerator) {
+                throw new BadRequestException("Chỉ Moderator mới có quyền cấp hoặc tắt Mic.");
+            }
+            affectedUserId = request.getTargetUserId();
+            displayMessage = "Moderator đã " + request.getAction() + " mic của User " + affectedUserId;
+        } else {
+            displayMessage = "User " + affectedUserId + " đã " + request.getAction() + " tay.";
+        }
+
+        return com.ecc.session.api.dto.response.HandSignalResponse.builder()
+                .sessionId(sessionId)
+                .userId(affectedUserId)
+                .action(request.getAction())
+                .message(displayMessage)
+                .build();
+    }
 }

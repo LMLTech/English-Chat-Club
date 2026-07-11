@@ -2,7 +2,7 @@ package com.ecc.session.api.websocket;
 
 import com.ecc.session.api.dto.request.ChatMessageRequest;
 import com.ecc.session.api.dto.response.ChatMessageResponse;
-import com.ecc.session.application.service.ChatService;
+import com.ecc.session.application.port.in.ManageChatUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Controller;
 @RequiredArgsConstructor
 public class ChatWebSocketController {
 
-    private final ChatService chatService;
+    private final ManageChatUseCase chatService;
     private final SimpMessagingTemplate messagingTemplate;
 
     /**
