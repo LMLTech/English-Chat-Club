@@ -33,7 +33,8 @@ export interface BookingResponse {
 }
 
 export interface CreateReviewRequest {
-  rating: number;
+  moderatorRating: number;
+  topicRating: number;
   comment?: string;
 }
 
@@ -97,5 +98,12 @@ export const sessionService = {
   // Events
   registerForEvent: async (eventId: number): Promise<void> => {
     await axiosInstance.post(`/api/events/${eventId}/register`);
+  },
+
+  // Voice Record
+  saveVoiceRecord: async (sessionId: number, duration: number, fileBase64: string): Promise<void> => {
+    await axiosInstance.post('/api/voice/record', { file: fileBase64 }, {
+      params: { sessionId, duration }
+    });
   },
 };

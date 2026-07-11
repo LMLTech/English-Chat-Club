@@ -5,7 +5,7 @@ import { profileService, UserProfileResponse, UpdateProfileRequest } from "@/fea
 import { useAuthStore } from "@/store/useAuthStore";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { toast } from "sonner";
-import { User, Mail, Shield, Star, Edit2, Save, X } from "lucide-react";
+import { User, Mail, Shield, Star, Edit2, Save, X, Calendar, MapPin, Plus } from "lucide-react";
 
 const CEFR_LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
@@ -138,9 +138,23 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
+
+          {/* Calendar & API Integrations */}
+          <div className="glass-card rounded-xl p-5 mt-4">
+            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-violet-400" />
+              Đồng bộ Lịch
+            </h3>
+            <p className="text-xs text-muted-foreground mb-4">
+              Kết nối với Google Calendar để tự động thêm các buổi học vào lịch của bạn.
+            </p>
+            <button className="w-full btn-ghost flex items-center justify-center gap-2 px-4 py-2 border border-white/10 hover:bg-white/5 transition-colors">
+              <span>Kết nối Google Calendar</span>
+            </button>
+          </div>
         </div>
 
-        {/* Right: Edit Form */}
+        {/* Right: Edit Form & Addresses */}
         <div className="lg:col-span-2 space-y-4">
           <div className="glass-card rounded-xl p-6">
             <div className="flex items-center justify-between mb-5">
@@ -189,7 +203,7 @@ export default function ProfilePage() {
                     className="ecc-input"
                   />
                 ) : (
-                  <p className="text-sm text-foreground px-4 py-2.5 rounded-lg bg-white/3 border border-white/5">
+                  <p className="text-sm text-foreground px-4 py-2.5 rounded-lg bg-white/5 border border-white/10">
                     {profile?.fullName || "Chưa cập nhật"}
                   </p>
                 )}
@@ -206,7 +220,7 @@ export default function ProfilePage() {
                     className="ecc-input resize-none"
                   />
                 ) : (
-                  <p className="text-sm text-foreground px-4 py-2.5 rounded-lg bg-white/3 border border-white/5 min-h-[80px]">
+                  <p className="text-sm text-foreground px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 min-h-[80px]">
                     {profile?.bio || <span className="text-muted-foreground">Chưa có thông tin giới thiệu</span>}
                   </p>
                 )}
@@ -240,6 +254,34 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
+
+          {/* Addresses */}
+          <div className="glass-card rounded-xl p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-cyan-400" />
+                Địa chỉ nhận quà
+              </h3>
+              <button className="btn-ghost flex items-center gap-1.5 text-xs px-3 py-1.5 text-violet-400 hover:text-violet-300">
+                <Plus className="w-3.5 h-3.5" />
+                Thêm địa chỉ
+              </button>
+            </div>
+            
+            <div className="p-4 rounded-xl border border-white/10 bg-white/5 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="font-semibold text-sm text-white">{profile?.fullName}</p>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/30">MẶC ĐỊNH</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-1">0987654321</p>
+                <p className="text-xs text-muted-foreground">123 Đường ABC, Quận XYZ, TP. HCM</p>
+              </div>
+              <button className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors">
+                <Edit2 className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

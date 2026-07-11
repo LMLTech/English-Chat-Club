@@ -80,4 +80,14 @@ export const profileService = {
     const res = await axiosInstance.delete(`/api/profile/addresses/${addressId}`);
     return res.data.data;
   },
+
+  connectCalendar: async (userId: number, authCode: string): Promise<string> => {
+    const res = await axiosInstance.post('/api/profile/calendar/connect', { userId, authCode });
+    return res.data.data;
+  },
+
+  disconnectCalendar: async (): Promise<string> => {
+    const res = await axiosInstance.delete('/api/profile/calendar/disconnect');
+    return res.data.data;
+  },
 };
