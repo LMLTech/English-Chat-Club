@@ -70,7 +70,7 @@ public class UserProfileService implements UserProfileUseCase {
                 .bio(user.getBio())
                 .cefrLevel(user.getCefrLevel())
                 .learningGoal(user.getLearningGoal())
-                .role(user.getRole() != null ? user.getRole().name() : null)
+                .role(user.getRoles() != null && !user.getRoles().isEmpty() ? user.getRoles().iterator().next().getName() : null)
                 .is2faEnabled(Boolean.TRUE.equals(user.getIs2faEnabled()))
                 .referralCode(user.getReferralCode())
                 .createdAt(user.getCreatedAt())
