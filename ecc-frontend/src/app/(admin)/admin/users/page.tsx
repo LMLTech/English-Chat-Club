@@ -26,7 +26,7 @@ export default function AdminUsersPage() {
           const { communityService } = await import("@/features/community/communityService");
           const leaderboard = await communityService.getLeaderboard({ type: "WEEKLY" });
           setUsers(leaderboard.map((u: any) => ({
-            id: u.userId,
+            userId: u.userId,
             fullName: u.userName,
             email: `user${u.userId}@gmail.com`,
             role: "MEMBER"
@@ -43,7 +43,7 @@ export default function AdminUsersPage() {
     try {
       await adminService.updateUserRole(userId, newRole);
       toast.success("Cập nhật phân quyền thành công!");
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+      setUsers(prev => prev.map(u => u.userId === userId ? { ...u, role: newRole } : u));
     } catch (err: any) {
       toast.error("Lỗi khi cập nhật quyền");
     } finally {
@@ -88,27 +88,27 @@ export default function AdminUsersPage() {
             </thead>
             <tbody className="divide-y divide-white/5">
               {users.map(user => (
-                <tr key={user.id} className="hover:bg-white/5 transition-colors group">
-                  <td className="px-6 py-4 text-muted-foreground">#{user.id}</td>
+                <tr key={user.userId} className="hover:bg-white/5 transition-colors group">
+                  <td className="px-6 py-4 text-muted-foreground">#{user.userId}</td>
                   <td className="px-6 py-4">
                     <p className="font-medium text-white">{user.fullName || user.name || "Unknown"}</p>
                     <p className="text-xs text-muted-foreground">{user.email}</p>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider border ${
-                      user.role === 'ADMIN' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                      user.role === 'MODERATOR' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                      user.role?.includes('ADMIN') ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                      user.role?.includes('MODERATOR') ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
                       'bg-blue-500/10 text-blue-400 border-blue-500/20'
                     }`}>
-                      {user.role}
+                      {user.role?.replace('ROLE_', '') || 'MEMBER'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <select 
-                        disabled={updatingId === user.id}
-                        value={user.role}
-                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                        disabled={updatingId === user.userId}
+                        value={user.role?.replace('ROLE_', '') || 'MEMBER'}
+                        onChange={(e) => handleRoleChange(user.userId, `ROLE_${e.target.value}`)}
                         className="bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-blue-500 disabled:opacity-50"
                       >
                         {AVAILABLE_ROLES.map(role => (

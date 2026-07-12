@@ -25,6 +25,30 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<UpdateProfileRequest>({});
+  
+  // 2FA Modal state
+  const [show2FAModal, setShow2FAModal] = useState(false);
+  const [totpCode, setTotpCode] = useState("");
+  const [qrCode, setQrCode] = useState("");
+  const [processing2FA, setProcessing2FA] = useState(false);
+
+  // Address Modal state
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [addressForm, setAddressForm] = useState({
+    recipientName: "",
+    phoneNumber: "",
+    street: "",
+    city: "",
+    province: "",
+    isDefault: true
+  });
+  
+  // Mock Address state for UI demonstration
+  const [address, setAddress] = useState<any>({
+    recipientName: "Chưa thiết lập",
+    phoneNumber: "Chưa thiết lập",
+    fullAddress: "Chưa thiết lập"
+  });
 
   useEffect(() => {
     profileService.getProfile()
@@ -56,6 +80,51 @@ export default function ProfilePage() {
   const getInitials = (name?: string) => {
     if (!name) return "U";
     return name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
+  };
+
+  const handleToggle2FA = async () => {
+    if (!profile) return;
+    setProcessing2FA(true);
+    try {
+      if (profile.twoFactorEnabled) {
+        // Mock disable 2FA
+        setProfile({ ...profile, twoFactorEnabled: false });
+        toast.success("Đã tắt bảo mật 2 lớp!");
+        setShow2FAModal(false);
+      } else {
+        // Mock enable 2FA
+        if (!qrCode) {
+          // Simulate fetching QR Code
+          setQrCode("https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=otpauth://totp/ECC:user?secret=JBSWY3DPEHPK3PXP&issuer=ECC");
+          setProcessing2FA(false);
+          return;
+        }
+        
+        if (totpCode.length !== 6) {
+          toast.error("Vui lòng nhập đúng 6 số mã xác thực!");
+          setProcessing2FA(false);
+          return;
+        }
+        
+        setProfile({ ...profile, twoFactorEnabled: true });
+        toast.success("Bật bảo mật 2 lớp thành công!");
+        setShow2FAModal(false);
+      }
+    } catch (err) {
+      toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+    }
+    setProcessing2FA(false);
+  };
+
+  const handleSaveAddress = () => {
+    // In a real app, call profileService.addAddress or updateAddress
+    setAddress({
+      recipientName: addressForm.recipientName,
+      phoneNumber: addressForm.phoneNumber,
+      fullAddress: `${addressForm.street}, ${addressForm.city}, ${addressForm.province}`
+    });
+    toast.success("Đã lưu địa chỉ nhận quà thành công!");
+    setShowAddressModal(false);
   };
 
   if (loading) return <LoadingSpinner size="lg" text="Đang tải hồ sơ..." />;
@@ -130,9 +199,9 @@ export default function ProfilePage() {
                   </span>
                   <button 
                     onClick={() => {
-                      if (confirm(profile?.twoFactorEnabled ? "Tắt bảo mật 2 lớp?" : "Bật bảo mật 2 lớp?")) {
-                        alert("Đã cập nhật cấu hình 2FA (Chờ API Backend)!");
-                      }
+                      setTotpCode("");
+                      setQrCode("");
+                      setShow2FAModal(true);
                     }}
                     className={`text-[10px] px-2 py-0.5 rounded border font-medium transition-colors ${
                       profile?.twoFactorEnabled 
@@ -245,23 +314,44 @@ export default function ProfilePage() {
               {editing && (
                 <div className="space-y-1.5">
                   <label className="block text-sm font-medium text-foreground/80">URL ảnh đại diện</label>
-                  <input
-                    type="url"
-                    value={form.avatarUrl || ""}
-                    onChange={(e) => setForm({ ...form, avatarUrl: e.target.value })}
-                    placeholder="https://example.com/avatar.jpg"
-                    className="ecc-input"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      value={form.avatarUrl || ""}
+                      onChange={(e) => setForm({ ...form, avatarUrl: e.target.value })}
+                      placeholder="https://example.com/avatar.jpg"
+                      className="ecc-input flex-1"
+                    />
+                    <label className="cursor-pointer flex items-center justify-center px-4 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 text-sm font-medium text-violet-400 transition-colors">
+                      <Plus className="w-4 h-4 mr-1" /> Tải lên
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (event) => setForm({...form, avatarUrl: event.target?.result as string});
+                            reader.readAsDataURL(file);
+                          }
+                        }} 
+                      />
+                    </label>
+                  </div>
                 </div>
               )}
 
               {editing && (
                 <div className="space-y-1.5">
-                  <label className="block text-sm font-medium text-foreground/80">Trình độ CEFR</label>
+                  <label className="block text-sm font-medium text-foreground/80 flex items-center justify-between">
+                    Trình độ CEFR 
+                    <span className="text-[10px] text-amber-400 font-normal bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">Chỉ tăng khi tích điểm</span>
+                  </label>
                   <select
-                    value={form.cefrLevel || profile?.cefrLevel || "B1"}
-                    onChange={(e) => setForm({ ...form, cefrLevel: e.target.value })}
-                    className="ecc-input"
+                    value={profile?.cefrLevel || "B1"}
+                    disabled
+                    className="ecc-input opacity-60 cursor-not-allowed"
                   >
                     {CEFR_LEVELS.map(level => (
                       <option key={level} value={level}>{level}</option>
@@ -293,28 +383,220 @@ export default function ProfilePage() {
                 <MapPin className="w-4 h-4 text-cyan-400" />
                 Địa chỉ nhận quà
               </h3>
-              <button className="btn-ghost flex items-center gap-1.5 text-xs px-3 py-1.5 text-violet-400 hover:text-violet-300">
+              <button 
+                onClick={() => {
+                  setAddressForm({
+                    recipientName: address.recipientName !== "Chưa thiết lập" ? address.recipientName : profile?.fullName || "",
+                    phoneNumber: address.phoneNumber !== "Chưa thiết lập" ? address.phoneNumber : "",
+                    street: "",
+                    city: "",
+                    province: "",
+                    isDefault: true
+                  });
+                  setShowAddressModal(true);
+                }}
+                className="btn-ghost flex items-center gap-1.5 text-xs px-3 py-1.5 text-violet-400 hover:text-violet-300"
+              >
                 <Plus className="w-3.5 h-3.5" />
-                Thêm địa chỉ
+                Thêm/Sửa địa chỉ
               </button>
             </div>
             
             <div className="p-4 rounded-xl border border-white/10 bg-white/5 flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="font-semibold text-sm text-white">{profile?.fullName}</p>
+                  <p className="font-semibold text-sm text-white">{address.recipientName}</p>
                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/30">MẶC ĐỊNH</span>
                 </div>
-                <p className="text-xs text-muted-foreground mb-1">0987654321</p>
-                <p className="text-xs text-muted-foreground">123 Đường ABC, Quận XYZ, TP. HCM</p>
+                <p className="text-xs text-muted-foreground mb-1">{address.phoneNumber}</p>
+                <p className="text-xs text-muted-foreground">{address.fullAddress}</p>
               </div>
-              <button className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors">
+              <button 
+                onClick={() => setShowAddressModal(true)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
+              >
                 <Edit2 className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* 2FA Modal */}
+      {show2FAModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#1a1b26] border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl relative">
+            <button 
+              onClick={() => setShow2FAModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors"
+            >
+              <X className="w-4 h-4 text-white" />
+            </button>
+            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+              <Shield className="w-5 h-5 text-violet-400" />
+              {profile?.twoFactorEnabled ? "Tắt Bảo Mật 2 Lớp" : "Bật Bảo Mật 2 Lớp (2FA)"}
+            </h3>
+            
+            {profile?.twoFactorEnabled ? (
+              <div className="space-y-4 mt-4">
+                <p className="text-sm text-muted-foreground">Nhập mã gồm 6 chữ số từ ứng dụng Authenticator của bạn để xác nhận tắt 2FA.</p>
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={totpCode}
+                  onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ''))}
+                  placeholder="Nhập mã 6 số..."
+                  className="ecc-input text-center text-xl tracking-[0.5em] font-mono"
+                />
+              </div>
+            ) : (
+              <div className="space-y-4 mt-4 text-center">
+                {!qrCode ? (
+                  <div className="py-8">
+                    <button 
+                      onClick={handleToggle2FA}
+                      disabled={processing2FA}
+                      className="btn-primary w-full py-2.5"
+                    >
+                      Bắt đầu thiết lập
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground text-left">1. Quét mã QR này bằng Google Authenticator hoặc Authy.</p>
+                    <div className="bg-white p-3 rounded-xl inline-block mx-auto border-4 border-violet-500/30">
+                      <img src={qrCode} alt="2FA QR Code" className="w-32 h-32" />
+                    </div>
+                    <p className="text-sm text-muted-foreground text-left mt-4">2. Nhập mã gồm 6 chữ số hiển thị trên ứng dụng.</p>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={totpCode}
+                      onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ''))}
+                      placeholder="Nhập mã 6 số..."
+                      className="ecc-input text-center text-xl tracking-[0.5em] font-mono"
+                    />
+                  </>
+                )}
+              </div>
+            )}
+
+            {(profile?.twoFactorEnabled || qrCode) && (
+              <div className="mt-6 flex justify-end gap-3">
+                <button 
+                  onClick={() => setShow2FAModal(false)}
+                  className="btn-ghost px-4 py-2 text-sm"
+                >
+                  Hủy
+                </button>
+                <button 
+                  onClick={handleToggle2FA}
+                  disabled={processing2FA || totpCode.length !== 6}
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                    profile?.twoFactorEnabled 
+                      ? "bg-red-500 hover:bg-red-600 text-white" 
+                      : "bg-violet-600 hover:bg-violet-500 text-white"
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {processing2FA ? "Đang xử lý..." : "Xác nhận"}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Address Modal */}
+      {showAddressModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#1a1b26] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl relative">
+            <button 
+              onClick={() => setShowAddressModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors"
+            >
+              <X className="w-4 h-4 text-white" />
+            </button>
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-cyan-400" />
+              Cập nhật địa chỉ nhận quà
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-foreground/80">Tên người nhận</label>
+                  <input
+                    type="text"
+                    value={addressForm.recipientName}
+                    onChange={(e) => setAddressForm({...addressForm, recipientName: e.target.value})}
+                    placeholder="Nguyễn Văn A"
+                    className="ecc-input"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-foreground/80">Số điện thoại</label>
+                  <input
+                    type="text"
+                    value={addressForm.phoneNumber}
+                    onChange={(e) => setAddressForm({...addressForm, phoneNumber: e.target.value})}
+                    placeholder="0987654321"
+                    className="ecc-input"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-foreground/80">Số nhà, Tên đường</label>
+                <input
+                  type="text"
+                  value={addressForm.street}
+                  onChange={(e) => setAddressForm({...addressForm, street: e.target.value})}
+                  placeholder="123 Đường ABC..."
+                  className="ecc-input"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-foreground/80">Tỉnh / Thành phố</label>
+                  <input
+                    type="text"
+                    value={addressForm.province}
+                    onChange={(e) => setAddressForm({...addressForm, province: e.target.value})}
+                    placeholder="Hồ Chí Minh"
+                    className="ecc-input"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-foreground/80">Quận / Huyện</label>
+                  <input
+                    type="text"
+                    value={addressForm.city}
+                    onChange={(e) => setAddressForm({...addressForm, city: e.target.value})}
+                    placeholder="Quận 1"
+                    className="ecc-input"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button 
+                onClick={() => setShowAddressModal(false)}
+                className="btn-ghost px-4 py-2 text-sm"
+              >
+                Hủy
+              </button>
+              <button 
+                onClick={handleSaveAddress}
+                className="btn-primary px-4 py-2 text-sm"
+              >
+                Lưu địa chỉ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

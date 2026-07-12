@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { moderatorService, ModeratorSessionRequest } from "@/features/moderator/moderatorService";
 import { sessionService, SessionResponse } from "@/features/sessions/sessionService";
+import axiosInstance from "@/lib/axios";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,21 +11,15 @@ import { Plus, Video, Calendar as CalendarIcon, Clock, Users, BookOpen, Search, 
 import { slideIn, staggerContainer, cn } from "@/lib/utils";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const teachingData = [
-  { name: 'T2', hours: 2.5 },
-  { name: 'T3', hours: 4 },
-  { name: 'T4', hours: 1.5 },
-  { name: 'T5', hours: 5 },
-  { name: 'T6', hours: 3.5 },
-  { name: 'T7', hours: 6 },
-  { name: 'CN', hours: 2 },
-];
+// Teaching data will be derived from real sessions
+
 
 export default function ModeratorDashboard() {
   const [sessions, setSessions] = useState<SessionResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
+  const [topics, setTopics] = useState<any[]>([]);
   
   const [form, setForm] = useState<ModeratorSessionRequest>({
     topicId: 1,
@@ -39,23 +34,51 @@ export default function ModeratorDashboard() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    sessionService.getSessions()
-      .then((data: any) => {
-        const list = Array.isArray(data) ? data : (data?.content || []);
+    Promise.all([
+      sessionService.getSessions(),
+      axiosInstance.get('/api/topics').then(res => res.data.data || [])
+    ])
+      .then(([sessionsData, topicsData]) => {
+        const list = Array.isArray(sessionsData) ? sessionsData : (sessionsData?.content || []);
         setSessions(list);
+        setTopics(topicsData);
+        if (topicsData.length > 0) {
+          setForm(prev => ({ ...prev, topicId: topicsData[0].id }));
+        }
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
+  // Derive chart data from real sessions (group by day of week)
+  const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  const teachingData = dayNames.map(name => {
+    const daySessions = sessions.filter(s => {
+      const d = new Date(s.scheduledAt);
+      return dayNames[d.getDay()] === name;
+    });
+    return { name, hours: Math.round(daySessions.reduce((sum, s) => sum + (s.durationMinutes || 0), 0) / 60 * 10) / 10 };
+  });
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     try {
+      // Format dates to drop the .SSSZ part so Java LocalDateTime parses it properly
+      const formatLocal = (dateString: string) => {
+        const d = new Date(dateString);
+        return d.getFullYear() + '-' +
+               String(d.getMonth() + 1).padStart(2, '0') + '-' +
+               String(d.getDate()).padStart(2, '0') + 'T' +
+               String(d.getHours()).padStart(2, '0') + ':' +
+               String(d.getMinutes()).padStart(2, '0') + ':' +
+               String(d.getSeconds()).padStart(2, '0');
+      };
+
       await moderatorService.createSession({
         ...form,
-        startTime: new Date(form.startTime).toISOString(),
-        endTime: new Date(form.endTime).toISOString()
+        startTime: formatLocal(form.startTime),
+        endTime: formatLocal(form.endTime)
       });
       toast.success("Đã gửi yêu cầu tạo buổi học thành công (Chờ admin duyệt)!");
       setIsCreating(false);
@@ -98,7 +121,7 @@ export default function ModeratorDashboard() {
             </div>
             <p className="text-sm font-medium text-muted-foreground">Buổi đã dạy</p>
           </div>
-          <p className="text-3xl font-bold text-white">42</p>
+          <p className="text-3xl font-bold text-white">{sessions.length}</p>
         </div>
 
         <div className="glass-card p-5 rounded-xl border border-blue-500/10">
@@ -108,7 +131,7 @@ export default function ModeratorDashboard() {
             </div>
             <p className="text-sm font-medium text-muted-foreground">Học viên tham gia</p>
           </div>
-          <p className="text-3xl font-bold text-white">156</p>
+          <p className="text-3xl font-bold text-white">{sessions.reduce((sum, s) => sum + (s.currentParticipants || 0), 0)}</p>
         </div>
 
         <div className="glass-card p-5 rounded-xl border border-green-500/10">
@@ -118,7 +141,7 @@ export default function ModeratorDashboard() {
             </div>
             <p className="text-sm font-medium text-muted-foreground">Đánh giá trung bình</p>
           </div>
-          <p className="text-3xl font-bold text-white">4.9<span className="text-sm text-muted-foreground font-normal">/5</span></p>
+          <p className="text-3xl font-bold text-white">—<span className="text-sm text-muted-foreground font-normal">/5</span></p>
         </div>
       </div>
 
@@ -160,7 +183,7 @@ export default function ModeratorDashboard() {
           <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <div>
             <h2 className="text-lg font-bold text-white mb-2">Trung tâm điều phối</h2>
-            <p className="text-sm text-muted-foreground mb-6">Bạn đang là người điều phối cho <strong className="text-white">3</strong> phòng chat active hiện tại. Nhấn vào phòng để bắt đầu buổi nói chuyện.</p>
+            <p className="text-sm text-muted-foreground mb-6">Bạn đang là người điều phối cho <strong className="text-white">{sessions.filter(s => s.status === "ACTIVE" || s.status === "IN_PROGRESS").length}</strong> phòng chat active hiện tại. Nhấn vào phòng để bắt đầu buổi nói chuyện.</p>
           </div>
           <button 
             onClick={() => setIsCreating(true)}
@@ -249,7 +272,22 @@ export default function ModeratorDashboard() {
                 </div>
                 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white">Mô tả chủ đề (Topic)</label>
+                  <label className="text-sm font-medium text-white">Chủ đề (Topic)</label>
+                  {topics.length > 0 ? (
+                    <select value={form.topicId} onChange={e => setForm({...form, topicId: Number(e.target.value)})} className="ecc-input" required>
+                      {topics.map(topic => (
+                        <option key={topic.id} value={topic.id}>{topic.title || topic.name}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                      Hiện tại chưa có chủ đề (Topic) nào được tạo. Vui lòng liên hệ Admin để tạo chủ đề trước.
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-white">Mô tả phòng học</label>
                   <textarea rows={2} value={form.description} onChange={e => setForm({...form, description: e.target.value})} className="ecc-input resize-none" required />
                 </div>
 
@@ -268,10 +306,12 @@ export default function ModeratorDashboard() {
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium text-white">Trình độ CEFR</label>
                     <select value={form.requiredLevel} onChange={e => setForm({...form, requiredLevel: e.target.value})} className="ecc-input">
+                      <option value="A1">A1 Beginner</option>
                       <option value="A2">A2 Elementary</option>
                       <option value="B1">B1 Intermediate</option>
                       <option value="B2">B2 Upper Intermediate</option>
                       <option value="C1">C1 Advanced</option>
+                      <option value="C2">C2 Proficient</option>
                     </select>
                   </div>
                   <div className="space-y-1.5">
@@ -280,7 +320,7 @@ export default function ModeratorDashboard() {
                   </div>
                 </div>
 
-                <button type="submit" disabled={submitting} className="w-full py-3 mt-4 rounded-xl font-semibold text-black bg-amber-500 hover:bg-amber-600 transition-colors shadow-[0_0_15px_rgba(245,158,11,0.3)] disabled:opacity-50">
+                <button type="submit" disabled={submitting || topics.length === 0} className="w-full py-3 mt-4 rounded-xl font-semibold text-black bg-amber-500 hover:bg-amber-600 transition-colors shadow-[0_0_15px_rgba(245,158,11,0.3)] disabled:opacity-50 disabled:hover:translate-y-0 disabled:shadow-none">
                   {submitting ? "Đang gửi..." : "Tạo & Chờ Duyệt"}
                 </button>
               </form>

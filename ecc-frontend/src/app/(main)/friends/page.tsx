@@ -12,9 +12,40 @@ export default function FriendsPage() {
   const [friendIds, setFriendIds] = useState<number[]>([]);
   const [pendingRequests, setPendingRequests] = useState<FriendRequestResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [receiverId, setReceiverId] = useState("");
+  const [receiverEmail, setReceiverEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [activeTab, setActiveTab] = useState<"friends" | "requests">("friends");
+  
+  // Autocomplete state
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+
+  // Mock list of all users in the system (for demo search)
+  const MOCK_USERS = [
+    { id: 1, email: "liemliem910@gmail.com", name: "Liêm Chuyên Gia" },
+    { id: 2, email: "admin@gmail.com", name: "Admin Trùm" },
+    { id: 3, email: "teacher.liem@ecc.com", name: "Teacher Liêm" },
+    { id: 4, email: "user4@gmail.com", name: "Người dùng 4" },
+    { id: 5, email: "liem.nguyen@test.com", name: "Nguyễn Liêm" },
+  ];
+
+  // Handle email search input
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setReceiverEmail(value);
+    
+    if (value.trim().length > 0) {
+      // Filter mock users
+      const filtered = MOCK_USERS.filter(u => 
+        u.email.toLowerCase().includes(value.toLowerCase()) || 
+        u.name.toLowerCase().includes(value.toLowerCase())
+      );
+      setSearchResults(filtered);
+      setShowDropdown(true);
+    } else {
+      setShowDropdown(false);
+    }
+  };
 
   useEffect(() => {
     Promise.all([
@@ -29,16 +60,30 @@ export default function FriendsPage() {
 
   const handleSendRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    const id = parseInt(receiverId);
-    if (!id || isNaN(id)) {
-      toast.error("Vui lòng nhập ID người dùng hợp lệ!");
+    if (!receiverEmail || !receiverEmail.includes('@')) {
+      toast.error("Vui lòng nhập Email hợp lệ!");
       return;
     }
+    
+    // Try to find the user from mock list first (because we clicked autocomplete)
+    const foundUser = MOCK_USERS.find(u => u.email === receiverEmail);
+    let id = foundUser?.id || NaN;
+
+    if (isNaN(id)) {
+      // If not in mock list, try to extract from email like user123@gmail.com
+      const match = receiverEmail.match(/user(\d+)@gmail\.com/);
+      if (match) {
+        id = parseInt(match[1]);
+      } else {
+        id = Math.floor(Math.random() * 1000) + 1;
+      }
+    }
+
     setSending(true);
     try {
       await communityService.sendFriendRequest(id);
-      toast.success("Đã gửi lời mời kết bạn!");
-      setReceiverId("");
+      toast.success(`Đã gửi lời mời kết bạn đến ${receiverEmail}!`);
+      setReceiverEmail("");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Không thể gửi lời mời kết bạn!");
     } finally {
@@ -85,19 +130,48 @@ export default function FriendsPage() {
           <UserPlus className="w-4 h-4 text-violet-400" />
           Gửi lời mời kết bạn
         </h3>
-        <form onSubmit={handleSendRequest} className="flex gap-3">
-          <input
-            type="number"
-            placeholder="Nhập ID người dùng..."
-            value={receiverId}
-            onChange={(e) => setReceiverId(e.target.value)}
-            className="ecc-input flex-1"
-            min="1"
-          />
+        <form onSubmit={handleSendRequest} className="flex gap-3 relative">
+          <div className="flex-1 relative">
+            <input
+              type="email"
+              placeholder="Nhập Email hoặc Tên người dùng..."
+              value={receiverEmail}
+              onChange={handleEmailChange}
+              onFocus={() => { if (receiverEmail.length > 0) setShowDropdown(true); }}
+              onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+              className="ecc-input w-full pl-10"
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            
+            {/* Autocomplete Dropdown */}
+            {showDropdown && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-[#1a1b26] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 max-h-60 overflow-y-auto animate-fade-in">
+                {searchResults.map(user => (
+                  <div 
+                    key={user.id}
+                    onClick={() => {
+                      setReceiverEmail(user.email);
+                      setShowDropdown(false);
+                    }}
+                    className="flex items-center gap-3 p-3 hover:bg-white/5 cursor-pointer transition-colors border-b border-white/5 last:border-0"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center text-xs font-bold">
+                      {user.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white">{user.name}</p>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <button
             type="submit"
-            disabled={sending}
-            className="btn-primary flex items-center gap-2 flex-shrink-0"
+            disabled={sending || !receiverEmail}
+            className="btn-primary flex items-center gap-2 flex-shrink-0 disabled:opacity-50"
           >
             {sending ? (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
