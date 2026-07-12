@@ -19,6 +19,7 @@ com\ecc\identity\api\dto\response\AddressResponse$AddressResponseBuilder.class
 com\ecc\identity\application\port\in\ManageTicketUseCase.class
 com\ecc\identity\api\dto\request\UpdateProfileRequest.class
 com\ecc\identity\application\port\in\GoogleCalendarUseCase.class
+com\ecc\identity\application\port\in\ManageUserUseCase.class
 com\ecc\identity\application\port\out\GoogleOAuthPort.class
 com\ecc\identity\application\service\TwoFactorAuthService.class
 com\ecc\identity\application\service\UserAddressService.class
@@ -58,6 +59,7 @@ com\ecc\identity\application\port\in\AssignRoleUseCase.class
 com\ecc\identity\infrastructure\adapter\TicketRepositoryAdapter.class
 com\ecc\identity\infrastructure\repository\SupportTicketRepository.class
 com\ecc\identity\api\dto\request\RegisterRequest.class
+com\ecc\identity\application\service\ManageUserService.class
 com\ecc\identity\application\port\in\UserProfileUseCase.class
 com\ecc\identity\domain\model\EmailVerificationToken$EmailVerificationTokenBuilder.class
 com\ecc\identity\domain\model\UserCalendarIntegration.class

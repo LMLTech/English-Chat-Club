@@ -63,4 +63,9 @@ public class EmailMarketingAdapter implements EmailMarketingPort {
         String sql = "SELECT email FROM users WHERE status = 'ACTIVE'";
         return jdbcTemplate.queryForList(sql, String.class);
     }
+
+    @Override
+    public List<EmailCampaign> getAllCampaigns() {
+        return campaignRepo.findAll();
+    }
 }

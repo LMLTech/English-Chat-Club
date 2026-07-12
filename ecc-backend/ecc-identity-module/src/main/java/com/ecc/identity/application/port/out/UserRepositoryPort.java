@@ -8,6 +8,6 @@ public interface UserRepositoryPort {
     Optional<User> findByReferralCode(String referralCode);
     Optional<User> findById(Long id);
     Optional<User> findByEmail(String email);
-    // Tìm User theo email
+    java.util.List<User> findAll();
     User save(User user);
 }

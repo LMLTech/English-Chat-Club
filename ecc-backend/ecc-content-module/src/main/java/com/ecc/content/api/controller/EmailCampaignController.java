@@ -18,6 +18,12 @@ public class EmailCampaignController {
 
     private final EmailCampaignUseCase campaignUseCase;
 
+    @GetMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<ApiResponse<java.util.List<EmailCampaign>>> getCampaigns() {
+        return ResponseEntity.ok(ApiResponse.success(campaignUseCase.getAllCampaigns()));
+    }
+
     // 1. Tạo chiến dịch (Lưu nháp)
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")

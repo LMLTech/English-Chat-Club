@@ -16,4 +16,6 @@ public interface EmailMarketingPort {
 
     // Lấy danh sách email của User (Không query Entity User để giữ đúng kiến trúc)
     List<String> getActiveUserEmails();
+    
+    List<EmailCampaign> getAllCampaigns();
 }

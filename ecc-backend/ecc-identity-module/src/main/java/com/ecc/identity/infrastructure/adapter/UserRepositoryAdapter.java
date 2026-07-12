@@ -38,4 +38,9 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     public Optional<User> findById(Long id) {
         return repository.findById(id);
     }
+
+    @Override
+    public java.util.List<User> findAll() {
+        return repository.findAll();
+    }
 }

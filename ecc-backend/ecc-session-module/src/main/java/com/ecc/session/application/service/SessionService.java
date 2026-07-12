@@ -329,6 +329,14 @@ public class SessionService implements ManageSessionUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Session> getPendingSessions() {
+        return sessionRepositoryPort.findAll().stream()
+                .filter(s -> "PENDING_APPROVAL".equals(s.getRoomStatus()))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public com.ecc.session.api.dto.response.HandSignalResponse handleHandSignal(Long sessionId, Long senderId, com.ecc.session.api.dto.request.HandSignalRequest request) {
         Session session = sessionRepositoryPort.findById(sessionId)
                 .orElseThrow(() -> new BadRequestException("Phòng không tồn tại"));
