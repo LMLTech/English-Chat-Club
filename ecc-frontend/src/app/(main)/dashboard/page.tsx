@@ -310,7 +310,7 @@ export default function DashboardPage() {
             </h2>
             <div className="text-center">
               <div className="text-5xl font-black text-gradient mb-2">
-                {dashboard?.streakDays ?? 0}
+                {dashboard?.currentStreak ?? 0}
               </div>
               <p className="text-sm text-muted-foreground">ngày liên tiếp</p>
               <div className="mt-4 grid grid-cols-7 gap-1">
@@ -318,7 +318,7 @@ export default function DashboardPage() {
                   <div
                     key={i}
                     className={`h-5 rounded-sm ${
-                      i < (dashboard?.streakDays ?? 0) % 7
+                      i < (dashboard?.currentStreak ?? 0) % 7
                         ? "bg-gradient-to-t from-orange-500 to-amber-400"
                         : "bg-white/5"
                     }`}

@@ -201,7 +201,7 @@ export default function SessionRoomPage() {
       <header className="h-14 border-b border-white/5 bg-black/40 backdrop-blur-md px-4 flex items-center justify-between z-10">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center text-violet-400 font-bold">
-            {session?.cefrLevel}
+            {session?.requiredLevel}
           </div>
           <div>
             <h1 className="text-sm font-semibold text-white">{session?.title}</h1>

@@ -130,3 +130,10 @@ playwright-report/
 # ==========================================================
 AGENTS.md
 CLAUDE.md
+
+# Bỏ qua thư mục build của Maven
+target/
+**/target/
+
+# Bỏ qua các file biên dịch
+*.class
