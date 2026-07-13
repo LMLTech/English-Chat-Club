@@ -65,7 +65,7 @@ export default function LoginPage() {
           }
 
           setUser({
-            userId: profile.userId,
+            userId: profile.id,
             email: profile.email,
             fullName: profile.fullName,
             role: userRole as any,

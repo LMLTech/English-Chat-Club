@@ -13,7 +13,8 @@ import lombok.*;
 public class LeaderboardEntryResponse {
     private int rank;
     private Long userId;
+    private String username;
+    private String avatarUrl;
     private Long score;
-    // Các field thêm có thể populate từ user-service: displayName, avatarUrl
-    // Hiện tại chỉ trả userId và score để tránh cross-module query
+    private String levelTitle;
 }

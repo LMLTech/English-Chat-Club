@@ -39,7 +39,8 @@ public class DashboardAdapter implements DashboardPort {
 
     @Override
     public int countAttendedSessions(Long userId) {
-        String sql = "SELECT COUNT(*) FROM bookings WHERE member_id = ? AND status = 'ATTENDED'";
+        String sql = "SELECT COUNT(*) FROM bookings b JOIN sessions s ON b.session_id = s.id " +
+                     "WHERE b.member_id = ? AND b.status IN ('CONFIRMED', 'ATTENDED') AND s.status = 'COMPLETED'";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId);
         return count != null ? count : 0;
     }
@@ -49,6 +50,51 @@ public class DashboardAdapter implements DashboardPort {
         String sql = "SELECT COUNT(*) FROM in_app_notifications WHERE user_id = ? AND is_read = 0";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId);
         return count != null ? count : 0;
+    }
+
+    @Override
+    public int countUpcomingBookings(Long userId) {
+        String sql = "SELECT COUNT(*) FROM bookings b JOIN sessions s ON b.session_id = s.id WHERE b.member_id = ? AND b.status IN ('CONFIRMED', 'PENDING_CONFIRM') AND s.status = 'SCHEDULED'";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId);
+        return count != null ? count : 0;
+    }
+
+    @Override
+    public int getCurrentStreak(Long userId) {
+        String sql = "SELECT current_streak FROM member_points WHERE user_id = ?";
+        try {
+            Integer streak = jdbcTemplate.queryForObject(sql, Integer.class, userId);
+            return streak != null ? streak : 0;
+        } catch (EmptyResultDataAccessException e) {
+            return 0;
+        }
+    }
+
+    @Override
+    public java.util.List<java.util.Map<String, Object>> getUpcomingSessions(Long userId) {
+        String sql = "SELECT s.id, s.title, s.start_time as startTime, s.end_time as endTime, s.cover_image as coverImage, s.status, s.required_level as requiredLevel " +
+                     "FROM bookings b JOIN sessions s ON b.session_id = s.id " +
+                     "WHERE b.member_id = ? AND b.status IN ('CONFIRMED', 'PENDING_CONFIRM') AND s.status = 'SCHEDULED' " +
+                     "ORDER BY s.start_time ASC LIMIT 5";
+        return jdbcTemplate.queryForList(sql, userId);
+    }
+
+    @Override
+    public java.util.List<java.util.Map<String, Object>> getOngoingSessions(Long userId) {
+        String sql = "SELECT s.id, s.title, s.start_time as startTime, s.end_time as endTime, s.cover_image as coverImage, s.status, s.required_level as requiredLevel " +
+                     "FROM bookings b JOIN sessions s ON b.session_id = s.id " +
+                     "WHERE b.member_id = ? AND b.status IN ('CONFIRMED', 'PENDING_CONFIRM') AND s.status = 'ONGOING' " +
+                     "ORDER BY s.start_time ASC LIMIT 5";
+        return jdbcTemplate.queryForList(sql, userId);
+    }
+
+    @Override
+    public java.util.List<java.util.Map<String, Object>> getClosedSessions(Long userId) {
+        String sql = "SELECT s.id, s.title, s.start_time as startTime, s.end_time as endTime, s.cover_image as coverImage, s.status, s.required_level as requiredLevel " +
+                     "FROM bookings b JOIN sessions s ON b.session_id = s.id " +
+                     "WHERE b.member_id = ? AND b.status IN ('CONFIRMED', 'ATTENDED', 'PENDING_CONFIRM') AND s.status IN ('COMPLETED', 'CANCELLED') " +
+                     "ORDER BY s.start_time DESC LIMIT 5";
+        return jdbcTemplate.queryForList(sql, userId);
     }
 
     // ==========================================

@@ -43,4 +43,9 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     public java.util.List<User> findAll() {
         return repository.findAll();
     }
+
+    @Override
+    public java.util.List<User> findByEmailContainingIgnoreCase(String email) {
+        return repository.findByEmailContainingIgnoreCase(email);
+    }
 }

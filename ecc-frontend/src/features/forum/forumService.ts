@@ -14,6 +14,8 @@ export interface ForumPostResponse {
   viewCount: number;
   createdAt: string;
   updatedAt: string;
+  isLiked?: boolean;
+  isSaved?: boolean;
 }
 
 export interface ForumCommentResponse {

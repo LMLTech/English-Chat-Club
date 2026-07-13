@@ -171,8 +171,17 @@ export default function Sidebar() {
             pathname === "/profile" ? "active bg-white/10" : ""
           )}
         >
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500/80 to-blue-500/80 flex items-center justify-center">
-            <User className="w-4 h-4 text-white" />
+          <div className="relative w-8 h-8 flex-shrink-0">
+            <div 
+              className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500/80 to-blue-500/80 flex items-center justify-center overflow-hidden"
+              style={user?.avatarFrame ? { border: `2px solid ${user.avatarFrame}` } : {}}
+            >
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-4 h-4 text-white" />
+              )}
+            </div>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-white truncate">

@@ -28,17 +28,16 @@ public class GamificationDataInitializerAdapter implements CommandLineRunner {
     }
 
     private void seedLevelConfigs() {
-        if (levelConfigRepository.count() > 0) return;
-
-        log.info("⏳ [Gamification] Đang seed LevelConfig...");
+        log.info("⏳ [Gamification] Đang seed/cập nhật LevelConfig...");
         levelConfigRepository.saveAll(java.util.List.of(
-                LevelConfig.builder().level(1).requiredPoints(0).title("Beginner").build(),
-                LevelConfig.builder().level(2).requiredPoints(100).title("Elementary").build(),
-                LevelConfig.builder().level(3).requiredPoints(300).title("Intermediate").build(),
-                LevelConfig.builder().level(4).requiredPoints(700).title("Advanced").build(),
-                LevelConfig.builder().level(5).requiredPoints(1500).title("Expert").build()
+                LevelConfig.builder().level(1).requiredPoints(0).title("Bậc A1").build(),
+                LevelConfig.builder().level(2).requiredPoints(1000).title("Bậc A2").build(),
+                LevelConfig.builder().level(3).requiredPoints(3000).title("Bậc B1").build(),
+                LevelConfig.builder().level(4).requiredPoints(6000).title("Bậc B2").build(),
+                LevelConfig.builder().level(5).requiredPoints(10000).title("Bậc C1").build(),
+                LevelConfig.builder().level(6).requiredPoints(15000).title("Bậc C2").build()
         ));
-        log.info("✅ [Gamification] Đã seed 5 LevelConfig.");
+        log.info("✅ [Gamification] Đã seed 6 LevelConfig.");
     }
 
     private void seedBadges() {

@@ -3,13 +3,15 @@ import type { PageResponse } from '@/features/forum/forumService';
 
 // ---- Dashboard ----
 export interface MemberDashboardResponse {
-  totalSessions: number;
-  upcomingBookings: number;
   totalPoints: number;
   currentLevel: number;
-  levelTitle: string;
-  recentSessions?: any[];
-  streakDays?: number;
+  totalSessionsAttended: number;
+  unreadNotifications: number;
+  upcomingBookings: number;
+  currentStreak: number;
+  upcomingSessions?: any[];
+  ongoingSessions?: any[];
+  closedSessions?: any[];
 }
 
 export interface AdminDashboardResponse {

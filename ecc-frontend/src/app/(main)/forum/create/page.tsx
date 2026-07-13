@@ -2,16 +2,23 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { forumService } from "@/features/forum/forumService";
+import { forumService, ForumCategoryResponse } from "@/features/forum/forumService";
 import { toast } from "sonner";
 import { MessageSquare, ArrowLeft, Send } from "lucide-react";
 import Link from "next/link";
+import { useEffect } from "react";
 
 export default function CreateForumPostPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
+  const [categories, setCategories] = useState<ForumCategoryResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    forumService.getCategories().then(setCategories).catch(console.error);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,9 +30,13 @@ export default function CreateForumPostPage() {
       toast.error("Nội dung phải có ít nhất 20 ký tự!");
       return;
     }
+    if (!categoryId) {
+      toast.error("Vui lòng chọn chủ đề!");
+      return;
+    }
     setLoading(true);
     try {
-      const post = await forumService.createPost({ title, content });
+      const post = await forumService.createPost({ title, content, categoryId });
       toast.success("Bài viết đã được đăng thành công!");
       router.push(`/forum/${post.id}`);
     } catch (err: any) {
@@ -70,6 +81,23 @@ export default function CreateForumPostPage() {
             <div className="flex justify-end">
               <span className="text-xs text-muted-foreground">{title.length}/200</span>
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-foreground/80">
+              Chủ đề bài viết <span className="text-red-400">*</span>
+            </label>
+            <select
+              value={categoryId || ""}
+              onChange={(e) => setCategoryId(Number(e.target.value))}
+              required
+              className="ecc-input"
+            >
+              <option value="" disabled>-- Chọn chủ đề --</option>
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-1.5">

@@ -118,10 +118,10 @@ export default function LeaderboardPage() {
                   <div className={`w-10 h-10 rounded-full mb-2 flex items-center justify-center text-sm font-bold text-white ${
                     pos === 1 ? "bg-amber-500" : pos === 2 ? "bg-gray-400" : "bg-amber-700"
                   }`}>
-                    {entry.username[0]}
+                    {(entry.username || `U${entry.userId}`)[0]}
                   </div>
-                  <p className="text-xs font-semibold text-foreground text-center truncate w-full">{entry.username.split(" ").pop()}</p>
-                  <p className="text-[10px] text-muted-foreground">{entry.totalPoints.toLocaleString()} pts</p>
+                  <p className="text-xs font-semibold text-foreground text-center truncate w-full">{(entry.username || `User ${entry.userId}`).split(" ").pop()}</p>
+                  <p className="text-[10px] text-muted-foreground">{(entry.score || 0).toLocaleString()} pts</p>
                   <div className={`mt-1.5 text-xs font-bold ${
                     pos === 1 ? "text-amber-400" : pos === 2 ? "text-gray-300" : "text-amber-700"
                   }`}>#{pos}</div>
@@ -154,24 +154,15 @@ export default function LeaderboardPage() {
                     {entry.avatarUrl ? (
                       <img src={entry.avatarUrl} alt="avatar" className="w-full h-full rounded-full object-cover" />
                     ) : (
-                      <span>{entry.username[0]}</span>
+                      <span>{(entry.username || `U${entry.userId}`)[0]}</span>
                     )}
                   </div>
-
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium truncate ${
-                      entry.userId === user?.userId ? "text-violet-300" : "text-foreground"
-                    }`}>
-                      {entry.username}
-                      {entry.userId === user?.userId && <span className="ml-2 text-xs text-violet-400">(Bạn)</span>}
-                    </p>
-                    {entry.cefrLevel && (
-                      <p className="text-xs text-muted-foreground">{entry.cefrLevel}</p>
-                    )}
+                    <p className="text-sm font-semibold text-foreground truncate">{entry.username || `User ${entry.userId}`}</p>
+                    <p className="text-xs text-muted-foreground">{(entry as any).levelTitle || 'Mới tham gia'}</p>
                   </div>
-
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-bold text-gradient">{entry.totalPoints.toLocaleString()}</p>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-foreground">{(entry.score || 0).toLocaleString()}</p>
                     <p className="text-[10px] text-muted-foreground">điểm</p>
                   </div>
                 </div>

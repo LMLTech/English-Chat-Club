@@ -35,6 +35,21 @@ public class UserProfileController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserProfileResponse>> getProfileById(@PathVariable Long id) {
+        UserProfileResponse response = userProfileUseCase.getProfile(id);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<UserProfileResponse>>> searchProfileByEmail(
+            @RequestParam("email") String email,
+            Authentication authentication) {
+        // Members có thể tìm kiếm
+        List<UserProfileResponse> responses = userProfileUseCase.searchProfileByEmail(email);
+        return ResponseEntity.ok(ApiResponse.success(responses));
+    }
+
     @PutMapping
     public ResponseEntity<ApiResponse<UserProfileResponse>> updateProfile(
             @Valid @RequestBody UpdateProfileRequest request,
@@ -42,6 +57,15 @@ public class UserProfileController {
         Long userId = getCurrentUserId(authentication);
         UserProfileResponse response = userProfileUseCase.updateProfile(userId, request);
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PostMapping("/avatar")
+    public ResponseEntity<ApiResponse<String>> uploadAvatar(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+            Authentication authentication) {
+        Long userId = getCurrentUserId(authentication);
+        String avatarUrl = userProfileUseCase.uploadAvatar(userId, file);
+        return ResponseEntity.ok(ApiResponse.success(avatarUrl, "Tải ảnh đại diện thành công"));
     }
 
     @PutMapping("/interests")
@@ -87,5 +111,14 @@ public class UserProfileController {
         Long userId = getCurrentUserId(authentication);
         userAddressUseCase.deleteAddress(userId, addressId);
         return ResponseEntity.ok(ApiResponse.success("Xóa địa chỉ thành công."));
+    }
+
+    @PutMapping("/avatar-frame")
+    public ResponseEntity<ApiResponse<String>> updateAvatarFrame(
+            @RequestBody java.util.Map<String, String> request,
+            Authentication authentication) {
+        Long userId = getCurrentUserId(authentication);
+        userProfileUseCase.updateAvatarFrame(userId, request.get("frameUrl"));
+        return ResponseEntity.ok(ApiResponse.success("Trang bị viền ảnh đại diện thành công."));
     }
 }

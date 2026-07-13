@@ -10,4 +10,10 @@ public class MemberDashboardResponse {
     private int currentLevel;
     private int totalSessionsAttended;
     private int unreadNotifications;
+    private int upcomingBookings;
+    private int currentStreak;
+
+    private java.util.List<java.util.Map<String, Object>> upcomingSessions;
+    private java.util.List<java.util.Map<String, Object>> ongoingSessions;
+    private java.util.List<java.util.Map<String, Object>> closedSessions;
 }

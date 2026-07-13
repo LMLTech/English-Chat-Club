@@ -82,14 +82,14 @@ export const authService = {
     return response.data.data as AuthResponse;
   },
 
-  setup2fa: async (userId: number) => {
-    const response = await axiosInstance.post('/api/auth/2fa/setup', null, { params: { userId } });
-    return response.data.data as Setup2faResponse;
+  setup2fa: async (userId: number): Promise<{ secretKey: string, qrCodeUrl: string }> => {
+    const res = await axiosInstance.post(`/api/auth/2fa/setup?userId=${userId}`);
+    return res.data.data;
   },
 
-  enable2fa: async (userId: number, totpCode: string) => {
-    const response = await axiosInstance.post('/api/auth/2fa/enable', { totpCode }, { params: { userId } });
-    return response.data.data as string;
+  enable2fa: async (userId: number, secretKey: string, totpCode: string) => {
+    const res = await axiosInstance.post(`/api/auth/2fa/enable?userId=${userId}`, { secretKey, totpCode });
+    return res.data.data;
   },
 
   disable2fa: async (userId: number, totpCode: string) => {

@@ -9,6 +9,7 @@ interface UserInfo {
   fullName: string;
   role: UserRole;
   avatarUrl?: string;
+  avatarFrame?: string;
 }
 
 interface AuthState {

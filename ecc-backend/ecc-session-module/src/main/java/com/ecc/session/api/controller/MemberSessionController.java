@@ -27,10 +27,20 @@ public class MemberSessionController {
      * Lấy danh sách các session
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<java.util.List<SessionResponse>>> getAllSessions() {
+    public ResponseEntity<ApiResponse<java.util.List<SessionResponse>>> getAllSessions(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String cefrLevel) {
+        
         java.util.List<SessionResponse> sessions = manageSessionUseCase.getAvailableSessions().stream()
+                .filter(s -> search == null || search.isBlank() || 
+                             s.getTitle().toLowerCase().contains(search.toLowerCase()) || 
+                             (s.getTopic() != null && s.getTopic().getTitle().toLowerCase().contains(search.toLowerCase())))
+                .filter(s -> status == null || status.isBlank() || status.equalsIgnoreCase("ALL") || status.equalsIgnoreCase(s.getStatus()))
+                .filter(s -> cefrLevel == null || cefrLevel.isBlank() || cefrLevel.equalsIgnoreCase("ALL") || cefrLevel.equalsIgnoreCase(s.getRequiredLevel()))
                 .map(SessionResponse::fromEntity)
                 .collect(java.util.stream.Collectors.toList());
+                
         return ResponseEntity.ok(ApiResponse.success(sessions));
     }
 

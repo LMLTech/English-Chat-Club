@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { communityService, DirectMessageResponse } from "@/features/community/communityService";
+import { profileService, UserProfileResponse } from "@/features/profile/profileService";
 import { useAuthStore } from "@/store/useAuthStore";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -12,6 +13,8 @@ import {
 import { toast } from "sonner";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { cn } from "@/lib/utils";
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 
 export default function ChatRoomPage() {
   const params = useParams();
@@ -20,11 +23,13 @@ export default function ChatRoomPage() {
   
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [friendProfile, setFriendProfile] = useState<UserProfileResponse | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [recordTime, setRecordTime] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recordInterval = useRef<NodeJS.Timeout | null>(null);
+  const stompClientRef = useRef<Client | null>(null);
 
   useEffect(() => {
     communityService.getChatHistory(friendId, { page: 0, size: 50 })
@@ -35,6 +40,55 @@ export default function ChatRoomPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    profileService.getProfileById(friendId)
+      .then(setFriendProfile)
+      .catch(console.error);
+
+    // Connect WebSocket
+    const token = localStorage.getItem("accessToken");
+    if (!token || !user?.userId) return;
+
+    const socket = new SockJS("http://localhost:8080/ws");
+    const client = new Client({
+      webSocketFactory: () => socket,
+      connectHeaders: {
+        Authorization: `Bearer ${token}`
+      },
+      debug: function (str) {
+        console.log(str);
+      },
+      onConnect: () => {
+        console.log("Connected to STOMP WebSocket");
+        // Subscribe to direct messages queue
+        client.subscribe(`/user/queue/direct`, (message) => {
+          if (message.body) {
+            const parsedMsg = JSON.parse(message.body);
+            // Only add if it's from this friend (or handle differently, but here we just append)
+            if (parsedMsg.senderId === friendId || parsedMsg.receiverId === friendId) {
+              setMessages(prev => {
+                // avoid duplicate by id
+                if (prev.some(m => m.id === parsedMsg.id)) return prev;
+                return [...prev, parsedMsg];
+              });
+            }
+          }
+        });
+      },
+      onStompError: (frame) => {
+        console.error('Broker reported error: ' + frame.headers['message']);
+        console.error('Additional details: ' + frame.body);
+      }
+    });
+
+    client.activate();
+    stompClientRef.current = client;
+
+    return () => {
+      if (client.active) {
+        client.deactivate();
+      }
+    };
   }, [friendId, user?.userId]);
 
   useEffect(() => {
@@ -47,15 +101,39 @@ export default function ChatRoomPage() {
     let msgContent = type === "text" ? newMessage.trim() : content;
     if (!msgContent && type === "text") return;
 
-    const newMsg = {
-      id: Date.now(),
-      senderId: user?.userId || 999,
-      content: msgContent,
-      type: type, // text, image, voice
-      createdAt: new Date().toISOString()
-    };
+    // Send to backend via STOMP
+    if (stompClientRef.current?.active) {
+      const chatMessage = {
+        content: msgContent,
+        attachmentUrl: type === "text" ? null : msgContent, // Assuming content holds URL if not text
+        type: type
+      };
+      
+      stompClientRef.current.publish({
+        destination: `/app/direct/${friendId}`,
+        body: JSON.stringify(chatMessage)
+      });
+      
+      // Optimistically add to UI, but note that the real id will come back from WebSocket 
+      // if the server bounces it back. For now, let's just wait for the websocket broadcast if possible.
+      // Actually, since it's a 1-1 chat, the backend might only send to the receiver. Let's check backend:
+      // "isReceiverOnline = true -> convertAndSendToUser" - It does NOT send back to the sender!
+      // So we MUST add it to UI locally.
+      
+      const newMsg = {
+        id: Date.now(), // Temporary ID
+        senderId: user?.userId || 999,
+        receiverId: friendId,
+        content: msgContent,
+        type: type,
+        createdAt: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, newMsg]);
+      
+    } else {
+      toast.error("Chưa kết nối đến máy chủ Chat!");
+    }
 
-    setMessages(prev => [...prev, newMsg]);
     if (type === "text") setNewMessage("");
   };
 
@@ -103,11 +181,11 @@ export default function ChatRoomPage() {
       <header className="h-16 border-b border-white/5 bg-background/50 backdrop-blur-xl px-6 flex items-center justify-between z-10 flex-shrink-0">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <img src={`https://i.pravatar.cc/150?u=${friendId}`} alt="Avatar" className="w-10 h-10 rounded-full object-cover shadow-lg border border-white/10" />
+            <img src={friendProfile?.avatarUrl || `https://i.pravatar.cc/150?u=${friendId}`} alt="Avatar" className="w-10 h-10 rounded-full object-cover shadow-lg border border-white/10" />
             <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-background" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-white">Người dùng #{friendId}</h2>
+            <h2 className="text-sm font-bold text-white">{friendProfile?.fullName || `Người dùng #${friendId}`}</h2>
             <p className="text-[11px] text-emerald-400 font-medium">Đang trực tuyến</p>
           </div>
         </div>
@@ -132,10 +210,10 @@ export default function ChatRoomPage() {
           {/* Welcome section */}
           <div className="text-center my-8">
             <div className="w-24 h-24 mx-auto rounded-full mb-4">
-              <img src={`https://i.pravatar.cc/150?u=${friendId}`} alt="Avatar" className="w-full h-full rounded-full object-cover shadow-2xl shadow-violet-500/20" />
+              <img src={friendProfile?.avatarUrl || `https://i.pravatar.cc/150?u=${friendId}`} alt="Avatar" className="w-full h-full rounded-full object-cover shadow-2xl shadow-violet-500/20" />
             </div>
             <h3 className="text-xl font-bold text-white mb-2">Đây là khởi đầu của cuộc trò chuyện.</h3>
-            <p className="text-sm text-muted-foreground">Gửi lời chào đến Người dùng #{friendId} ngay nào!</p>
+            <p className="text-sm text-muted-foreground">Gửi lời chào đến {friendProfile?.fullName || `Người dùng #${friendId}`} ngay nào!</p>
           </div>
 
           <AnimatePresence initial={false}>
@@ -154,7 +232,7 @@ export default function ChatRoomPage() {
                   {/* Avatar */}
                   <div className="w-8 flex-shrink-0">
                     {showAvatar && !isMe && (
-                      <img src={`https://i.pravatar.cc/150?u=${friendId}`} alt="Avatar" className="w-8 h-8 rounded-full" />
+                      <img src={friendProfile?.avatarUrl || `https://i.pravatar.cc/150?u=${friendId}`} alt="Avatar" className="w-8 h-8 rounded-full object-cover" />
                     )}
                   </div>
 
@@ -227,7 +305,8 @@ export default function ChatRoomPage() {
               </button>
             </div>
             
-            <textarea
+            <input
+              type="text"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={(e) => {
@@ -236,9 +315,8 @@ export default function ChatRoomPage() {
                   handleSend(e);
                 }
               }}
-              placeholder={`Nhắn tin cho Người dùng #${friendId}...`}
-              className="flex-1 bg-transparent border-none focus:ring-0 text-sm text-white resize-none max-h-32 min-h-[40px] py-3 px-2 outline-none"
-              rows={1}
+              placeholder={`Nhắn tin cho ${friendProfile?.fullName || `Người dùng #${friendId}`}...`}
+              className="flex-1 bg-transparent border-none focus:ring-0 text-sm text-white placeholder:text-muted-foreground outline-none py-3"
             />
 
             <div className="flex gap-1 pb-1">
