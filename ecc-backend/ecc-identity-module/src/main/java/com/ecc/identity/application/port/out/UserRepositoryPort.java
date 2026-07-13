@@ -8,6 +8,7 @@ public interface UserRepositoryPort {
     Optional<User> findByReferralCode(String referralCode);
     Optional<User> findById(Long id);
     Optional<User> findByEmail(String email);
+    java.util.List<User> findByEmailContainingIgnoreCase(String email);
     java.util.List<User> findAll();
     User save(User user);
 }

@@ -61,6 +61,18 @@ public class UserProfileService implements UserProfileUseCase {
         userInterestRepositoryPort.updateInterests(userId, request.getCategoryIds());
     }
 
+    @Override
+    public List<UserProfileResponse> searchProfileByEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return List.of();
+        }
+        List<User> users = userRepositoryPort.findByEmailContainingIgnoreCase(email.trim());
+        return users.stream().map(user -> {
+            List<Long> categoryIds = userInterestRepositoryPort.getInterestCategoryIds(user.getId());
+            return mapToResponse(user, categoryIds);
+        }).toList();
+    }
+
     private UserProfileResponse mapToResponse(User user, List<Long> categoryIds) {
         return UserProfileResponse.builder()
                 .id(user.getId())
@@ -76,5 +88,52 @@ public class UserProfileService implements UserProfileUseCase {
                 .createdAt(user.getCreatedAt())
                 .interestCategoryIds(categoryIds)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public String uploadAvatar(Long userId, org.springframework.web.multipart.MultipartFile file) {
+        User user = userRepositoryPort.findById(userId)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy thông tin người dùng."));
+
+        if (file.isEmpty()) {
+            throw new BadRequestException("File không được để trống.");
+        }
+
+        try {
+            // Đảm bảo thư mục tồn tại
+            java.nio.file.Path uploadPath = java.nio.file.Paths.get("uploads");
+            if (!java.nio.file.Files.exists(uploadPath)) {
+                java.nio.file.Files.createDirectories(uploadPath);
+            }
+
+            // Tạo tên file an toàn và duy nhất
+            String originalFileName = org.springframework.util.StringUtils.cleanPath(file.getOriginalFilename() != null ? file.getOriginalFilename() : "");
+            String extension = "";
+            if (originalFileName.contains(".")) {
+                extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+            }
+            String newFileName = "avatar_" + userId + "_" + System.currentTimeMillis() + extension;
+
+            java.nio.file.Path filePath = uploadPath.resolve(newFileName);
+            java.nio.file.Files.copy(file.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+            String avatarUrl = "/uploads/" + newFileName;
+            user.setAvatarUrl(avatarUrl);
+            userRepositoryPort.save(user);
+
+            return avatarUrl;
+        } catch (java.io.IOException ex) {
+            throw new RuntimeException("Không thể lưu file tải lên.", ex);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updateAvatarFrame(Long userId, String avatarFrameUrl) {
+        User user = userRepositoryPort.findById(userId)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy thông tin người dùng."));
+        user.setAvatarFrame(avatarFrameUrl);
+        userRepositoryPort.save(user);
     }
 }

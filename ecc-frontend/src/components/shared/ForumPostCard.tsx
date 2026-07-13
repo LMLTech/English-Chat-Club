@@ -5,6 +5,7 @@ import { ForumPostResponse } from "@/features/forum/forumService";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 import Link from "next/link";
+import AuthorInfo from "./AuthorInfo";
 
 interface ForumPostCardProps {
   post: ForumPostResponse;
@@ -29,18 +30,7 @@ export default function ForumPostCard({ post, onLike, onSave }: ForumPostCardPro
       {/* Header */}
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500/60 to-blue-500/60 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-            {post.authorName?.[0]?.toUpperCase() || "U"}
-          </div>
-          <div>
-            <p className="text-xs font-medium text-foreground">{post.authorName}</p>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Clock className="w-2.5 h-2.5" />
-              <span className="text-[10px]">
-                {formatDistanceToNow(createdAt, { addSuffix: true, locale: vi })}
-              </span>
-            </div>
-          </div>
+          <AuthorInfo authorId={post.authorId} createdAt={createdAt} />
         </div>
         <div className="flex items-center gap-1.5">
           {post.categoryName && (
@@ -68,9 +58,11 @@ export default function ForumPostCard({ post, onLike, onSave }: ForumPostCardPro
       <div className="flex items-center gap-4 mt-4 pt-3 border-t border-white/5">
         <button
           onClick={() => onLike?.(post.id)}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-red-400 transition-colors"
+          className={`flex items-center gap-1.5 text-xs transition-colors ${
+            post.isLiked ? "text-red-500" : "text-muted-foreground hover:text-red-400"
+          }`}
         >
-          <Heart className="w-3.5 h-3.5" />
+          <Heart className="w-3.5 h-3.5" fill={post.isLiked ? "currentColor" : "none"} />
           <span>{post.likeCount}</span>
         </button>
         <Link
@@ -86,9 +78,11 @@ export default function ForumPostCard({ post, onLike, onSave }: ForumPostCardPro
         </div>
         <button
           onClick={() => onSave?.(post.id)}
-          className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground hover:text-violet-400 transition-colors"
+          className={`ml-auto flex items-center gap-1.5 text-xs transition-colors ${
+            post.isSaved ? "text-violet-500" : "text-muted-foreground hover:text-violet-400"
+          }`}
         >
-          <Bookmark className="w-3.5 h-3.5" />
+          <Bookmark className="w-3.5 h-3.5" fill={post.isSaved ? "currentColor" : "none"} />
         </button>
       </div>
     </div>

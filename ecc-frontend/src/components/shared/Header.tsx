@@ -160,10 +160,11 @@ export default function Header() {
         <Link href="/profile" className="flex items-center gap-2.5 group cursor-pointer">
           <motion.div 
             whileHover={{ scale: 1.05 }}
-            className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-lg shadow-violet-500/20"
+            className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-lg shadow-violet-500/20 overflow-hidden"
+            style={user?.avatarFrame ? { border: `2px solid ${user.avatarFrame}` } : {}}
           >
             {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt="avatar" className="w-full h-full rounded-lg object-cover" />
+              <img src={user.avatarUrl} alt="avatar" className="w-full h-full object-cover" />
             ) : (
               <span>{getInitials(user?.fullName)}</span>
             )}

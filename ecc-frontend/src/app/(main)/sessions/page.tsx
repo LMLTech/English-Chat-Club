@@ -10,7 +10,15 @@ import { CalendarDays, Filter, Search } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
 
-const CEFR_LEVELS = ["Tất cả", "A1", "A2", "B1", "B2", "C1", "C2"];
+const CEFR_LEVELS = [
+  { value: "Tất cả", label: "Tất cả" },
+  { value: "A1", label: "A1 (Sơ cấp)" },
+  { value: "A2", label: "A2 (Cơ bản)" },
+  { value: "B1", label: "B1 (Trung cấp)" },
+  { value: "B2", label: "B2 (Trung cao)" },
+  { value: "C1", label: "C1 (Cao cấp)" },
+  { value: "C2", label: "C2 (Thành thạo)" },
+];
 
 export default function SessionsPage() {
   const { user } = useAuthStore();
@@ -21,7 +29,8 @@ export default function SessionsPage() {
   const [bookedIds, setBookedIds] = useState<Set<number>>(new Set());
   const [search, setSearch] = useState("");
   const [cefrFilter, setCefrFilter] = useState("Tất cả");
-  const [statusFilter, setStatusFilter] = useState("SCHEDULED");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [topicFilter, setTopicFilter] = useState("ALL");
 
   useEffect(() => {
     Promise.all([
@@ -73,10 +82,12 @@ export default function SessionsPage() {
   const filtered = sessions.filter((s) => {
     const matchSearch = search === "" ||
       s.title.toLowerCase().includes(search.toLowerCase()) ||
-      s.description?.toLowerCase().includes(search.toLowerCase());
-    const matchCefr = cefrFilter === "Tất cả" || s.cefrLevel === cefrFilter;
+      s.description?.toLowerCase().includes(search.toLowerCase()) ||
+      s.topicTitle?.toLowerCase().includes(search.toLowerCase());
+    const matchCefr = cefrFilter === "Tất cả" || s.requiredLevel === cefrFilter;
     const matchStatus = statusFilter === "ALL" || s.status === statusFilter;
-    return matchSearch && matchCefr && matchStatus;
+    const matchTopic = topicFilter === "ALL" || s.topicTitle === topicFilter;
+    return matchSearch && matchCefr && matchStatus && matchTopic;
   });
 
   return (
@@ -114,22 +125,37 @@ export default function SessionsPage() {
             <div className="flex gap-1.5 flex-wrap">
               {CEFR_LEVELS.map((level) => (
                 <button
-                  key={level}
-                  onClick={() => setCefrFilter(level)}
+                  key={level.value}
+                  onClick={() => setCefrFilter(level.value)}
                   className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
-                    cefrFilter === level
+                    cefrFilter === level.value
                       ? "bg-violet-500 text-white"
                       : "bg-white/5 border border-white/10 text-muted-foreground hover:bg-white/10"
                   }`}
                 >
-                  {level}
+                  {level.label}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Status filter */}
+          {/* Topic filter */}
           <div className="flex items-center gap-2 ml-auto">
+            <span className="text-xs text-muted-foreground">Chủ đề:</span>
+            <select
+              value={topicFilter}
+              onChange={(e) => setTopicFilter(e.target.value)}
+              className="ecc-input py-1 text-xs w-auto"
+            >
+              <option value="ALL">Tất cả chủ đề</option>
+              {topics.map(t => (
+                <option key={t.id} value={t.title}>{t.title}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Status filter */}
+          <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">Trạng thái:</span>
             <select
               value={statusFilter}

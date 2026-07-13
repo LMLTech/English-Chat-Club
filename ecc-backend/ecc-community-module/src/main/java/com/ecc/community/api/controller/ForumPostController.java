@@ -30,18 +30,41 @@ public class ForumPostController {
     public ResponseEntity<ApiResponse<Page<ForumPostResponse>>> getPosts(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication
     ) {
+        Long userId = null;
+        if (authentication != null && !"anonymousUser".equals(authentication.getName())) {
+            userId = Long.parseLong(authentication.getName());
+        }
+        Long finalUserId = userId;
+        
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<ForumPostResponse> posts = postService.getPublishedPosts(categoryId, pageable)
-                .map(ForumPostResponse::fromEntity);
+                .map(post -> {
+                    ForumPostResponse response = ForumPostResponse.fromEntity(post);
+                    if (finalUserId != null) {
+                        response.setLiked(interactionService.isLiked(finalUserId, post.getId()));
+                        response.setSaved(interactionService.isSaved(finalUserId, post.getId()));
+                    }
+                    return response;
+                });
         return ResponseEntity.ok(ApiResponse.success(posts));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ForumPostResponse>> getPost(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<ForumPostResponse>> getPost(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
         ForumPost post = postService.viewPost(id);
-        return ResponseEntity.ok(ApiResponse.success(ForumPostResponse.fromEntity(post)));
+        ForumPostResponse response = ForumPostResponse.fromEntity(post);
+        if (authentication != null && !"anonymousUser".equals(authentication.getName())) {
+            Long userId = Long.parseLong(authentication.getName());
+            response.setLiked(interactionService.isLiked(userId, post.getId()));
+            response.setSaved(interactionService.isSaved(userId, post.getId()));
+        }
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @PostMapping

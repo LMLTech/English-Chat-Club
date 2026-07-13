@@ -21,6 +21,9 @@ public class ForumPostResponse {
     private int commentCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
+    private boolean isLiked;
+    private boolean isSaved;
 
     public static ForumPostResponse fromEntity(ForumPost post) {
         return ForumPostResponse.builder()

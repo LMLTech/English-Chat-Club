@@ -16,11 +16,21 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
   const [friendIds, setFriendIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
+  const [friendProfiles, setFriendProfiles] = useState<any[]>([]);
 
   useEffect(() => {
     // In real app, fetch actual friend profiles
     communityService.getFriends()
-      .then(setFriendIds)
+      .then(async (ids) => {
+        setFriendIds(ids);
+        
+        // Fetch profiles for each friend
+        const { profileService } = await import("@/features/profile/profileService");
+        const profiles = await Promise.all(
+          ids.map(id => profileService.getProfileById(id).catch(() => null))
+        );
+        setFriendProfiles(profiles.filter(p => p !== null));
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -28,15 +38,18 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
   if (loading) return <div className="h-full flex items-center justify-center"><LoadingSpinner size="lg" text="Đang tải tin nhắn..." /></div>;
 
   // Only show real friends from API - no mock data
-  const displayFriends = friendIds.map(id => ({
-    id, 
-    name: `Người dùng #${id}`,
-    avatar: `https://i.pravatar.cc/150?u=${id}`,
-    status: "offline" as string,
-    lastMessage: "Nhấn để bắt đầu trò chuyện...",
-    time: "",
-    unread: 0
-  }));
+  const displayFriends = friendIds.map(id => {
+    const profile = friendProfiles.find(p => p.id === id);
+    return {
+      id, 
+      name: profile?.fullName || `Người dùng #${id}`,
+      avatar: profile?.avatarUrl || `https://i.pravatar.cc/150?u=${id}`,
+      status: "offline" as string,
+      lastMessage: "Nhấn để bắt đầu trò chuyện...",
+      time: "",
+      unread: 0
+    };
+  });
 
   return (
     <div className="h-[calc(100vh-4rem)] flex overflow-hidden bg-black/20 rounded-tl-2xl border-t border-l border-white/5">

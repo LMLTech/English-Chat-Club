@@ -23,6 +23,11 @@ public class DashboardService implements DashboardUseCase {
                 .currentLevel(dashboardPort.getCurrentLevel(userId))
                 .totalSessionsAttended(dashboardPort.countAttendedSessions(userId))
                 .unreadNotifications(dashboardPort.countUnreadNotifications(userId))
+                .upcomingBookings(dashboardPort.countUpcomingBookings(userId))
+                .currentStreak(dashboardPort.getCurrentStreak(userId))
+                .upcomingSessions(dashboardPort.getUpcomingSessions(userId))
+                .ongoingSessions(dashboardPort.getOngoingSessions(userId))
+                .closedSessions(dashboardPort.getClosedSessions(userId))
                 .build();
     }
 

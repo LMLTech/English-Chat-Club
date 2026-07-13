@@ -34,7 +34,13 @@ export default function ForumPage() {
     try {
       await forumService.toggleLike(postId);
       setPosts((prev) =>
-        prev.map((p) => p.id === postId ? { ...p, likeCount: p.likeCount + 1 } : p)
+        prev.map((p) => {
+          if (p.id === postId) {
+            const isLiked = !p.isLiked;
+            return { ...p, isLiked, likeCount: p.likeCount + (isLiked ? 1 : -1) };
+          }
+          return p;
+        })
       );
     } catch (err: any) {
       toast.error("Không thể like bài viết!");
@@ -44,7 +50,10 @@ export default function ForumPage() {
   const handleSave = async (postId: number) => {
     try {
       await forumService.toggleSave(postId);
-      toast.success("Đã lưu bài viết");
+      setPosts((prev) =>
+        prev.map((p) => p.id === postId ? { ...p, isSaved: !p.isSaved } : p)
+      );
+      toast.success("Đã cập nhật lưu bài viết");
     } catch {
       toast.error("Không thể lưu bài viết!");
     }

@@ -10,6 +10,31 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, Video, VideoOff, MessageSquare, Users, Settings, LogOut, PhoneOff, Hand, Share, Smile, MoreVertical, Disc, ShieldAlert, BookPlus, Send, Star, BookOpen } from "lucide-react";
 import { useWebRTC } from "@/hooks/useWebRTC";
+import { profileService, UserProfileResponse } from "@/features/profile/profileService";
+
+function ChatMessageItem({ msg, isCurrentUser }: { msg: any, isCurrentUser: boolean }) {
+  const [author, setAuthor] = useState<UserProfileResponse | null>(null);
+
+  useEffect(() => {
+    if (msg.senderId && !isCurrentUser) {
+      profileService.getProfileById(msg.senderId).then(setAuthor).catch(() => {});
+    }
+  }, [msg.senderId, isCurrentUser]);
+
+  const displayName = isCurrentUser ? "Bạn" : (author?.fullName || `User ${msg.senderId}`);
+  
+  return (
+    <div className={`flex flex-col gap-1 ${isCurrentUser ? "items-end" : "items-start"}`}>
+      <div className={`px-3 py-2 rounded-2xl max-w-[85%] text-sm ${isCurrentUser ? "bg-violet-600 text-white rounded-tr-sm" : "bg-white/10 text-white rounded-tl-sm"}`}>
+        {msg.content}
+      </div>
+      <span className="text-[10px] text-muted-foreground flex gap-1 items-center">
+        {displayName}
+        {!isCurrentUser && author?.email && <span>({author.email})</span>}
+      </span>
+    </div>
+  );
+}
 
 const VideoPlayer = ({ stream, isLocal, muted = false }: { stream: MediaStream | null, isLocal: boolean, muted?: boolean }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -271,12 +296,7 @@ export default function SessionRoomPage() {
                       <div className="text-xs text-center text-muted-foreground my-4">Chưa có tin nhắn nào. Hãy nói lời chào!</div>
                     ) : (
                       chatMessages.map((msg, idx) => (
-                        <div key={idx} className={`flex flex-col gap-1 ${msg.senderId === user?.userId ? "items-end" : "items-start"}`}>
-                          <div className={`px-3 py-2 rounded-2xl max-w-[85%] text-sm ${msg.senderId === user?.userId ? "bg-violet-600 text-white rounded-tr-sm" : "bg-white/10 text-white rounded-tl-sm"}`}>
-                            {msg.content}
-                          </div>
-                          <span className="text-[10px] text-muted-foreground">{msg.senderId === user?.userId ? "Bạn" : `User ${msg.senderId}`}</span>
-                        </div>
+                        <ChatMessageItem key={idx} msg={msg} isCurrentUser={msg.senderId === user?.userId} />
                       ))
                     )}
                   </>
