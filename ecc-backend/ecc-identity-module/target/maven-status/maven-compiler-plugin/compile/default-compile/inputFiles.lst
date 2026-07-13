@@ -64,6 +64,7 @@ E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\e
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\api\dto\request\AddressRequest.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\application\port\in\ManageTicketUseCase.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\infrastructure\repository\TicketMessageRepository.java
+E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\application\service\ManageUserService.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\application\port\in\RegisterUseCase.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\application\service\ForgotPasswordService.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\application\service\VerifyEmailService.java
@@ -87,6 +88,7 @@ E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\e
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\api\dto\response\Setup2faResponse.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\api\controller\AdminUserController.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\application\port\out\TokenCachePort.java
+E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\application\port\in\ManageUserUseCase.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\api\controller\UserCalendarController.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\application\port\in\AssignRoleUseCase.java
 E:\HOC_TAP_UTH\Hoc_Ky_2_Nam_3\Do_An_Thuc_Te_CNPM\English-Chat-Club\ecc-backend\ecc-identity-module\src\main\java\com\ecc\identity\domain\model\User.java

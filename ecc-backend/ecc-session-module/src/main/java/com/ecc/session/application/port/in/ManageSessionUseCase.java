@@ -12,5 +12,6 @@ public interface ManageSessionUseCase {
     BookingResponse cancelBooking(Long memberId, Long sessionId);
     BookingResponse confirmPromotion(Long memberId, Long sessionId);
     List<Session> getAvailableSessions();
+    List<Session> getPendingSessions();
     com.ecc.session.api.dto.response.HandSignalResponse handleHandSignal(Long sessionId, Long senderId, com.ecc.session.api.dto.request.HandSignalRequest request);
 }

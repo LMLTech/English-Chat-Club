@@ -20,6 +20,7 @@ public class FriendshipService {
     // CHUẨN HEXAGONAL: Dùng Port thay vì Repository
     private final FriendRequestPort friendRequestPort;
     private final FriendshipPort friendshipPort;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     @Transactional
     public FriendRequest sendFriendRequest(Long senderId, Long receiverId) {
@@ -43,7 +44,19 @@ public class FriendshipService {
                         .build());
 
         request.setStatus(FriendRequestStatus.PENDING);
-        return friendRequestPort.save(request);
+        FriendRequest savedRequest = friendRequestPort.save(request);
+
+        // Tạo thông báo cho người nhận
+        try {
+            jdbcTemplate.update(
+                "INSERT INTO in_app_notifications (user_id, type, title, message, reference_id, is_read, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())",
+                receiverId, "FRIEND_REQUEST", "Lời mời kết bạn", "Bạn nhận được một lời mời kết bạn mới", savedRequest.getId(), false
+            );
+        } catch (Exception e) {
+            log.warn("Không thể tạo thông báo kết bạn: {}", e.getMessage());
+        }
+
+        return savedRequest;
     }
 
     @Transactional

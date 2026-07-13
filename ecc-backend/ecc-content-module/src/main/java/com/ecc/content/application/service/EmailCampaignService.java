@@ -120,4 +120,10 @@ public class EmailCampaignService implements EmailCampaignUseCase {
                 "</body>" +
                 "</html>";
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EmailCampaign> getAllCampaigns() {
+        return marketingPort.getAllCampaigns(); // Wait, let's see if marketingPort has getAllCampaigns
+    }
 }

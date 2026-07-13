@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 
 export default function AnimatedBackground() {
   const [mounted, setMounted] = useState(false);
@@ -14,24 +13,14 @@ export default function AnimatedBackground() {
 
   return (
     <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-[#0a0a0f]">
-      {/* Dynamic Gradients */}
-      <motion.div
-        animate={{
-          x: ["-20%", "20%", "-20%"],
-          y: ["-10%", "10%", "-10%"],
-          scale: [1, 1.2, 1],
-        }}
-        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-        className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-violet-600/10 rounded-full blur-[120px]"
+      {/* Dynamic Gradients (CSS Animated instead of Framer Motion for performance) */}
+      <div
+        className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-violet-600/10 rounded-full blur-[120px] animate-pulse"
+        style={{ animationDuration: '4s' }}
       />
-      <motion.div
-        animate={{
-          x: ["20%", "-20%", "20%"],
-          y: ["10%", "-10%", "10%"],
-          scale: [1, 1.5, 1],
-        }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-blue-600/10 rounded-full blur-[150px]"
+      <div
+        className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-blue-600/10 rounded-full blur-[150px] animate-pulse"
+        style={{ animationDuration: '6s', animationDelay: '1s' }}
       />
 
       {/* Grid Pattern overlay */}

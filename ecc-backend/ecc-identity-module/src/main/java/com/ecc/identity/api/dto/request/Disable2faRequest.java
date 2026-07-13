@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class Disable2faRequest {
-    @NotBlank(message = "Vui lòng nhập mật khẩu để xác nhận tắt bảo mật 2 lớp")
-    private String password;
+    @NotBlank(message = "Vui lòng nhập mã TOTP để xác nhận tắt bảo mật 2 lớp")
+    private String totpCode;
 }

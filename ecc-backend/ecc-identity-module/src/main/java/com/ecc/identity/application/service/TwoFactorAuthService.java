@@ -135,9 +135,12 @@ public class TwoFactorAuthService implements TwoFactorAuthUseCase {
             throw new BadRequestException("Bảo mật 2 lớp hiện đang tắt.");
         }
 
-        // Xác minh mật khẩu trước khi cho phép tắt
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new BadRequestException("Mật khẩu không chính xác.");
+        // GIẢI MÃ AES TRƯỚC KHI XÁC THỰC OTP
+        String decryptedSecret = aesEncryptionUtil.decrypt(user.getTwoFactorSecret());
+        boolean isValid = totpManager.verifyCode(decryptedSecret, request.getTotpCode());
+
+        if (!isValid) {
+            throw new BadRequestException("Mã xác thực không chính xác. Vui lòng thử lại.");
         }
 
         user.setIs2faEnabled(false);

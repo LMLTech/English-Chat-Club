@@ -31,9 +31,9 @@ const statusColors: Record<string, string> = {
 };
 
 export default function SessionCard({ session, onBook, onCancel, isBooked, isFull }: SessionCardProps) {
-  const scheduledDate = new Date(session.scheduledAt);
-  const endDate = new Date(scheduledDate.getTime() + session.durationMinutes * 60000);
-  const cefrStyle = cefrColors[session.cefrLevel] || "text-gray-400 bg-gray-500/10 border-gray-500/20";
+  const scheduledDate = new Date(session.startTime);
+  const endDate = new Date(session.endTime);
+  const cefrStyle = cefrColors[session.requiredLevel] || "text-gray-400 bg-gray-500/10 border-gray-500/20";
   const statusStyle = statusColors[session.status] || "text-gray-400 bg-gray-500/10 border-gray-500/20";
 
   const participantPercent = Math.round((session.currentParticipants / session.maxParticipants) * 100);
@@ -43,15 +43,13 @@ export default function SessionCard({ session, onBook, onCancel, isBooked, isFul
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-foreground text-sm leading-snug line-clamp-2">
-            {session.title}
-          </h3>
-          {session.topicName && (
-            <p className="text-xs text-muted-foreground mt-1">📌 {session.topicName}</p>
+          <h3 className="font-bold text-foreground text-lg truncate">{session.title}</h3>
+          {session.topicTitle && (
+            <p className="text-xs text-muted-foreground mt-1">📌 {session.topicTitle}</p>
           )}
         </div>
         <div className="flex flex-col gap-1.5 items-end flex-shrink-0">
-          <span className={`badge-pill border ${cefrStyle}`}>{session.cefrLevel}</span>
+          <span className={`badge-pill border ${cefrStyle}`}>{session.requiredLevel}</span>
           <span className={`badge-pill border ${statusStyle} text-[10px]`}>
             {session.status === "SCHEDULED" ? "Sắp diễn ra" :
              session.status === "ONGOING" ? "Đang diễn ra" :
@@ -77,7 +75,7 @@ export default function SessionCard({ session, onBook, onCancel, isBooked, isFul
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Clock className="w-3.5 h-3.5 text-blue-400" />
           <span>
-            {format(scheduledDate, "HH:mm")} – {format(endDate, "HH:mm")} ({session.durationMinutes} phút)
+            {format(scheduledDate, "HH:mm")} – {format(endDate, "HH:mm")}
           </span>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

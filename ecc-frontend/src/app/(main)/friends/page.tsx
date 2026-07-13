@@ -7,38 +7,120 @@ import EmptyState from "@/components/shared/EmptyState";
 import { toast } from "sonner";
 import { Users, UserPlus, Check, X, MessageCircle, Search } from "lucide-react";
 import Link from "next/link";
+import { profileService, UserProfileResponse } from "@/features/profile/profileService";
 
 export default function FriendsPage() {
   const [friendIds, setFriendIds] = useState<number[]>([]);
   const [pendingRequests, setPendingRequests] = useState<FriendRequestResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [receiverId, setReceiverId] = useState("");
+  const [receiverEmail, setReceiverEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [activeTab, setActiveTab] = useState<"friends" | "requests">("friends");
+  
+  // Autocomplete state
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searchResults, setSearchResults] = useState<UserProfileResponse[]>([]);
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Handle email search input
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setReceiverEmail(value);
+    
+    if (searchTimeout) clearTimeout(searchTimeout);
+
+    if (value.trim().length >= 3) {
+      const timeout = setTimeout(async () => {
+        try {
+          const results = await profileService.searchProfileByEmail(value.trim());
+          setSearchResults(results || []);
+          setShowDropdown(true);
+        } catch (error) {
+          console.error("Search failed", error);
+        }
+      }, 500); // debounce 500ms
+      setSearchTimeout(timeout);
+    } else {
+      setShowDropdown(false);
+      setSearchResults([]);
+    }
+  };
+
+  const [friendProfiles, setFriendProfiles] = useState<UserProfileResponse[]>([]);
 
   useEffect(() => {
     Promise.all([
       communityService.getFriends(),
       communityService.getPendingRequests(),
-    ]).then(([friends, requests]) => {
+    ]).then(async ([friends, requests]) => {
       setFriendIds(friends);
-      setPendingRequests(requests.content || []);
+      
+      try {
+        const pending = requests.content || [];
+        const pendingWithProfiles = await Promise.all(
+          pending.map(async (req) => {
+            try {
+              const profile = await profileService.getProfileById(req.senderId);
+              return { ...req, senderName: profile.fullName };
+            } catch {
+              return { ...req, senderName: `Người dùng #${req.senderId}` };
+            }
+          })
+        );
+        setPendingRequests(pendingWithProfiles);
+      } catch (e) {
+        setPendingRequests(requests.content || []);
+      }
+      
+      // Fetch profiles for friends
+      try {
+        const profiles = await Promise.all(
+          friends.map(id => profileService.getProfileById(id).catch(() => null))
+        );
+        setFriendProfiles(profiles.filter(Boolean) as UserProfileResponse[]);
+      } catch (e) {
+        console.error("Failed to fetch friend profiles", e);
+      }
     }).catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
   const handleSendRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    const id = parseInt(receiverId);
-    if (!id || isNaN(id)) {
-      toast.error("Vui lòng nhập ID người dùng hợp lệ!");
+    if (!receiverEmail || !receiverEmail.includes('@')) {
+      toast.error("Vui lòng nhập Email hợp lệ!");
       return;
     }
+    
+    let id = NaN;
+
+    // Check if the input exactly matches an email in searchResults
+    const matchedUser = searchResults.find(u => u.email === receiverEmail);
+    if (matchedUser) {
+      id = matchedUser.userId || (matchedUser as any).id;
+    } else {
+      // Try fetching exact match
+      try {
+        const results = await profileService.searchProfileByEmail(receiverEmail.trim());
+        const exactMatch = results.find(u => u.email === receiverEmail);
+        if (exactMatch) {
+          id = exactMatch.userId || (exactMatch as any).id;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    if (!id || isNaN(id)) {
+      toast.error("Không tìm thấy người dùng với Email này!");
+      return;
+    }
+
     setSending(true);
     try {
       await communityService.sendFriendRequest(id);
-      toast.success("Đã gửi lời mời kết bạn!");
-      setReceiverId("");
+      toast.success(`Đã gửi lời mời kết bạn đến ${receiverEmail}!`);
+      setReceiverEmail("");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Không thể gửi lời mời kết bạn!");
     } finally {
@@ -85,19 +167,52 @@ export default function FriendsPage() {
           <UserPlus className="w-4 h-4 text-violet-400" />
           Gửi lời mời kết bạn
         </h3>
-        <form onSubmit={handleSendRequest} className="flex gap-3">
-          <input
-            type="number"
-            placeholder="Nhập ID người dùng..."
-            value={receiverId}
-            onChange={(e) => setReceiverId(e.target.value)}
-            className="ecc-input flex-1"
-            min="1"
-          />
+        <form onSubmit={handleSendRequest} className="flex gap-3 relative">
+          <div className="flex-1 relative">
+            <input
+              type="email"
+              placeholder="Nhập Email hoặc Tên người dùng..."
+              value={receiverEmail}
+              onChange={handleEmailChange}
+              onFocus={() => { if (receiverEmail.length > 0) setShowDropdown(true); }}
+              onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+              className="ecc-input w-full pl-10"
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            
+            {/* Autocomplete Dropdown */}
+            {showDropdown && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-[#1a1b26] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 max-h-60 overflow-y-auto animate-fade-in">
+                {searchResults.map(user => (
+                  <div 
+                    key={user.userId || (user as any).id}
+                    onClick={() => {
+                      setReceiverEmail(user.email);
+                      setShowDropdown(false);
+                    }}
+                    className="flex items-center gap-3 p-3 hover:bg-white/5 cursor-pointer transition-colors border-b border-white/5 last:border-0"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center text-xs font-bold overflow-hidden">
+                      {user.avatarUrl ? (
+                        <img src={user.avatarUrl} alt={user.fullName} className="w-full h-full object-cover" />
+                      ) : (
+                        user.fullName ? user.fullName.charAt(0).toUpperCase() : 'U'
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white">{user.fullName}</p>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <button
             type="submit"
-            disabled={sending}
-            className="btn-primary flex items-center gap-2 flex-shrink-0"
+            disabled={sending || !receiverEmail}
+            className="btn-primary flex items-center gap-2 flex-shrink-0 disabled:opacity-50"
           >
             {sending ? (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -145,17 +260,21 @@ export default function FriendsPage() {
         ) : (
           <div className="glass-card rounded-xl overflow-hidden">
             <div className="divide-y divide-white/5">
-              {friendIds.map((id) => (
-                <div key={id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-white/3 transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500/60 to-blue-500/60 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
-                    U
+              {friendProfiles.map((profile) => (
+                <div key={profile.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-white/5 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500/20 to-blue-500/20 flex items-center justify-center text-sm font-bold text-violet-400 flex-shrink-0 overflow-hidden">
+                    {profile.avatarUrl ? (
+                      <img src={profile.avatarUrl} alt={profile.fullName} className="w-full h-full object-cover" />
+                    ) : (
+                      profile.fullName?.[0]?.toUpperCase() || "U"
+                    )}
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">Người dùng #{id}</p>
-                    <p className="text-xs text-muted-foreground">ID: {id}</p>
+                    <p className="text-sm font-medium text-foreground">{profile.fullName}</p>
+                    <p className="text-xs text-muted-foreground">{profile.email}</p>
                   </div>
                   <Link
-                    href={`/messages/${id}`}
+                    href={`/messages/${profile.id}`}
                     className="flex items-center gap-1.5 text-xs text-violet-400 hover:text-violet-300 transition-colors px-3 py-1.5 rounded-lg bg-violet-500/10 border border-violet-500/20"
                   >
                     <MessageCircle className="w-3.5 h-3.5" />

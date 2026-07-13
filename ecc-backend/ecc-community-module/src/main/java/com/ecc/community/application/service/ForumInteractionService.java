@@ -72,6 +72,18 @@ public class ForumInteractionService {
         return savedPostPort.findByUserId(userId, pageable);
     }
 
+    @Transactional(readOnly = true)
+    public boolean isLiked(Long userId, Long postId) {
+        if (userId == null) return false;
+        return postLikePort.findByPostIdAndUserId(postId, userId).isPresent();
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isSaved(Long userId, Long postId) {
+        if (userId == null) return false;
+        return savedPostPort.findByPostIdAndUserId(postId, userId).isPresent();
+    }
+
     private ForumPost getActivePost(Long postId) {
         return forumPostPort.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Bài viết không tồn tại"));

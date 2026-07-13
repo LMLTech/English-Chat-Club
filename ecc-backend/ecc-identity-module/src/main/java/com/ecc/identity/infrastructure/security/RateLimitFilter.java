@@ -23,9 +23,9 @@ public class RateLimitFilter implements Filter {
     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
 
     private Bucket createNewBucket() {
-        // Giới hạn: 100 requests mỗi 1 phút cho mỗi IP
+        // Giới hạn: 500 requests mỗi 1 phút cho mỗi IP (Tăng cho môi trường Dev)
         return Bucket.builder()
-                .addLimit(Bandwidth.classic(100, Refill.intervally(100, Duration.ofMinutes(1))))
+                .addLimit(Bandwidth.classic(500, Refill.intervally(500, Duration.ofMinutes(1))))
                 .build();
     }
 

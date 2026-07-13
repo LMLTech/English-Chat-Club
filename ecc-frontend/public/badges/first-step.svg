@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <defs>
+    <linearGradient id="badge-grad" x1="0" y1="0" x2="80" y2="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#60a5fa"/>
+    </linearGradient>
+  </defs>
+  <circle cx="40" cy="40" r="38" fill="url(#badge-grad)" opacity="0.15" stroke="url(#badge-grad)" stroke-width="2"/>
+  <path d="M40 20L44.5 30.5H55.5L46.5 37L50.5 48L40 41.5L29.5 48L33.5 37L24.5 30.5H35.5L40 20Z" fill="url(#badge-grad)"/>
+  <text x="40" y="65" text-anchor="middle" font-size="8" fill="#a78bfa" font-family="system-ui" font-weight="bold">FIRST STEP</text>
+</svg>

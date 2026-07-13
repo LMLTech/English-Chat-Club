@@ -123,6 +123,43 @@ export default function Sidebar() {
             </motion.div>
           );
         })}
+
+        {/* Admin Section */}
+        {(user?.role === 'ADMIN' || user?.role === 'ROLE_ADMIN') && (
+          <>
+            <p className="px-3 pb-2 pt-4 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+              Admin
+            </p>
+            <motion.div variants={slideIn}>
+              <Link href="/admin/users" className={cn("sidebar-item relative overflow-hidden group", isActive("/admin/users") ? "active text-white" : "text-muted-foreground hover:text-foreground")}>
+                {isActive("/admin/users") && <motion.div layoutId="active-nav" className="absolute inset-0 bg-white/10 rounded-lg -z-10" />}
+                <Users className={cn("w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110", isActive("/admin/users") ? "text-violet-400" : "")} />
+                <span className="font-medium text-[13px]">Quản lý người dùng</span>
+              </Link>
+            </motion.div>
+            <motion.div variants={slideIn}>
+              <Link href="/admin/sessions" className={cn("sidebar-item relative overflow-hidden group", isActive("/admin/sessions") ? "active text-white" : "text-muted-foreground hover:text-foreground")}>
+                {isActive("/admin/sessions") && <motion.div layoutId="active-nav" className="absolute inset-0 bg-white/10 rounded-lg -z-10" />}
+                <CalendarDays className={cn("w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110", isActive("/admin/sessions") ? "text-violet-400" : "")} />
+                <span className="font-medium text-[13px]">Duyệt phòng</span>
+              </Link>
+            </motion.div>
+            <motion.div variants={slideIn}>
+              <Link href="/admin/support" className={cn("sidebar-item relative overflow-hidden group", isActive("/admin/support") ? "active text-white" : "text-muted-foreground hover:text-foreground")}>
+                {isActive("/admin/support") && <motion.div layoutId="active-nav" className="absolute inset-0 bg-white/10 rounded-lg -z-10" />}
+                <LifeBuoy className={cn("w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110", isActive("/admin/support") ? "text-violet-400" : "")} />
+                <span className="font-medium text-[13px]">Hỗ trợ</span>
+              </Link>
+            </motion.div>
+            <motion.div variants={slideIn}>
+              <Link href="/admin/marketing" className={cn("sidebar-item relative overflow-hidden group", isActive("/admin/marketing") ? "active text-white" : "text-muted-foreground hover:text-foreground")}>
+                {isActive("/admin/marketing") && <motion.div layoutId="active-nav" className="absolute inset-0 bg-white/10 rounded-lg -z-10" />}
+                <Sparkles className={cn("w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110", isActive("/admin/marketing") ? "text-violet-400" : "")} />
+                <span className="font-medium text-[13px]">Email Marketing</span>
+              </Link>
+            </motion.div>
+          </>
+        )}
       </motion.nav>
 
       {/* User section */}
@@ -134,11 +171,20 @@ export default function Sidebar() {
             pathname === "/profile" ? "active bg-white/10" : ""
           )}
         >
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500/80 to-blue-500/80 flex items-center justify-center">
-            <User className="w-4 h-4 text-white" />
+          <div className="relative w-8 h-8 flex-shrink-0">
+            <div 
+              className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500/80 to-blue-500/80 flex items-center justify-center overflow-hidden"
+              style={user?.avatarFrame ? { border: `2px solid ${user.avatarFrame}` } : {}}
+            >
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-4 h-4 text-white" />
+              )}
+            </div>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">
+            <p className="text-sm font-medium text-white truncate">
               {user?.fullName || "Hồ sơ"}
             </p>
             {user?.role && (
@@ -146,7 +192,6 @@ export default function Sidebar() {
             )}
           </div>
         </Link>
-
         <button
           onClick={handleLogout}
           className="sidebar-item w-full text-left text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-all"

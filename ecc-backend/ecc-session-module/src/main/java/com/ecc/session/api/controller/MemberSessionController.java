@@ -2,6 +2,7 @@ package com.ecc.session.api.controller;
 
 import com.ecc.common.dto.ApiResponse;
 import com.ecc.session.api.dto.response.BookingResponse;
+import com.ecc.session.api.dto.response.SessionResponse;
 import com.ecc.session.application.port.in.ManageSessionUseCase;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +27,21 @@ public class MemberSessionController {
      * Lấy danh sách các session
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<java.util.List<com.ecc.session.domain.model.Session>>> getAllSessions() {
-        return ResponseEntity.ok(ApiResponse.success(manageSessionUseCase.getAvailableSessions()));
+    public ResponseEntity<ApiResponse<java.util.List<SessionResponse>>> getAllSessions(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String cefrLevel) {
+        
+        java.util.List<SessionResponse> sessions = manageSessionUseCase.getAvailableSessions().stream()
+                .filter(s -> search == null || search.isBlank() || 
+                             s.getTitle().toLowerCase().contains(search.toLowerCase()) || 
+                             (s.getTopic() != null && s.getTopic().getTitle().toLowerCase().contains(search.toLowerCase())))
+                .filter(s -> status == null || status.isBlank() || status.equalsIgnoreCase("ALL") || status.equalsIgnoreCase(s.getStatus()))
+                .filter(s -> cefrLevel == null || cefrLevel.isBlank() || cefrLevel.equalsIgnoreCase("ALL") || cefrLevel.equalsIgnoreCase(s.getRequiredLevel()))
+                .map(SessionResponse::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
+                
+        return ResponseEntity.ok(ApiResponse.success(sessions));
     }
 
     /**

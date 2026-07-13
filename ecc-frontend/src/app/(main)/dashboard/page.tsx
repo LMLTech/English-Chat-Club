@@ -26,18 +26,19 @@ export default function DashboardPage() {
   const [points, setPoints] = useState<MemberPointsResponse | null>(null);
   const [badges, setBadges] = useState<BadgeResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeSessionTab, setActiveSessionTab] = useState<'upcoming' | 'ongoing' | 'closed'>('upcoming');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [dashData, pointsData, badgesData] = await Promise.all([
-          contentService.getMemberDashboard(),
-          communityService.getMyPoints(),
-          communityService.getMyBadges(),
+          contentService.getMemberDashboard().catch(() => null),
+          communityService.getMyPoints().catch(() => null),
+          communityService.getMyBadges().catch(() => []),
         ]);
         setDashboard(dashData);
-        setPoints(pointsData);
-        setBadges(badgesData.slice(0, 4));
+        setPoints(pointsData || { userId: user?.userId || 0, totalPoints: 0, currentLevel: 1, levelTitle: 'Người mới', updatedAt: new Date().toISOString() });
+        setBadges((badgesData || []).slice(0, 4));
       } catch (err) {
         console.error("Failed to load dashboard:", err);
       } finally {
@@ -73,7 +74,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatsCard
           title="Buổi học đã tham gia"
-          value={dashboard?.totalSessions ?? 0}
+          value={dashboard?.totalSessionsAttended ?? 0}
           icon={CalendarDays}
           iconColor="text-blue-400"
           gradient="from-blue-500/10 to-cyan-500/10"
@@ -182,52 +183,83 @@ export default function DashboardPage() {
             </div>
           </div>
           
-          {/* Upcoming Sessions (Lịch học đã đăng ký) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="glass-card rounded-xl p-6 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="flex items-center justify-between mb-4 relative z-10">
-                <h2 className="font-semibold text-white flex items-center gap-2">
-                  <CalendarDays className="w-4 h-4 text-blue-400" />
-                  Lịch học sắp tới của bạn
-                </h2>
-                <button 
-                  onClick={() => alert("Đã gửi yêu cầu kết nối Google Calendar!")}
-                  className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  Kết nối Google Calendar
-                </button>
-              </div>
-              
-              {dashboard?.upcomingBookings === 0 ? (
-                <div className="text-center py-6 border border-dashed border-white/10 rounded-xl relative z-10">
-                  <CalendarDays className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Bạn chưa đăng ký buổi học nào.</p>
-                  <Link href="/sessions" className="text-violet-400 text-sm hover:underline mt-2 inline-block font-medium">
-                    Tìm buổi học ngay →
-                  </Link>
-                </div>
-              ) : (
-                <div className="text-center py-6 border border-dashed border-white/10 rounded-xl bg-blue-500/5 relative z-10 border-blue-500/20">
-                  <CalendarDays className="w-10 h-10 text-blue-400 mx-auto mb-2 animate-bounce" />
-                  <p className="text-sm font-medium text-white">Bạn có {dashboard?.upcomingBookings} buổi học sắp tới.</p>
-                  <Link href="/sessions" className="text-blue-400 text-sm hover:underline mt-2 inline-block font-medium">
-                    Vào phòng chờ ngay →
-                  </Link>
-                </div>
-              )}
+          {/* Sessions List */}
+          <div className="glass-card rounded-xl p-6 relative overflow-hidden group mt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-white flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-blue-400" />
+                Lịch học của bạn
+              </h2>
+            </div>
+            
+            <div className="flex gap-4 mb-4 border-b border-white/10 pb-2">
+              <button 
+                onClick={() => setActiveSessionTab('upcoming')}
+                className={`text-sm pb-2 font-medium transition-colors relative ${activeSessionTab === 'upcoming' ? 'text-blue-400' : 'text-muted-foreground hover:text-white'}`}
+              >
+                Sắp diễn ra
+                {activeSessionTab === 'upcoming' && <span className="absolute bottom-[-9px] left-0 right-0 h-0.5 bg-blue-400 rounded-full" />}
+              </button>
+              <button 
+                onClick={() => setActiveSessionTab('ongoing')}
+                className={`text-sm pb-2 font-medium transition-colors relative ${activeSessionTab === 'ongoing' ? 'text-emerald-400' : 'text-muted-foreground hover:text-white'}`}
+              >
+                Đang diễn ra
+                {activeSessionTab === 'ongoing' && <span className="absolute bottom-[-9px] left-0 right-0 h-0.5 bg-emerald-400 rounded-full" />}
+              </button>
+              <button 
+                onClick={() => setActiveSessionTab('closed')}
+                className={`text-sm pb-2 font-medium transition-colors relative ${activeSessionTab === 'closed' ? 'text-rose-400' : 'text-muted-foreground hover:text-white'}`}
+              >
+                Đã đóng
+                {activeSessionTab === 'closed' && <span className="absolute bottom-[-9px] left-0 right-0 h-0.5 bg-rose-400 rounded-full" />}
+              </button>
             </div>
 
-            <div className="glass-card rounded-xl p-6 flex flex-col justify-center items-center text-center relative overflow-hidden group border-amber-500/20">
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent" />
-              <div className="relative z-10">
-                <Trophy className="w-12 h-12 text-amber-400 mx-auto mb-3" />
-                <h3 className="text-lg font-bold text-white mb-2">Thử thách tuần!</h3>
-                <p className="text-sm text-muted-foreground mb-4">Tham gia 3 buổi học tuần này để nhận Badge "Ngôi sao chăm chỉ" và 500 XP.</p>
-                <Link href="/gamification" className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-semibold text-sm transition-colors shadow-[0_0_15px_rgba(245,158,11,0.3)]">
-                  Xem nhiệm vụ
-                </Link>
-              </div>
+            <div className="space-y-3">
+              {activeSessionTab === 'upcoming' && (!dashboard?.upcomingSessions || dashboard.upcomingSessions.length === 0) && (
+                <p className="text-sm text-muted-foreground py-4 text-center">Không có lịch học sắp tới.</p>
+              )}
+              {activeSessionTab === 'ongoing' && (!dashboard?.ongoingSessions || dashboard.ongoingSessions.length === 0) && (
+                <p className="text-sm text-muted-foreground py-4 text-center">Không có buổi học nào đang diễn ra.</p>
+              )}
+              {activeSessionTab === 'closed' && (!dashboard?.closedSessions || dashboard.closedSessions.length === 0) && (
+                <p className="text-sm text-muted-foreground py-4 text-center">Chưa có lịch sử buổi học.</p>
+              )}
+
+              {activeSessionTab === 'upcoming' && dashboard?.upcomingSessions?.map((session, i) => (
+                <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                  <div>
+                    <p className="text-sm font-medium text-white">{session.title}</p>
+                    <p className="text-xs text-muted-foreground">Bắt đầu: {new Date(session.startTime).toLocaleString('vi-VN')}</p>
+                  </div>
+                  <Link href={`/sessions`} className="text-xs text-blue-400 hover:underline px-3 py-1 rounded bg-blue-500/10">Chi tiết</Link>
+                </div>
+              ))}
+              {activeSessionTab === 'ongoing' && dashboard?.ongoingSessions?.map((session, i) => (
+                <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                  <div>
+                    <p className="text-sm font-medium text-white">{session.title}</p>
+                    <p className="text-xs text-emerald-400 font-medium">Đang diễn ra</p>
+                  </div>
+                  <Link href={`/sessions`} className="text-xs text-emerald-400 hover:underline px-3 py-1 rounded bg-emerald-500/10">Tham gia ngay</Link>
+                </div>
+              ))}
+              {activeSessionTab === 'closed' && dashboard?.closedSessions?.map((session, i) => (
+                <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                  <div>
+                    <p className="text-sm font-medium text-white">{session.title}</p>
+                    <p className="text-xs text-muted-foreground">Kết thúc: {new Date(session.endTime).toLocaleString('vi-VN')}</p>
+                  </div>
+                  <span className="text-xs text-rose-400 px-3 py-1 rounded bg-rose-500/10">Đã đóng</span>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-4 pt-4 border-t border-white/10 text-center">
+               <Link href="/sessions" className="text-sm text-violet-400 hover:text-violet-300 transition-colors font-medium">
+                 Tìm thêm buổi học →
+               </Link>
             </div>
           </div>
         </div>

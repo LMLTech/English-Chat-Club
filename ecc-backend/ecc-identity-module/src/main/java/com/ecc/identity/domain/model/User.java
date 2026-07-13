@@ -75,6 +75,9 @@ public class User {
     @Column(name = "referral_code", unique = true, length = 20)
     private String referralCode;
 
+    @Column(name = "avatar_frame", length = 255)
+    private String avatarFrame;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "referred_by")
     private User referredBy;

@@ -31,10 +31,10 @@ export interface BadgeResponse {
 export interface LeaderboardEntryResponse {
   rank: number;
   userId: number;
-  username: string;
+  username?: string;
   avatarUrl?: string;
-  totalPoints: number;
-  cefrLevel?: string;
+  score: number;
+  levelTitle?: string;
 }
 
 // ---- Friends ----

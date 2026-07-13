@@ -2,13 +2,16 @@ package com.ecc.community.application.service;
 
 import com.ecc.community.api.dto.response.LeaderboardEntryResponse;
 import com.ecc.community.application.port.in.LeaderboardUseCase;
+import com.ecc.community.application.port.out.LevelConfigPort;
+import com.ecc.community.application.port.out.MemberPointsPort;
+import com.ecc.community.domain.model.LevelConfig;
+import com.ecc.community.domain.model.MemberPoints;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -35,6 +38,8 @@ public class LeaderboardService implements LeaderboardUseCase {
     private static final String KEY_MONTHLY = "leaderboard:monthly";
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final MemberPointsPort memberPointsPort;
+    private final LevelConfigPort levelConfigPort;
 
     // ─────────────────────────────────────────────────────────────────────────
     // Cập nhật điểm
@@ -68,11 +73,30 @@ public class LeaderboardService implements LeaderboardUseCase {
      * @param top  Số lượng trả về (tối đa 100)
      */
     public List<LeaderboardEntryResponse> getTopLeaderboard(String type, int top) {
-        String key = resolveKey(type);
-        Set<ZSetOperations.TypedTuple<Object>> tuples =
-                redisTemplate.opsForZSet().reverseRangeWithScores(key, 0, top - 1);
+        List<java.util.Map<String, Object>> topMembers = memberPointsPort.findTopMembersWithUserDetails(top);
+        List<LeaderboardEntryResponse> result = new ArrayList<>();
+        int rank = 1;
+        for (java.util.Map<String, Object> map : topMembers) {
+            Long userId = ((Number) map.get("userId")).longValue();
+            Long score = ((Number) map.get("totalPoints")).longValue();
+            Integer currentLevel = ((Number) map.get("currentLevel")).intValue();
+            String username = (String) map.get("username");
+            String avatarUrl = (String) map.get("avatarUrl");
 
-        return buildEntries(tuples);
+            String levelTitle = levelConfigPort.findById(currentLevel)
+                .map(LevelConfig::getTitle)
+                .orElse("Level " + currentLevel);
+
+            result.add(LeaderboardEntryResponse.builder()
+                    .rank(rank++)
+                    .userId(userId)
+                    .username(username)
+                    .avatarUrl(avatarUrl)
+                    .score(score)
+                    .levelTitle(levelTitle)
+                    .build());
+        }
+        return result;
     }
 
     /**

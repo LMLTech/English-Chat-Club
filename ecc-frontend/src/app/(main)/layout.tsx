@@ -7,6 +7,7 @@ import Sidebar from "@/components/shared/Sidebar";
 import Header from "@/components/shared/Header";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { useState } from "react";
+import { profileService } from "@/features/profile/profileService";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuthStore();
@@ -33,7 +34,21 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     }
     
     setIsAuthorized(true);
-  }, [user, mounted, router]);
+
+    // Lấy thông tin profile đầy đủ để cập nhật avatar và avatarFrame
+    if (user?.userId) {
+      profileService.getProfileById(user.userId)
+        .then((profile) => {
+          useAuthStore.getState().setUser({
+            ...useAuthStore.getState().user!,
+            fullName: profile.fullName,
+            avatarUrl: profile.avatarUrl,
+            avatarFrame: profile.avatarFrame,
+          });
+        })
+        .catch(console.error);
+    }
+  }, [user?.role, user?.userId, mounted, router]);
 
   if (!mounted || !isAuthorized) {
     return <LoadingSpinner size="lg" text="Đang tải dữ liệu..." />;

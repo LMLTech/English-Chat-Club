@@ -11,14 +11,14 @@ export interface SessionResponse {
   id: number;
   title: string;
   description?: string;
-  scheduledAt: string;
-  durationMinutes: number;
+  startTime: string;
+  endTime: string;
   maxParticipants: number;
   currentParticipants: number;
-  cefrLevel: string;
+  requiredLevel: string;
   status: string;
   topicId?: number;
-  topicName?: string;
+  topicTitle?: string;
   moderatorId: number;
   moderatorName?: string;
   zoomLink?: string;
