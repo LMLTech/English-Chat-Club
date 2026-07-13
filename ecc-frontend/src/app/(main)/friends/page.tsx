@@ -97,14 +97,14 @@ export default function FriendsPage() {
     // Check if the input exactly matches an email in searchResults
     const matchedUser = searchResults.find(u => u.email === receiverEmail);
     if (matchedUser) {
-      id = matchedUser.userId || (matchedUser as any).id;
+      id = matchedUser.id || (matchedUser as any).userId;
     } else {
       // Try fetching exact match
       try {
         const results = await profileService.searchProfileByEmail(receiverEmail.trim());
         const exactMatch = results.find(u => u.email === receiverEmail);
         if (exactMatch) {
-          id = exactMatch.userId || (exactMatch as any).id;
+          id = exactMatch.id || (exactMatch as any).userId;
         }
       } catch (e) {
         console.error(e);
@@ -185,7 +185,7 @@ export default function FriendsPage() {
               <div className="absolute top-full left-0 right-0 mt-2 bg-[#1a1b26] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 max-h-60 overflow-y-auto animate-fade-in">
                 {searchResults.map(user => (
                   <div 
-                    key={user.userId || (user as any).id}
+                    key={user.id || (user as any).userId}
                     onClick={() => {
                       setReceiverEmail(user.email);
                       setShowDropdown(false);

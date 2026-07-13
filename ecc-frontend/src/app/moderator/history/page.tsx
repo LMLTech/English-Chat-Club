@@ -79,7 +79,7 @@ export default function ModeratorHistoryPage() {
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Tổng giờ dạy</p>
-              <p className="text-2xl font-bold text-white">{Math.round(sessions.reduce((sum, s) => sum + (s.durationMinutes || 0), 0) / 60)}h</p>
+              <p className="text-2xl font-bold text-white">{Math.round(sessions.reduce((sum, s) => sum + (Math.round((new Date(s.endTime).getTime() - new Date(s.startTime).getTime()) / 60000) || 0), 0) / 60)}h</p>
             </div>
           </div>
         </motion.div>
@@ -126,11 +126,11 @@ export default function ModeratorHistoryPage() {
                 <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5" />
-                    {new Date(session.scheduledAt).toLocaleDateString("vi-VN")}
+                    {new Date(session.startTime).toLocaleDateString("vi-VN")}
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5" />
-                    {session.durationMinutes} phút
+                    {Math.round((new Date(session.endTime).getTime() - new Date(session.startTime).getTime()) / 60000)} phút
                   </span>
                   <span className="flex items-center gap-1">
                     <Users className="w-3.5 h-3.5" />
@@ -142,7 +142,7 @@ export default function ModeratorHistoryPage() {
               {/* Level & Status */}
               <div className="flex items-center gap-2 flex-shrink-0">
                 <span className="px-2.5 py-1 rounded-md bg-violet-500/10 text-violet-400 text-[10px] font-bold border border-violet-500/20">
-                  {session.cefrLevel}
+                  {session.requiredLevel}
                 </span>
                 <span className={cn(
                   "px-2.5 py-1 rounded-md text-[10px] font-bold border",

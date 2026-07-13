@@ -36,7 +36,7 @@ export default function Verify2faPage() {
           const { profileService } = await import("@/features/profile/profileService");
           const profile = await profileService.getProfile();
           setUser({
-            userId: profile.userId,
+            userId: profile.id,
             email: profile.email,
             fullName: profile.fullName,
             role: profile.role as any,

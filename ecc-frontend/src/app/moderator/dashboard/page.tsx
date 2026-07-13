@@ -54,10 +54,10 @@ export default function ModeratorDashboard() {
   const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
   const teachingData = dayNames.map(name => {
     const daySessions = sessions.filter(s => {
-      const d = new Date(s.scheduledAt);
+      const d = new Date(s.startTime);
       return dayNames[d.getDay()] === name;
     });
-    return { name, hours: Math.round(daySessions.reduce((sum, s) => sum + (s.durationMinutes || 0), 0) / 60 * 10) / 10 };
+    return { name, hours: Math.round(daySessions.reduce((sum, s) => sum + (Math.round((new Date(s.endTime).getTime() - new Date(s.startTime).getTime()) / 60000) || 0), 0) / 60 * 10) / 10 };
   });
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -220,7 +220,7 @@ export default function ModeratorDashboard() {
           <motion.div key={session.id} variants={slideIn} className="glass-card rounded-2xl p-5 border border-white/5 hover:border-amber-500/30 transition-all group">
             <div className="flex items-start justify-between mb-4">
               <span className="px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-400 text-[10px] font-bold tracking-wider border border-amber-500/20">
-                {session.cefrLevel}
+                {session.requiredLevel}
               </span>
               <span className="text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
                 {session.status}
@@ -231,10 +231,10 @@ export default function ModeratorDashboard() {
             </h3>
             <div className="space-y-2 mt-4 pt-4 border-t border-white/5">
               <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <CalendarIcon className="w-4 h-4" /> {new Date(session.scheduledAt).toLocaleDateString("vi-VN")}
+                <CalendarIcon className="w-4 h-4" /> {new Date(session.startTime).toLocaleDateString("vi-VN")}
               </p>
               <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <Clock className="w-4 h-4" /> {session.durationMinutes} phút
+                <Clock className="w-4 h-4" /> {Math.round((new Date(session.endTime).getTime() - new Date(session.startTime).getTime()) / 60000)} phút
               </p>
               <p className="text-sm text-muted-foreground flex items-center gap-2">
                 <Users className="w-4 h-4" /> {session.currentParticipants}/{session.maxParticipants} học viên
