@@ -149,7 +149,7 @@ export default function SessionsPage() {
             >
               <option value="ALL">Tất cả chủ đề</option>
               {topics.map(t => (
-                <option key={t.id} value={t.title}>{t.title}</option>
+                <option key={t.id} value={t.name}>{t.name}</option>
               ))}
             </select>
           </div>

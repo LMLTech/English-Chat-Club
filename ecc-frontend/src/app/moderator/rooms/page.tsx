@@ -139,7 +139,7 @@ export default function ModeratorRoomsPage() {
                   {session.status}
                 </span>
                 <span className="px-2.5 py-1 rounded-md bg-violet-500/10 text-violet-400 text-[10px] font-bold border border-violet-500/20">
-                  {session.cefrLevel}
+                  {session.requiredLevel}
                 </span>
               </div>
 
@@ -152,11 +152,11 @@ export default function ModeratorRoomsPage() {
               <div className="space-y-2 pt-3 border-t border-white/5">
                 <p className="text-sm text-muted-foreground flex items-center gap-2">
                   <Calendar className="w-4 h-4 flex-shrink-0" />
-                  {new Date(session.scheduledAt).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                  {new Date(session.startTime).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })}
                 </p>
                 <p className="text-sm text-muted-foreground flex items-center gap-2">
                   <Clock className="w-4 h-4 flex-shrink-0" />
-                  {session.durationMinutes} phút
+                  {Math.round((new Date(session.endTime).getTime() - new Date(session.startTime).getTime()) / 60000)} phút
                 </p>
                 <p className="text-sm text-muted-foreground flex items-center gap-2">
                   <Users className="w-4 h-4 flex-shrink-0" />
