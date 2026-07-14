@@ -4,6 +4,8 @@ export interface SupportTicketResponse {
   id: number;
   uuid: string;
   subject: string;
+  content: string;
+  replyMessage: string | null;
   category: string;
   status: string;
   priority: string;
@@ -15,32 +17,33 @@ export interface SupportTicketResponse {
 export interface CreateTicketRequest {
   subject: string;
   category: string;
-  priority: string;
-  message: string;
+  content: string;
 }
 
-export interface TicketMessageRequest {
-  message: string;
+export interface TicketReplyRequest {
+  replyMessage: string;
 }
 
 export const supportService = {
-  getTickets: async (status?: string): Promise<SupportTicketResponse[]> => {
-    const res = await axiosInstance.get('/api/support/tickets', { params: { status } });
+  // User APIs
+  getTickets: async (): Promise<SupportTicketResponse[]> => {
+    const res = await axiosInstance.get('/api/users/support-tickets');
     return res.data.data;
   },
 
-  createTicket: async (data: CreateTicketRequest): Promise<string> => {
-    const res = await axiosInstance.post('/api/support/tickets', data);
+  createTicket: async (data: CreateTicketRequest): Promise<SupportTicketResponse> => {
+    const res = await axiosInstance.post('/api/users/support-tickets', data);
     return res.data.data;
   },
 
-  closeTicket: async (uuid: string): Promise<string> => {
-    const res = await axiosInstance.put(`/api/support/tickets/${uuid}/close`);
+  // Admin APIs
+  getAllTickets: async (): Promise<SupportTicketResponse[]> => {
+    const res = await axiosInstance.get('/api/admin/support-tickets');
     return res.data.data;
   },
 
-  addMessage: async (uuid: string, data: TicketMessageRequest): Promise<string> => {
-    const res = await axiosInstance.post(`/api/support/tickets/${uuid}/messages`, data);
+  replyTicket: async (id: number, data: TicketReplyRequest): Promise<SupportTicketResponse> => {
+    const res = await axiosInstance.post(`/api/admin/support-tickets/${id}/reply`, data);
     return res.data.data;
   },
 };

@@ -16,4 +16,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("memberId") Long memberId,
             @Param("sessionId") Long sessionId
     );
+
+    @Query("SELECT b.session.id FROM Booking b WHERE b.memberId = :memberId AND b.status IN ('CONFIRMED', 'WAITING')")
+    java.util.List<Long> findBookedSessionIdsByMemberId(@Param("memberId") Long memberId);
 }

@@ -4,6 +4,7 @@ import { CalendarDays, Clock, Users, Star } from "lucide-react";
 import { SessionResponse } from "@/features/sessions/sessionService";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
+import Link from "next/link";
 
 interface SessionCardProps {
   session: SessionResponse;
@@ -109,14 +110,22 @@ export default function SessionCard({ session, onBook, onCancel, isBooked, isFul
 
       {/* Actions */}
       {session.status === "SCHEDULED" && (onBook || onCancel) && (
-        <div className="pt-3 border-t border-white/5">
+        <div className="pt-3 border-t border-white/5 flex gap-2">
           {isBooked ? (
-            <button
-              onClick={() => onCancel?.(session.id)}
-              className="w-full px-4 py-2 rounded-lg text-xs font-semibold text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-colors"
-            >
-              Hủy đặt chỗ
-            </button>
+            <>
+              <button
+                onClick={() => onCancel?.(session.id)}
+                className="flex-1 px-4 py-2 rounded-lg text-xs font-semibold text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+              >
+                Hủy đặt chỗ
+              </button>
+              <Link
+                href={`/sessions/${session.id}/room`}
+                className="flex-1 px-4 py-2 rounded-lg text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors flex items-center justify-center text-center"
+              >
+                Vào phòng
+              </Link>
+            </>
           ) : (
             <button
               onClick={() => onBook?.(session.id)}
@@ -129,6 +138,13 @@ export default function SessionCard({ session, onBook, onCancel, isBooked, isFul
               {isFull ? "Vào danh sách chờ" : "Đặt chỗ ngay"}
             </button>
           )}
+        </div>
+      )}
+      {session.status === "ONGOING" && (
+        <div className="pt-3 border-t border-white/5">
+          <Link href={`/sessions/${session.id}/room`} className="w-full px-4 py-2 rounded-lg text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors flex items-center justify-center">
+            Tham gia ngay
+          </Link>
         </div>
       )}
     </div>

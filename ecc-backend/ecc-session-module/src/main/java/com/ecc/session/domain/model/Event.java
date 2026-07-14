@@ -32,6 +32,9 @@ public class Event {
     @Column(name = "reward_points", nullable = false, columnDefinition = "INT DEFAULT 0")
     private Integer rewardPoints;
 
+    @Column(name = "image_url", columnDefinition = "TEXT")
+    private String imageUrl;
+
     @Column(nullable = false, length = 20)
     private String status; // UPCOMING, ONGOING, COMPLETED
 

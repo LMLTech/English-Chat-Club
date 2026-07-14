@@ -21,9 +21,28 @@ public class ModeratorSessionController {
 
     private final ManageSessionUseCase manageSessionUseCase;
     private final ModerationService moderationService;
+    private final com.ecc.session.application.port.in.ManageSessionReviewUseCase manageSessionReviewUseCase;
 
     private Long getCurrentUserId(Authentication authentication) {
         return Long.parseLong(authentication.getName());
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<java.util.List<SessionResponse>>> getMySessions(
+            Authentication authentication) {
+        Long moderatorId = getCurrentUserId(authentication);
+        java.util.List<SessionResponse> sessions = manageSessionUseCase.getModeratorSessions(moderatorId).stream()
+                .map(SessionResponse::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.success(sessions));
+    }
+
+    @GetMapping("/reviews")
+    public ResponseEntity<ApiResponse<java.util.List<com.ecc.session.api.dto.response.ReviewResponse>>> getMyReviews(
+            Authentication authentication) {
+        Long moderatorId = getCurrentUserId(authentication);
+        java.util.List<com.ecc.session.api.dto.response.ReviewResponse> reviews = manageSessionReviewUseCase.getReviewsForModerator(moderatorId);
+        return ResponseEntity.ok(ApiResponse.success(reviews));
     }
 
     @PostMapping
@@ -34,6 +53,23 @@ public class ModeratorSessionController {
         Long moderatorId = getCurrentUserId(authentication);
         Session session = manageSessionUseCase.createSession(moderatorId, request);
         return ResponseEntity.ok(ApiResponse.success(SessionResponse.fromEntity(session)));
+    }
+
+    @PostMapping("/upload-cover")
+    public ResponseEntity<ApiResponse<String>> uploadCover(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        try {
+            java.nio.file.Path uploadPath = java.nio.file.Paths.get("uploads/covers");
+            if (!java.nio.file.Files.exists(uploadPath)) {
+                java.nio.file.Files.createDirectories(uploadPath);
+            }
+            String fileName = java.util.UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            java.nio.file.Path filePath = uploadPath.resolve(fileName);
+            file.transferTo(filePath.toFile());
+            return ResponseEntity.ok(ApiResponse.success("/uploads/covers/" + fileName));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(400, "Lỗi khi upload ảnh"));
+        }
     }
 
     @PostMapping("/{id}/summary")

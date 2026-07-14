@@ -11,6 +11,7 @@ public class CreateEventRequest {
     private String title;
 
     private String description;
+    private String imageUrl;
 
     @NotNull(message = "Points required is required")
     private Integer pointsRequired;

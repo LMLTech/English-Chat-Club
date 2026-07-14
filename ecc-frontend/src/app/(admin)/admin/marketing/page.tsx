@@ -1,166 +1,227 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { adminService, EmailCampaign } from "@/features/admin/adminService";
 import { toast } from "sonner";
-import { Send, Mail, Edit3, Loader2, Image as ImageIcon, Paperclip, X } from "lucide-react";
-import axiosInstance from "@/lib/axios";
+import { Mail, Plus, Send, RefreshCw, Image as ImageIcon } from "lucide-react";
 
-export default function EmailMarketingPage() {
-  const [subject, setSubject] = useState("");
-  const [content, setContent] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [targetAudience, setTargetAudience] = useState("ALL");
-  const [attachedImage, setAttachedImage] = useState<string | null>(null);
+export default function AdminMarketingPage() {
+  const [campaigns, setCampaigns] = useState<EmailCampaign[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    title: "",
+    subject: "",
+    htmlContent: "",
+    targetSegment: "",
+    imageUrl: ""
+  });
 
-  const handleSendCampaign = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!subject || !content) {
-      toast.error("Vui lòng nhập đủ tiêu đề và nội dung email");
+  useEffect(() => {
+    fetchCampaigns();
+  }, []);
+
+  const fetchCampaigns = () => {
+    setLoading(true);
+    adminService.getCampaigns()
+      .then(res => setCampaigns(res || []))
+      .catch(() => toast.error("Không thể tải danh sách chiến dịch"))
+      .finally(() => setLoading(false));
+  };
+
+  const handleCreate = async () => {
+    if (!formData.title || !formData.subject || !formData.htmlContent) {
+      toast.error("Vui lòng điền đầy đủ thông tin bắt buộc");
       return;
     }
     
-    setLoading(true);
+    setIsSubmitting(true);
     try {
-      // 1. Tạo chiến dịch
-      const res = await axiosInstance.post('/api/content/campaigns', {
-        subject,
-        contentHtml: attachedImage ? `<img src="${attachedImage}" style="max-width: 100%; border-radius: 8px;" /><br/>${content}` : content,
-        targetAudience: targetAudience
-      });
-      const campaignId = res.data.data.id;
-
-      // 2. Gửi ngay lập tức
-      await axiosInstance.post(`/api/content/campaigns/${campaignId}/send-now`);
+      let finalHtml = formData.htmlContent;
+      if (formData.imageUrl) {
+        finalHtml = `<div style="text-align: center;"><img src="${formData.imageUrl}" alt="Campaign Image" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;" /></div>` + finalHtml;
+      }
       
-      toast.success("Chiến dịch Email đã được tạo và đang gửi ngầm!");
-      setSubject("");
-      setContent("");
-      setAttachedImage(null);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Lỗi khi gửi chiến dịch Email");
+      const newCampaign = await adminService.createCampaign({
+        title: formData.title,
+        subject: formData.subject,
+        htmlContent: finalHtml,
+        targetSegment: formData.targetSegment
+      });
+      
+      toast.success("Tạo chiến dịch thành công!");
+      setCampaigns(prev => [newCampaign, ...prev]);
+      setShowModal(false);
+      setFormData({ title: "", subject: "", htmlContent: "", targetSegment: "", imageUrl: "" });
+    } catch (err) {
+      toast.error("Lỗi khi tạo chiến dịch");
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSendNow = async (id: number) => {
+    try {
+      toast.info("Đang xử lý gửi email...");
+      await adminService.sendCampaignNow(id);
+      toast.success("Chiến dịch đã được đưa vào hàng đợi gửi (Background Task)");
+      fetchCampaigns();
+    } catch (err) {
+      toast.error("Lỗi khi gửi chiến dịch");
+    }
+  };
+
+  // Fake image upload for UI demonstration (since there is no generic upload endpoint in backend)
+  const handleFakeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith("image/")) {
-        toast.error("Vui lòng chọn một tệp hình ảnh hợp lệ.");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setAttachedImage(event.target?.result as string);
-        toast.success("Đã đính kèm ảnh thành công!");
-      };
-      reader.readAsDataURL(file);
+      const fakeUrl = URL.createObjectURL(file);
+      setFormData({ ...formData, imageUrl: fakeUrl });
+      toast.success("Đã tải ảnh lên thành công (Demo)");
     }
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2 mb-1">
-          <Mail className="w-6 h-6 text-pink-400" />
-          Email Marketing
-        </h1>
-        <p className="text-sm text-muted-foreground">Tạo và gửi chiến dịch email hàng loạt đến toàn bộ học viên</p>
+    <div className="space-y-6">
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Mail className="w-6 h-6 text-purple-400" />
+            Email Marketing
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">Quản lý và gửi email thông báo, sự kiện cho học viên</p>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={fetchCampaigns} className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-colors border border-white/10">
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+          <button 
+            onClick={() => setShowModal(true)}
+            className="px-4 h-10 rounded-xl bg-purple-600 hover:bg-purple-700 flex items-center gap-2 text-sm font-medium text-white transition-colors shadow-lg shadow-purple-500/20"
+          >
+            <Plus className="w-4 h-4" /> Tạo chiến dịch
+          </button>
+        </div>
       </div>
 
-      <div className="glass-card rounded-2xl p-6 border border-white/5 max-w-4xl">
-        <form onSubmit={handleSendCampaign} className="space-y-6">
-          
-          {/* Target Audience */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-white flex items-center gap-2">
-              <Mail className="w-4 h-4 text-pink-400" /> Đối tượng nhận Email
-            </label>
-            <select 
-              value={targetAudience}
-              onChange={(e) => setTargetAudience(e.target.value)}
-              className="ecc-input w-full"
-            >
-              <option value="ALL">Tất cả thành viên</option>
-              <option value="MEMBER">Chỉ Học viên (Members)</option>
-              <option value="MODERATOR">Chỉ Người điều phối (Moderators)</option>
-            </select>
-          </div>
-
-          {/* Subject */}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-white flex items-center gap-2">
-              <Edit3 className="w-4 h-4 text-pink-400" /> Tiêu đề Email
-            </label>
-            <input 
-              type="text" 
-              value={subject}
-              onChange={e => setSubject(e.target.value)}
-              placeholder="Nhập tiêu đề hấp dẫn..." 
-              className="ecc-input w-full"
-              required
-            />
-          </div>
-
-          {/* Content */}
-          <div className="space-y-2 relative">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-white flex items-center gap-2">
-                <Edit3 className="w-4 h-4 text-pink-400" /> Nội dung Email (Hỗ trợ HTML)
-              </label>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {loading ? (
+           <div className="col-span-full p-12 flex justify-center"><div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div></div>
+        ) : campaigns.length === 0 ? (
+           <div className="col-span-full p-12 flex justify-center text-muted-foreground text-sm glass-card rounded-2xl border border-white/5">Chưa có chiến dịch nào.</div>
+        ) : (
+          campaigns.map(camp => (
+            <div key={camp.id} className="glass-card rounded-2xl border border-white/5 p-5 flex flex-col group relative overflow-hidden hover:border-purple-500/30 transition-all">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               
-              {/* Toolbar */}
-              <div className="flex items-center gap-2">
-                <label className="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-xs font-medium text-white transition-colors border border-white/10">
-                  <ImageIcon className="w-3.5 h-3.5 text-blue-400" /> Chèn ảnh
-                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                </label>
-                <button type="button" className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 text-xs font-medium text-white transition-colors border border-white/10">
-                  <Paperclip className="w-3.5 h-3.5 text-emerald-400" /> Đính kèm tệp
-                </button>
+              <div className="flex justify-between items-start mb-3 relative">
+                <span className={`px-2 py-1 rounded text-[10px] font-bold ${
+                  camp.status === 'SENT' ? 'bg-emerald-500/10 text-emerald-400' :
+                  camp.status === 'SENDING' ? 'bg-blue-500/10 text-blue-400' :
+                  'bg-white/10 text-muted-foreground'
+                }`}>
+                  {camp.status || 'DRAFT'}
+                </span>
+                <span className="text-xs text-muted-foreground">{new Date(camp.createdAt).toLocaleDateString('vi-VN')}</span>
+              </div>
+              
+              <h3 className="text-lg font-bold text-white mb-1 relative truncate" title={camp.title}>{camp.title}</h3>
+              <p className="text-sm text-purple-200/60 mb-4 relative truncate" title={camp.subject}>{camp.subject}</p>
+              
+              <div className="mt-auto pt-4 border-t border-white/5 flex gap-2 relative">
+                {camp.status !== 'SENT' && camp.status !== 'SENDING' && (
+                  <button 
+                    onClick={() => handleSendNow(camp.id)}
+                    className="flex-1 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 border border-purple-500/20"
+                  >
+                    <Send className="w-3 h-3" /> Gửi ngay
+                  </button>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#12141c] border border-white/10 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
+            <div className="p-6 border-b border-white/5 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-white">Tạo chiến dịch mới</h2>
+              <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-white">✕</button>
+            </div>
+            
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto styled-scrollbar">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Tiêu đề (Nội bộ)</label>
+                <input 
+                  type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})}
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
+                  placeholder="VD: Khuyến mãi mùa hè 2026"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Chủ đề Email (Subject)</label>
+                <input 
+                  type="text" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})}
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
+                  placeholder="Khuyến mãi 50% các khóa học hè!"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Hình ảnh quảng cáo</label>
+                <div className="flex items-center gap-3">
+                  {formData.imageUrl && (
+                    <img src={formData.imageUrl} alt="Preview" className="h-10 w-10 object-cover rounded-md border border-white/10" />
+                  )}
+                  <button type="button" onClick={() => document.getElementById('campaign-img')?.click()} className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-white transition-colors flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4" /> {formData.imageUrl ? 'Thay ảnh khác' : 'Tải ảnh lên'}
+                  </button>
+                  <input type="file" id="campaign-img" accept="image/*" className="hidden" onChange={handleFakeUpload} />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Nội dung HTML</label>
+                <textarea 
+                  value={formData.htmlContent} onChange={e => setFormData({...formData, htmlContent: e.target.value})}
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 min-h-[150px] font-mono"
+                  placeholder="<h1>Chào bạn!</h1><p>Nội dung email...</p>"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Phân khúc gửi (Tùy chọn)</label>
+                <input 
+                  type="text" value={formData.targetSegment} onChange={e => setFormData({...formData, targetSegment: e.target.value})}
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
+                  placeholder='VD: {"level": "B1"}'
+                />
               </div>
             </div>
             
-            {/* Image Preview */}
-            {attachedImage && (
-              <div className="relative w-fit mb-3 group mt-2">
-                <img src={attachedImage} alt="Attachment Preview" className="h-32 rounded-lg border border-white/20 object-cover" />
-                <button 
-                  type="button" 
-                  onClick={() => setAttachedImage(null)}
-                  className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            )}
-
-            <textarea 
-              rows={12}
-              value={content}
-              onChange={e => setContent(e.target.value)}
-              placeholder="<h1>Xin chào các bạn</h1><p>Hôm nay chúng ta có ưu đãi đặc biệt...</p>"
-              className="ecc-input w-full font-mono text-sm resize-y"
-              required
-            />
-            <p className="text-xs text-muted-foreground mt-2">
-              Lưu ý: Nội dung sẽ được gửi dưới định dạng HTML. Hãy kiểm tra kỹ các thẻ trước khi gửi.
-            </p>
+            <div className="p-6 border-t border-white/5 bg-white/5 flex justify-end gap-3">
+              <button 
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-white transition-colors"
+              >
+                Hủy bỏ
+              </button>
+              <button 
+                onClick={handleCreate}
+                disabled={isSubmitting}
+                className="px-6 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-sm font-medium text-white transition-colors shadow-lg shadow-purple-500/20 flex items-center gap-2"
+              >
+                {isSubmitting ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "Tạo mới"}
+              </button>
+            </div>
           </div>
-
-          <div className="pt-4 border-t border-white/5 flex justify-end">
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="btn-primary bg-pink-600 hover:bg-pink-700 shadow-[0_0_15px_rgba(219,39,119,0.4)] flex items-center gap-2 px-8 py-3"
-            >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-              Gửi chiến dịch ngay
-            </button>
-          </div>
-        </form>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

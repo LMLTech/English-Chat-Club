@@ -17,9 +17,9 @@ export default function SupportPage() {
   // New ticket form
   const [subject, setSubject] = useState("");
   const [category, setCategory] = useState("TECHNICAL");
-  const [priority, setPriority] = useState("NORMAL");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [expandedTicketId, setExpandedTicketId] = useState<number | null>(null);
 
   const loadTickets = async () => {
     setLoading(true);
@@ -43,7 +43,7 @@ export default function SupportPage() {
 
     setSubmitting(true);
     try {
-      await supportService.createTicket({ subject, category, priority, message });
+      await supportService.createTicket({ subject, category, content: message });
       toast.success("Đã gửi yêu cầu hỗ trợ thành công!");
       setIsCreating(false);
       setSubject("");
@@ -132,20 +132,6 @@ export default function SupportPage() {
                   </select>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-foreground/80">Mức độ ưu tiên</label>
-                  <select
-                    value={priority}
-                    onChange={(e) => setPriority(e.target.value)}
-                    className="ecc-input"
-                  >
-                    <option value="LOW">Thấp</option>
-                    <option value="NORMAL">Bình thường</option>
-                    <option value="HIGH">Cao</option>
-                    <option value="URGENT">Khẩn cấp</option>
-                  </select>
-                </div>
-
                 <div className="space-y-1.5 md:col-span-2">
                   <label className="text-sm font-medium text-foreground/80">Nội dung chi tiết</label>
                   <textarea
@@ -201,20 +187,16 @@ export default function SupportPage() {
                 <motion.div
                   key={ticket.id}
                   variants={slideIn}
-                  className="glass-card rounded-xl p-5 border border-white/5 hover:border-white/10 hover:bg-white/[0.03] transition-all cursor-pointer group"
+                  className="glass-card rounded-xl border border-white/5 hover:border-white/10 transition-all overflow-hidden"
                 >
-                  <div className="flex flex-col md:flex-row md:items-center gap-4">
+                  <div 
+                    onClick={() => setExpandedTicketId(expandedTicketId === ticket.id ? null : ticket.id)}
+                    className="p-5 flex flex-col md:flex-row md:items-center gap-4 cursor-pointer hover:bg-white/[0.03]"
+                  >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 mb-2">
                         <span className="text-xs font-mono text-muted-foreground">#{ticket.id}</span>
                         {getStatusBadge(ticket.status)}
-                        <span className={`text-[10px] font-bold px-2 py-1 rounded border ${
-                          ticket.priority === 'URGENT' ? 'text-red-400 bg-red-500/10 border-red-500/20' :
-                          ticket.priority === 'HIGH' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' :
-                          'text-white/60 bg-white/5 border-white/10'
-                        }`}>
-                          {ticket.priority}
-                        </span>
                       </div>
                       <h3 className="text-base font-semibold text-white group-hover:text-violet-300 transition-colors truncate">
                         {ticket.subject}
@@ -231,10 +213,42 @@ export default function SupportPage() {
                       </div>
                     </div>
                     
-                    <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-white/5 group-hover:bg-violet-500/20 group-hover:text-violet-400 transition-colors">
-                      <ChevronRight className="w-5 h-5" />
+                    <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-white/5 transition-colors">
+                      <ChevronRight className={cn("w-5 h-5 transition-transform", expandedTicketId === ticket.id ? "rotate-90" : "")} />
                     </div>
                   </div>
+
+                  {/* Expanded Content */}
+                  <AnimatePresence>
+                    {expandedTicketId === ticket.id && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="border-t border-white/5 bg-white/[0.02]"
+                      >
+                        <div className="p-5 space-y-4">
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider font-semibold">Nội dung yêu cầu</p>
+                            <div className="p-3 rounded-lg bg-black/20 text-sm text-white/90 whitespace-pre-wrap border border-white/5">
+                              {ticket.content}
+                            </div>
+                          </div>
+                          
+                          {ticket.replyMessage && (
+                            <div>
+                              <p className="text-xs text-emerald-400 mb-1 uppercase tracking-wider font-semibold flex items-center gap-1.5">
+                                <CheckCircle2 className="w-3.5 h-3.5" /> Phản hồi từ Admin
+                              </p>
+                              <div className="p-3 rounded-lg bg-emerald-500/10 text-sm text-emerald-100/90 whitespace-pre-wrap border border-emerald-500/20">
+                                {ticket.replyMessage}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
               ))
             )}

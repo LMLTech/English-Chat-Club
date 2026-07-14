@@ -26,6 +26,14 @@ public class AdminSessionController {
         return ResponseEntity.ok(ApiResponse.success(pendingSessions));
     }
 
+    @GetMapping("/active")
+    public ResponseEntity<ApiResponse<java.util.List<SessionResponse>>> getActiveSessions() {
+        java.util.List<SessionResponse> activeSessions = manageSessionUseCase.getActiveSessions().stream()
+                .map(SessionResponse::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.success(activeSessions));
+    }
+
     @PutMapping("/{id}/approve")
     @Auditable(action = "APPROVE_SESSION", description = "Duyệt phiên học")
     public ResponseEntity<ApiResponse<SessionResponse>> approveSession(@PathVariable Long id) {

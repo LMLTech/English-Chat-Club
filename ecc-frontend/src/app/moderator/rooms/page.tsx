@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { sessionService, SessionResponse } from "@/features/sessions/sessionService";
+import { moderatorService } from "@/features/moderator/moderatorService";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,7 +23,7 @@ export default function ModeratorRoomsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    sessionService.getSessions()
+    moderatorService.getSessions()
       .then((data: any) => {
         const list = Array.isArray(data) ? data : (data?.content || []);
         setSessions(list);
@@ -43,11 +44,28 @@ export default function ModeratorRoomsPage() {
 
   const filteredSessions = sessions.filter(s => {
     const matchesSearch = s.title.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+
+    const now = new Date();
+    const start = new Date(s.startTime);
+    const end = new Date(s.endTime);
     const status = s.status?.toUpperCase();
-    if (activeTab === "active") return matchesSearch && (status === "ACTIVE" || status === "IN_PROGRESS");
-    if (activeTab === "upcoming") return matchesSearch && (status === "SCHEDULED" || status === "PENDING" || status === "APPROVED");
-    if (activeTab === "ended") return matchesSearch && (status === "COMPLETED" || status === "ENDED" || status === "CANCELLED");
-    return matchesSearch;
+
+    if (status === "CANCELLED") {
+      return activeTab === "ended";
+    }
+
+    if (activeTab === "active") {
+      return now >= start && now <= end;
+    }
+    if (activeTab === "upcoming") {
+      return now < start;
+    }
+    if (activeTab === "ended") {
+      return now > end;
+    }
+    
+    return true;
   });
 
   if (loading) return <LoadingSpinner size="lg" text="Đang tải phòng học..." />;
@@ -152,11 +170,11 @@ export default function ModeratorRoomsPage() {
               <div className="space-y-2 pt-3 border-t border-white/5">
                 <p className="text-sm text-muted-foreground flex items-center gap-2">
                   <Calendar className="w-4 h-4 flex-shrink-0" />
-                  {new Date(session.startTime).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                  {new Date(session.startTime).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })} - {new Date(session.endTime).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })}
                 </p>
                 <p className="text-sm text-muted-foreground flex items-center gap-2">
                   <Clock className="w-4 h-4 flex-shrink-0" />
-                  {Math.round((new Date(session.endTime).getTime() - new Date(session.startTime).getTime()) / 60000)} phút
+                  {new Date(session.startTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })} - {new Date(session.endTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
                 </p>
                 <p className="text-sm text-muted-foreground flex items-center gap-2">
                   <Users className="w-4 h-4 flex-shrink-0" />
@@ -173,20 +191,38 @@ export default function ModeratorRoomsPage() {
 
               {/* Actions */}
               <div className="mt-5 flex gap-2">
-                {(session.status === "ACTIVE" || session.status === "IN_PROGRESS") ? (
-                  <Link
-                    href={`/sessions/${session.id}/room`}
-                    className="flex-1 py-2.5 rounded-xl bg-amber-500 text-black font-semibold text-sm hover:bg-amber-400 transition-all text-center shadow-[0_0_15px_rgba(245,158,11,0.3)]"
+                {(() => {
+                  const now = new Date();
+                  const start = new Date(session.startTime);
+                  const end = new Date(session.endTime);
+                  
+                  if (now > end) {
+                    return (
+                      <button disabled className="flex-1 py-2.5 rounded-xl bg-white/5 text-muted-foreground font-medium text-sm text-center inline-block cursor-not-allowed border border-white/5">
+                        Đã kết thúc
+                      </button>
+                    );
+                  } else if (now >= start && now <= end) {
+                    return (
+                      <Link href={`/sessions/${session.id}/room`} className="flex-1 py-2.5 rounded-xl bg-amber-500 text-black font-semibold text-sm hover:bg-amber-400 transition-colors text-center shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+                        Vào phòng
+                      </Link>
+                    );
+                  } else {
+                    return (
+                      <Link href={`/sessions/${session.id}/room`} className="flex-1 py-2.5 rounded-xl bg-amber-500/20 text-amber-300 font-semibold text-sm hover:bg-amber-500/30 transition-colors text-center shadow-sm">
+                        Vào sớm (Chưa đến giờ)
+                      </Link>
+                    );
+                  }
+                })()}
+                
+                {new Date() < new Date(session.endTime) && (
+                  <Link 
+                    href="/moderator/dashboard"
+                    className="px-4 py-2.5 rounded-xl bg-white/5 text-white font-medium text-sm hover:bg-white/10 transition-colors border border-white/10"
                   >
-                    Vào phòng
-                  </Link>
-                ) : (
-                  <Link
-                    href={`/sessions/${session.id}/room`}
-                    className="flex-1 py-2.5 rounded-xl bg-white/5 text-white font-medium text-sm hover:bg-white/10 transition-colors text-center border border-white/10"
-                  >
-                    <Eye className="w-4 h-4 inline mr-1" />
-                    Xem chi tiết
+                    Sửa
                   </Link>
                 )}
               </div>

@@ -14,4 +14,7 @@ public interface BookingRepositoryPort {
 
     /** Tìm booking CONFIRMED của một member trong một session */
     Optional<Booking> findActiveByMemberIdAndSessionId(Long memberId, Long sessionId);
+
+    /** Lấy danh sách ID các session mà member đã đặt chỗ (bao gồm CONFIRMED và WAITING) */
+    java.util.List<Long> findBookedSessionIdsByMemberId(Long memberId);
 }

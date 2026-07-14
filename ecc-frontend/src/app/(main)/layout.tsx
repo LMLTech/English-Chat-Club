@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import Sidebar from "@/components/shared/Sidebar";
 import Header from "@/components/shared/Header";
@@ -12,6 +12,7 @@ import { profileService } from "@/features/profile/profileService";
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuthStore();
   const router = useRouter();
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
@@ -24,13 +25,17 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     
     // Check if user is an ADMIN or MODERATOR
     if (user?.role === 'ADMIN' || user?.role === 'ROLE_ADMIN') {
-      router.push('/admin/dashboard');
-      return;
+      if (!pathname?.includes('/room')) {
+        router.push('/admin/dashboard');
+        return;
+      }
     }
     
     if (user?.role === 'MODERATOR' || user?.role === 'ROLE_MODERATOR') {
-      router.push('/moderator/dashboard');
-      return;
+      if (!pathname?.includes('/room')) {
+        router.push('/moderator/dashboard');
+        return;
+      }
     }
     
     setIsAuthorized(true);
@@ -48,7 +53,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         })
         .catch(console.error);
     }
-  }, [user?.role, user?.userId, mounted, router]);
+  }, [user?.role, user?.userId, mounted, router, pathname]);
 
   if (!mounted || !isAuthorized) {
     return <LoadingSpinner size="lg" text="Đang tải dữ liệu..." />;

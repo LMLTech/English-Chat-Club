@@ -52,7 +52,7 @@ public class EmailCampaignService implements EmailCampaignUseCase {
         marketingPort.saveCampaign(campaign);
 
         // 1. Lấy danh sách email
-        List<String> targetEmails = marketingPort.getActiveUserEmails();
+        List<String> targetEmails = marketingPort.getActiveUserEmails(campaign.getTargetSegment());
         log.info("[Marketing] Bắt đầu gửi campaign '{}' cho {} users", campaign.getTitle(), targetEmails.size());
 
         // Tạo nội dung HTML chuyên nghiệp

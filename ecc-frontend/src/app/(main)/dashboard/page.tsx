@@ -227,33 +227,64 @@ export default function DashboardPage() {
                 <p className="text-sm text-muted-foreground py-4 text-center">Chưa có lịch sử buổi học.</p>
               )}
 
-              {activeSessionTab === 'upcoming' && dashboard?.upcomingSessions?.map((session, i) => (
-                <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                  <div>
-                    <p className="text-sm font-medium text-white">{session.title}</p>
-                    <p className="text-xs text-muted-foreground">Bắt đầu: {new Date(session.startTime).toLocaleString('vi-VN')}</p>
+              {activeSessionTab === 'upcoming' && dashboard?.upcomingSessions?.map((session, i) => {
+                const startTime = session.startTime || session.start_time || session.STARTTIME || session.START_TIME;
+                const endTime = session.endTime || session.end_time || session.ENDTIME || session.END_TIME;
+                const d = new Date(startTime);
+                const e = new Date(endTime || startTime);
+                const pad = (n: number) => n.toString().padStart(2, '0');
+                const dateStr = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+                const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())} - ${pad(e.getHours())}:${pad(e.getMinutes())}`;
+                
+                return (
+                  <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                    <div>
+                      <p className="text-sm font-medium text-white">{session.title || session.TITLE}</p>
+                      <p className="text-xs text-muted-foreground">{dateStr} • {timeStr}</p>
+                    </div>
+                    <Link href={`/sessions`} className="text-xs text-blue-400 hover:underline px-3 py-1 rounded bg-blue-500/10">Chi tiết</Link>
                   </div>
-                  <Link href={`/sessions`} className="text-xs text-blue-400 hover:underline px-3 py-1 rounded bg-blue-500/10">Chi tiết</Link>
-                </div>
-              ))}
-              {activeSessionTab === 'ongoing' && dashboard?.ongoingSessions?.map((session, i) => (
-                <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                  <div>
-                    <p className="text-sm font-medium text-white">{session.title}</p>
-                    <p className="text-xs text-emerald-400 font-medium">Đang diễn ra</p>
+                );
+              })}
+              {activeSessionTab === 'ongoing' && dashboard?.ongoingSessions?.map((session, i) => {
+                const startTime = session.startTime || session.start_time || session.STARTTIME || session.START_TIME;
+                const endTime = session.endTime || session.end_time || session.ENDTIME || session.END_TIME;
+                const d = new Date(startTime);
+                const e = new Date(endTime || startTime);
+                const pad = (n: number) => n.toString().padStart(2, '0');
+                const dateStr = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+                const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())} - ${pad(e.getHours())}:${pad(e.getMinutes())}`;
+                
+                return (
+                  <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                    <div>
+                      <p className="text-sm font-medium text-white">{session.title || session.TITLE}</p>
+                      <p className="text-xs text-muted-foreground">{dateStr} • {timeStr}</p>
+                      <p className="text-xs text-emerald-400 font-medium mt-1">Đang diễn ra</p>
+                    </div>
+                    <Link href={`/sessions/${session.id || session.ID}/room`} className="text-xs text-emerald-400 hover:underline px-3 py-1 rounded bg-emerald-500/10">Tham gia ngay</Link>
                   </div>
-                  <Link href={`/sessions`} className="text-xs text-emerald-400 hover:underline px-3 py-1 rounded bg-emerald-500/10">Tham gia ngay</Link>
-                </div>
-              ))}
-              {activeSessionTab === 'closed' && dashboard?.closedSessions?.map((session, i) => (
-                <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                  <div>
-                    <p className="text-sm font-medium text-white">{session.title}</p>
-                    <p className="text-xs text-muted-foreground">Kết thúc: {new Date(session.endTime).toLocaleString('vi-VN')}</p>
+                );
+              })}
+              {activeSessionTab === 'closed' && dashboard?.closedSessions?.map((session, i) => {
+                const startTime = session.startTime || session.start_time || session.STARTTIME || session.START_TIME;
+                const endTime = session.endTime || session.end_time || session.ENDTIME || session.END_TIME;
+                const d = new Date(startTime);
+                const e = new Date(endTime || startTime);
+                const pad = (n: number) => n.toString().padStart(2, '0');
+                const dateStr = `${pad(e.getDate())}/${pad(e.getMonth() + 1)}/${e.getFullYear()}`;
+                const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())} - ${pad(e.getHours())}:${pad(e.getMinutes())}`;
+                
+                return (
+                  <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                    <div>
+                      <p className="text-sm font-medium text-white">{session.title || session.TITLE}</p>
+                      <p className="text-xs text-muted-foreground">{dateStr} • {timeStr}</p>
+                    </div>
+                    <span className="text-xs text-rose-400 px-3 py-1 rounded bg-rose-500/10">Đã đóng</span>
                   </div>
-                  <span className="text-xs text-rose-400 px-3 py-1 rounded bg-rose-500/10">Đã đóng</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
             
             <div className="mt-4 pt-4 border-t border-white/10 text-center">

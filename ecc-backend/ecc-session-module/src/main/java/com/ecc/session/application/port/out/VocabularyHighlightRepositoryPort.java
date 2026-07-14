@@ -10,4 +10,5 @@ public interface VocabularyHighlightRepositoryPort {
     List<VocabularyHighlight> findAll();
     void deleteById(Long id);
     void delete(VocabularyHighlight entity);
+    List<VocabularyHighlight> findBySessionId(Long sessionId);
 }

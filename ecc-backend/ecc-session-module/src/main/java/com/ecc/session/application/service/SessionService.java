@@ -48,6 +48,7 @@ public class SessionService implements ManageSessionUseCase {
     private final WaitingListRepositoryPort waitingListRepositoryPort;
     private final PointsPort pointsPort;
     private final ApplicationEventPublisher eventPublisher;
+    private final com.ecc.session.application.port.out.VocabularyHighlightRepositoryPort vocabularyHighlightRepositoryPort;
 
     // ═══════════════════════════════════════════════════════════════════════
     // Flow 2.2 – Tạo Session (Moderator)
@@ -337,6 +338,22 @@ public class SessionService implements ManageSessionUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Session> getActiveSessions() {
+        return sessionRepositoryPort.findAll().stream()
+                .filter(s -> "IN_PROGRESS".equals(s.getStatus()) || "OPEN".equals(s.getStatus()))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Session> getModeratorSessions(Long moderatorId) {
+        return sessionRepositoryPort.findAll().stream()
+                .filter(s -> moderatorId.equals(s.getModeratorId()))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public com.ecc.session.api.dto.response.HandSignalResponse handleHandSignal(Long sessionId, Long senderId, com.ecc.session.api.dto.request.HandSignalRequest request) {
         Session session = sessionRepositoryPort.findById(sessionId)
                 .orElseThrow(() -> new BadRequestException("Phòng không tồn tại"));
@@ -361,5 +378,15 @@ public class SessionService implements ManageSessionUseCase {
                 .action(request.getAction())
                 .message(displayMessage)
                 .build();
+    }
+
+    @Override
+    public java.util.List<Long> getBookedSessionIds(Long memberId) {
+        return bookingRepositoryPort.findBookedSessionIdsByMemberId(memberId);
+    }
+
+    @Override
+    public java.util.List<com.ecc.session.domain.model.VocabularyHighlight> getVocabulariesBySessionId(Long sessionId) {
+        return vocabularyHighlightRepositoryPort.findBySessionId(sessionId);
     }
 }

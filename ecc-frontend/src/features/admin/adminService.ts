@@ -1,5 +1,27 @@
 import axiosInstance from '@/lib/axios';
 
+export interface SupportTicket {
+  id: number;
+  userId: number;
+  subject: string;
+  content: string;
+  status: string;
+  createdAt: string;
+  replyMessage?: string;
+  userEmail?: string;
+  userName?: string;
+}
+
+export interface EmailCampaign {
+  id: number;
+  title: string;
+  subject: string;
+  htmlContent: string;
+  targetSegment: string;
+  status: string;
+  createdAt: string;
+}
+
 export interface AdminTopicResponse {
   id: number;
   title: string;
@@ -19,9 +41,10 @@ export interface AdminEventResponse {
   id: number;
   title: string;
   description: string;
+  imageUrl: string;
   pointsRequired: number;
   rewardPoints: number;
-  status: string;
+  registeredCount?: number;
   startTime: string;
   endTime: string;
 }
@@ -29,6 +52,7 @@ export interface AdminEventResponse {
 export interface AdminEventRequest {
   title: string;
   description: string;
+  imageUrl?: string;
   pointsRequired: number;
   rewardPoints: number;
   startTime: string;
@@ -36,6 +60,12 @@ export interface AdminEventRequest {
 }
 
 export const adminService = {
+  // Dashboard
+  getDashboardStats: async (): Promise<any> => {
+    const res = await axiosInstance.get('/api/admin/dashboard/stats');
+    return res.data.data;
+  },
+
   // Users
   getUsers: async (): Promise<any[]> => {
     const res = await axiosInstance.get('/api/admin/users');
@@ -50,6 +80,11 @@ export const adminService = {
   // Sessions
   getPendingSessions: async (): Promise<any[]> => {
     const res = await axiosInstance.get('/api/admin/sessions/pending');
+    return res.data.data?.content || res.data.data || [];
+  },
+  
+  getActiveSessions: async (): Promise<any[]> => {
+    const res = await axiosInstance.get('/api/admin/sessions/active');
     return res.data.data?.content || res.data.data || [];
   },
 
@@ -86,6 +121,11 @@ export const adminService = {
   },
 
   // Events
+  getEvents: async (): Promise<AdminEventResponse[]> => {
+    const res = await axiosInstance.get('/api/admin/events');
+    return res.data.data;
+  },
+
   createEvent: async (data: AdminEventRequest): Promise<AdminEventResponse> => {
     const res = await axiosInstance.post('/api/admin/events', data);
     return res.data.data;
@@ -93,6 +133,33 @@ export const adminService = {
 
   updateAttendances: async (id: number, attendedUserIds: number[]): Promise<any> => {
     const res = await axiosInstance.put(`/api/admin/events/${id}/attendances`, { attendedUserIds });
+    return res.data.data;
+  },
+
+  // Support Tickets
+  getSupportTickets: async (): Promise<SupportTicket[]> => {
+    const res = await axiosInstance.get('/api/admin/support-tickets');
+    return res.data.data;
+  },
+
+  replySupportTicket: async (id: number, replyMessage: string): Promise<SupportTicket> => {
+    const res = await axiosInstance.post(`/api/admin/support-tickets/${id}/reply`, { replyMessage });
+    return res.data.data;
+  },
+
+  // Email Campaigns
+  getCampaigns: async (): Promise<EmailCampaign[]> => {
+    const res = await axiosInstance.get('/api/content/campaigns');
+    return res.data.data;
+  },
+
+  createCampaign: async (data: any): Promise<EmailCampaign> => {
+    const res = await axiosInstance.post('/api/content/campaigns', data);
+    return res.data.data;
+  },
+
+  sendCampaignNow: async (id: number): Promise<string> => {
+    const res = await axiosInstance.post(`/api/content/campaigns/${id}/send-now`);
     return res.data.data;
   },
 };

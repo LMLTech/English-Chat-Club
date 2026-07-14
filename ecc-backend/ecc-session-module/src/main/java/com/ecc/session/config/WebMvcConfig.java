@@ -13,5 +13,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         // Chuỗi "file:uploads/voices/" là đường dẫn vật lý trên máy tính
         registry.addResourceHandler("/files/voices/**")
                 .addResourceLocations("file:uploads/voices/");
+        registry.addResourceHandler("/uploads/covers/**")
+                .addResourceLocations("file:uploads/covers/");
     }
 }

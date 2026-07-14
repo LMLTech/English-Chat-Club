@@ -16,9 +16,11 @@ interface UseWebRTCProps {
   sessionId: number;
   onChatMessageReceived?: (msg: any) => void;
   onHandSignalReceived?: (msg: any) => void;
+  onVocabReceived?: (vocab: any) => void;
+  onUserStatusChanged?: (type: 'JOIN' | 'LEAVE', userId: string) => void;
 }
 
-export const useWebRTC = ({ sessionId, onChatMessageReceived, onHandSignalReceived }: UseWebRTCProps) => {
+export const useWebRTC = ({ sessionId, onChatMessageReceived, onHandSignalReceived, onVocabReceived, onUserStatusChanged }: UseWebRTCProps) => {
   const { user, accessToken } = useAuthStore();
   
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -30,7 +32,7 @@ export const useWebRTC = ({ sessionId, onChatMessageReceived, onHandSignalReceiv
   const peersRef = useRef<PeerConnectionMap>({});
   const localStreamRef = useRef<MediaStream | null>(null);
 
-  const STOMP_URL = 'http://localhost:8080/ws';
+  const STOMP_URL = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/ws`;
 
   const sendSignal = useCallback((type: string, targetId: string | null, payload: any) => {
     if (stompClientRef.current?.connected && user) {
@@ -107,6 +109,8 @@ export const useWebRTC = ({ sessionId, onChatMessageReceived, onHandSignalReceiv
   useEffect(() => {
     if (!user || !accessToken) return;
 
+    let isMounted = true;
+
     // 1. Lấy quyền Camera/Mic
     const initMedia = async () => {
       try {
@@ -115,6 +119,11 @@ export const useWebRTC = ({ sessionId, onChatMessageReceived, onHandSignalReceiv
         stream.getAudioTracks().forEach(t => t.enabled = false);
         stream.getVideoTracks().forEach(t => t.enabled = false);
         
+        if (!isMounted) {
+          stream.getTracks().forEach(t => t.stop());
+          return;
+        }
+
         setLocalStream(stream);
         localStreamRef.current = stream;
       } catch (error) {
@@ -125,6 +134,7 @@ export const useWebRTC = ({ sessionId, onChatMessageReceived, onHandSignalReceiv
 
     // 2. Kết nối STOMP
     const initStomp = () => {
+      if (!isMounted) return;
       const client = new Client({
         webSocketFactory: () => new SockJS(STOMP_URL),
         connectHeaders: {
@@ -140,6 +150,7 @@ export const useWebRTC = ({ sessionId, onChatMessageReceived, onHandSignalReceiv
             if (data.senderId === user.userId.toString()) return; // Ignore own signal
 
             if (data.type === 'user-joined') {
+              if (onUserStatusChanged) onUserStatusChanged('JOIN', data.senderId);
               // New user joined, we are already in the room, so we create an offer
               const pc = createPeerConnection(data.senderId);
               const offer = await pc.createOffer();
@@ -166,6 +177,7 @@ export const useWebRTC = ({ sessionId, onChatMessageReceived, onHandSignalReceiv
               }
             }
             else if (data.type === 'user-left') {
+               if (onUserStatusChanged) onUserStatusChanged('LEAVE', data.senderId);
                setRemoteStreams(prev => {
                  const newStreams = { ...prev };
                  delete newStreams[data.senderId];
@@ -175,6 +187,9 @@ export const useWebRTC = ({ sessionId, onChatMessageReceived, onHandSignalReceiv
                  peersRef.current[data.senderId].close();
                  delete peersRef.current[data.senderId];
                }
+            }
+            else if (data.type === 'vocab') {
+              if (onVocabReceived) onVocabReceived(data.payload);
             }
           });
 
@@ -205,6 +220,7 @@ export const useWebRTC = ({ sessionId, onChatMessageReceived, onHandSignalReceiv
     initMedia().then(initStomp);
 
     return () => {
+      isMounted = false;
       // Cleanup
       sendSignal('user-left', null, null);
       if (stompClientRef.current) stompClientRef.current.deactivate();
@@ -238,6 +254,7 @@ export const useWebRTC = ({ sessionId, onChatMessageReceived, onHandSignalReceiv
     toggleMic,
     toggleVideo,
     sendChatMessage,
-    sendHandSignal
+    sendHandSignal,
+    sendSignal
   };
 };

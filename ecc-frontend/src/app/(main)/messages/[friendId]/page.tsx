@@ -19,7 +19,7 @@ import SockJS from "sockjs-client";
 export default function ChatRoomPage() {
   const params = useParams();
   const friendId = Number(params.friendId);
-  const { user } = useAuthStore();
+  const { user, accessToken } = useAuthStore();
   
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,28 +46,31 @@ export default function ChatRoomPage() {
       .catch(console.error);
 
     // Connect WebSocket
-    const token = localStorage.getItem("accessToken");
-    if (!token || !user?.userId) return;
-
+    if (!accessToken || !user?.userId) return;
+    
+    let isMounted = true;
     const socket = new SockJS("http://localhost:8080/ws");
     const client = new Client({
       webSocketFactory: () => socket,
       connectHeaders: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${accessToken}`
       },
       debug: function (str) {
-        console.log(str);
+        // console.log(str);
       },
       onConnect: () => {
+        if (!isMounted) {
+          client.deactivate();
+          return;
+        }
         console.log("Connected to STOMP WebSocket");
         // Subscribe to direct messages queue
         client.subscribe(`/user/queue/direct`, (message) => {
           if (message.body) {
             const parsedMsg = JSON.parse(message.body);
-            // Only add if it's from this friend (or handle differently, but here we just append)
+            // Only add if it's from this friend
             if (parsedMsg.senderId === friendId || parsedMsg.receiverId === friendId) {
               setMessages(prev => {
-                // avoid duplicate by id
                 if (prev.some(m => m.id === parsedMsg.id)) return prev;
                 return [...prev, parsedMsg];
               });
@@ -77,19 +80,21 @@ export default function ChatRoomPage() {
       },
       onStompError: (frame) => {
         console.error('Broker reported error: ' + frame.headers['message']);
-        console.error('Additional details: ' + frame.body);
       }
     });
 
-    client.activate();
-    stompClientRef.current = client;
+    if (isMounted) {
+      client.activate();
+      stompClientRef.current = client;
+    }
 
     return () => {
-      if (client.active) {
-        client.deactivate();
+      isMounted = false;
+      if (stompClientRef.current) {
+        stompClientRef.current.deactivate();
       }
     };
-  }, [friendId, user?.userId]);
+  }, [friendId, user?.userId, accessToken]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
