@@ -64,6 +64,23 @@ public class MemberSessionController {
     }
 
     /**
+     * GET /api/sessions/my-bookings
+     * Lấy danh sách các session ID mà member đã đặt
+     */
+    @GetMapping("/my-bookings")
+    @PreAuthorize("hasAuthority('MEMBER')")
+    public ResponseEntity<ApiResponse<java.util.List<Long>>> getMyBookings(Authentication authentication) {
+        Long memberId = Long.parseLong(authentication.getName());
+        java.util.List<Long> bookedIds = manageSessionUseCase.getBookedSessionIds(memberId);
+        return ResponseEntity.ok(ApiResponse.success(bookedIds));
+    }
+
+    @GetMapping("/{id}/vocabularies")
+    public ResponseEntity<ApiResponse<java.util.List<com.ecc.session.domain.model.VocabularyHighlight>>> getVocabularies(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(manageSessionUseCase.getVocabulariesBySessionId(id)));
+    }
+
+    /**
      * DELETE /api/sessions/{id}/book
      * Flow 2.4 – Member hủy chỗ.
      * - Nếu hủy muộn (< 2h trước giờ bắt đầu) → trừ 5 điểm.

@@ -39,4 +39,9 @@ public class VocabularyHighlightRepositoryAdapter implements VocabularyHighlight
     public void delete(VocabularyHighlight entity) {
         repository.delete(entity);
     }
+
+    @Override
+    public List<VocabularyHighlight> findBySessionId(Long sessionId) {
+        return repository.findBySessionId(sessionId);
+    }
 }

@@ -12,4 +12,6 @@ public interface EventRegistrationRepositoryPort {
     void delete(EventRegistration entity);
     boolean existsByEventAndUserId(com.ecc.session.domain.model.Event event, Long userId);
     Optional<EventRegistration> findByEventAndUserId(com.ecc.session.domain.model.Event event, Long userId);
+    List<EventRegistration> findByUserId(Long userId);
+    List<EventRegistration> findByEventId(Long eventId);
 }

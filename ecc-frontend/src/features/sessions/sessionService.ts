@@ -65,8 +65,23 @@ export const sessionService = {
     return res.data.data;
   },
 
+  getMyBookedSessionIds: async (): Promise<number[]> => {
+    const res = await axiosInstance.get('/api/sessions/my-bookings');
+    return res.data.data;
+  },
+
   getSessionById: async (sessionId: number): Promise<SessionResponse> => {
     const res = await axiosInstance.get(`/api/sessions/${sessionId}`);
+    return res.data.data;
+  },
+
+  getChatHistory: async (sessionId: number): Promise<any[]> => {
+    const res = await axiosInstance.get(`/api/sessions/${sessionId}/messages`);
+    return res.data.data;
+  },
+
+  getVocabularies: async (sessionId: number): Promise<any[]> => {
+    const res = await axiosInstance.get(`/api/sessions/${sessionId}/vocabularies`);
     return res.data.data;
   },
 
@@ -111,9 +126,17 @@ export const sessionService = {
   },
 
   // Voice Record
-  saveVoiceRecord: async (sessionId: number, duration: number, fileBase64: string): Promise<void> => {
-    await axiosInstance.post('/api/voice/record', { file: fileBase64 }, {
-      params: { sessionId, duration }
+  saveVoiceRecord: async (sessionId: number, duration: number, audioBlob: Blob): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', audioBlob, 'record.webm');
+    formData.append('sessionId', sessionId.toString());
+    formData.append('duration', duration.toString());
+
+    const res = await axiosInstance.post('/api/voice/record', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
     });
+    return res.data.data;
   },
 };

@@ -32,6 +32,7 @@ public class EventService implements ManageEventUseCase {
         Event event = Event.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
+                .imageUrl(request.getImageUrl())
                 .pointsRequired(request.getPointsRequired())
                 .rewardPoints(request.getRewardPoints())
                 .status("UPCOMING")
@@ -46,7 +47,10 @@ public class EventService implements ManageEventUseCase {
     @Transactional(readOnly = true)
     public List<EventResponse> getAllEvents() {
         return eventRepository.findAll().stream()
-                .map(EventResponse::fromEntity)
+                .map(event -> {
+                    int count = eventRegistrationRepository.findByEventId(event.getId()).size();
+                    return EventResponse.fromEntityWithCount(event, count);
+                })
                 .collect(java.util.stream.Collectors.toList());
     }
 
@@ -100,5 +104,12 @@ public class EventService implements ManageEventUseCase {
 
         event.setStatus("COMPLETED");
         eventRepository.save(event);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> getMyRegistrations(Long userId) {
+        return eventRegistrationRepository.findByUserId(userId).stream()
+                .map(r -> r.getEvent().getId())
+                .collect(java.util.stream.Collectors.toList());
     }
 }

@@ -32,6 +32,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Buổi học", href: "/sessions", icon: CalendarDays },
+  { label: "Sự kiện", href: "/events", icon: CalendarDays },
   { label: "Diễn đàn", href: "/forum", icon: MessageSquare },
   { label: "Bạn bè", href: "/friends", icon: Users },
   { label: "Tin nhắn", href: "/messages", icon: BookOpen },
@@ -39,7 +40,7 @@ const navItems: NavItem[] = [
   { label: "Điểm & Huy hiệu", href: "/gamification", icon: Swords },
   { label: "Đổi quà", href: "/rewards", icon: Gift },
   { label: "Tài nguyên", href: "/resources", icon: Library },
-  { label: "Hỗ trợ", href: "/support", icon: LifeBuoy },
+  { label: "Hỗ trợ & Báo cáo", href: "/support", icon: LifeBuoy },
 ];
 
 export default function Sidebar() {
@@ -148,7 +149,7 @@ export default function Sidebar() {
               <Link href="/admin/support" className={cn("sidebar-item relative overflow-hidden group", isActive("/admin/support") ? "active text-white" : "text-muted-foreground hover:text-foreground")}>
                 {isActive("/admin/support") && <motion.div layoutId="active-nav" className="absolute inset-0 bg-white/10 rounded-lg -z-10" />}
                 <LifeBuoy className={cn("w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110", isActive("/admin/support") ? "text-violet-400" : "")} />
-                <span className="font-medium text-[13px]">Hỗ trợ</span>
+                <span className="font-medium text-[13px]">Hỗ trợ & Báo cáo</span>
               </Link>
             </motion.div>
             <motion.div variants={slideIn}>
@@ -156,6 +157,13 @@ export default function Sidebar() {
                 {isActive("/admin/marketing") && <motion.div layoutId="active-nav" className="absolute inset-0 bg-white/10 rounded-lg -z-10" />}
                 <Sparkles className={cn("w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110", isActive("/admin/marketing") ? "text-violet-400" : "")} />
                 <span className="font-medium text-[13px]">Email Marketing</span>
+              </Link>
+            </motion.div>
+            <motion.div variants={slideIn}>
+              <Link href="/admin/resources" className={cn("sidebar-item relative overflow-hidden group", isActive("/admin/resources") ? "active text-white" : "text-muted-foreground hover:text-foreground")}>
+                {isActive("/admin/resources") && <motion.div layoutId="active-nav" className="absolute inset-0 bg-white/10 rounded-lg -z-10" />}
+                <Library className={cn("w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110", isActive("/admin/resources") ? "text-violet-400" : "")} />
+                <span className="font-medium text-[13px]">Quản lý Tài nguyên</span>
               </Link>
             </motion.div>
           </>

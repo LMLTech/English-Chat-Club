@@ -58,9 +58,13 @@ public class EmailMarketingAdapter implements EmailMarketingPort {
     }
 
     @Override
-    public List<String> getActiveUserEmails() {
-        // Query SQL thuần vào bảng users của Identity Module (Decoupled tuyệt đối)
+    public List<String> getActiveUserEmails(String targetAudience) {
         String sql = "SELECT email FROM users WHERE status = 'ACTIVE'";
+        
+        if ("MEMBER".equals(targetAudience) || "MODERATOR".equals(targetAudience)) {
+            sql += " AND role = '" + targetAudience + "'";
+        }
+        
         return jdbcTemplate.queryForList(sql, String.class);
     }
 

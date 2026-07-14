@@ -23,10 +23,24 @@ function ChatMessageItem({ msg, isCurrentUser }: { msg: any, isCurrentUser: bool
 
   const displayName = isCurrentUser ? "Bạn" : (author?.fullName || `User ${msg.senderId}`);
   
+  if (msg.type === 'SYSTEM') {
+    return (
+      <div className="flex justify-center w-full my-2">
+        <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] text-muted-foreground">
+          {displayName} {msg.content === 'JOIN' ? 'đã tham gia phòng' : 'đã rời phòng'}
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div className={`flex flex-col gap-1 ${isCurrentUser ? "items-end" : "items-start"}`}>
       <div className={`px-3 py-2 rounded-2xl max-w-[85%] text-sm ${isCurrentUser ? "bg-violet-600 text-white rounded-tr-sm" : "bg-white/10 text-white rounded-tl-sm"}`}>
-        {msg.content}
+        {msg.type === 'VOICE' ? (
+          <audio src={msg.content.startsWith('http') ? msg.content : `${process.env.NEXT_PUBLIC_API_URL || ''}${msg.content}`} controls className="h-8 max-w-[200px]" />
+        ) : (
+          msg.content
+        )}
       </div>
       <span className="text-[10px] text-muted-foreground flex gap-1 items-center">
         {displayName}
@@ -76,13 +90,65 @@ export default function SessionRoomPage() {
   
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState("");
+  const [vocabList, setVocabList] = useState<{word: string, meaning: string}[]>([]);
+  const [participantProfiles, setParticipantProfiles] = useState<Record<string, UserProfileResponse>>({});
   
+  // Load from API and localStorage on mount
+  useEffect(() => {
+    if (params.id) {
+      sessionService.getChatHistory(Number(params.id))
+        .then((history) => {
+          if (history && Array.isArray(history)) {
+            setChatMessages(history);
+          }
+        })
+        .catch(console.error);
+
+      sessionService.getVocabularies(Number(params.id))
+        .then((vocabs) => {
+          if (vocabs && Array.isArray(vocabs)) {
+            setVocabList(vocabs);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [params.id]);
+
   const handleChatMessage = useCallback((msg: any) => {
-    setChatMessages(prev => [...prev, msg]);
+    setChatMessages(prev => {
+      // Basic deduplication for STOMP if needed, though StrictMode is fixed
+      if (prev.some(m => m.content === msg.content && m.senderId === msg.senderId && Math.abs(m.timestamp - msg.timestamp) < 1000)) {
+        return prev;
+      }
+      return [...prev, msg];
+    });
   }, []);
+
+  const [raisedHands, setRaisedHands] = useState<Set<string>>(new Set());
 
   const handleHandSignal = useCallback((msg: any) => {
     toast(msg.message, { icon: "👋" });
+    const id = String(msg.userId || msg.senderId || "unknown");
+    if (msg.action === "RAISE") {
+      setRaisedHands(prev => new Set(prev).add(id));
+    } else if (msg.action === "LOWER") {
+      setRaisedHands(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  }, []);
+
+  const handleUserStatusChanged = useCallback((type: 'JOIN' | 'LEAVE', userId: string) => {
+    setChatMessages(prev => [...prev, { type: 'SYSTEM', content: type, senderId: Number(userId), timestamp: Date.now() }]);
+    if (type === 'LEAVE') {
+      setRaisedHands(prev => {
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
+    }
   }, []);
 
   const {
@@ -93,16 +159,75 @@ export default function SessionRoomPage() {
     toggleMic,
     toggleVideo,
     sendChatMessage,
-    sendHandSignal
+    sendHandSignal,
+    sendSignal
   } = useWebRTC({ 
     sessionId: Number(params.id),
     onChatMessageReceived: handleChatMessage,
-    onHandSignalReceived: handleHandSignal
+    onHandSignalReceived: handleHandSignal,
+    onVocabReceived: (vocab) => {
+      setVocabList(prev => [...prev, vocab]);
+      toast.success(`Từ vựng mới: ${vocab.word} - ${vocab.meaning}`);
+    },
+    onUserStatusChanged: handleUserStatusChanged
   });
+
+  // Fetch profiles for connected peers
+  useEffect(() => {
+    const peerIds = Object.keys(remoteStreams);
+    peerIds.forEach(id => {
+      if (!participantProfiles[id]) {
+        profileService.getProfileById(Number(id)).then(profile => {
+          setParticipantProfiles(prev => ({ ...prev, [id]: profile }));
+        }).catch(() => {});
+      }
+    });
+  }, [remoteStreams, participantProfiles]);
 
   // Controls
   const [handRaised, setHandRaised] = useState(false);
   const [recording, setRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordStartTimeRef = useRef<number>(0);
+
+  const toggleRecording = async () => {
+    if (!recording) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const recorder = new MediaRecorder(stream);
+        audioChunksRef.current = [];
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) audioChunksRef.current.push(e.data);
+        };
+        recorder.onstop = async () => {
+          const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          const duration = Math.round((Date.now() - recordStartTimeRef.current) / 1000);
+          try {
+            const audioUrl = await sessionService.saveVoiceRecord(Number(params.id), duration, blob);
+            sendChatMessage(audioUrl, 'VOICE');
+            toast.success("Đã lưu và gửi bản ghi âm!");
+          } catch (err) {
+            toast.error("Lỗi khi gửi bản ghi âm!");
+          }
+        };
+        recorder.start();
+        mediaRecorderRef.current = recorder;
+        recordStartTimeRef.current = Date.now();
+        setRecording(true);
+        toast.success("Bắt đầu ghi âm...");
+      } catch (err) {
+        console.error(err);
+        toast.error("Không thể truy cập Micro để ghi âm!");
+      }
+    } else {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop());
+      }
+      setRecording(false);
+    }
+  };
   
   // Sidebars
   const [activeSidebar, setActiveSidebar] = useState<"chat" | "users" | "vocab" | null>("chat");
@@ -129,6 +254,11 @@ export default function SessionRoomPage() {
 
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
   const [summaryText, setSummaryText] = useState("");
+  
+  // Review Modal State
+  const [moderatorRating, setModeratorRating] = useState(5);
+  const [topicRating, setTopicRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
 
   // If redirecting, don't render room UI
   if (!user) return null;
@@ -137,14 +267,15 @@ export default function SessionRoomPage() {
     e.preventDefault();
     try {
       await sessionService.submitReview(Number(params.id), {
-        moderatorRating: 5,
-        topicRating: 5,
-        comment: "Great session!"
+        moderatorRating,
+        topicRating,
+        comment: reviewComment
       });
       toast.success("Cảm ơn bạn đã đánh giá!");
       router.push("/dashboard");
-    } catch (err) {
-      toast.error("Không thể gửi đánh giá");
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.message || "Không thể gửi đánh giá";
+      toast.error(errorMsg);
     }
   };
 
@@ -166,6 +297,8 @@ export default function SessionRoomPage() {
     if (!word || !meaning) return;
     try {
       await moderatorService.addVocabulary({ sessionId: Number(params.id), userId: user?.userId || 0, word, meaning });
+      sendSignal('vocab', null, { word, meaning });
+      setVocabList(prev => [...prev, { word, meaning }]);
       toast.success("Đã thêm từ vựng mới vào hệ thống");
     } catch (err) {
       toast.error("Lỗi thêm từ vựng");
@@ -207,7 +340,7 @@ export default function SessionRoomPage() {
             <h1 className="text-sm font-semibold text-white">{session?.title}</h1>
             <p className="text-[10px] text-muted-foreground flex items-center gap-2">
               <span className="flex items-center gap-1">
-                <Users className="w-3 h-3" /> {session?.currentParticipants}/{session?.maxParticipants}
+                <Users className="w-3 h-3" /> {Object.keys(remoteStreams).length + 1} đang tham gia
               </span>
               <span>•</span>
               <span className="text-emerald-400">Đang diễn ra</span>
@@ -258,10 +391,17 @@ export default function SessionRoomPage() {
             <div key={peerId} className="relative rounded-2xl bg-black/40 border border-white/5 overflow-hidden flex items-center justify-center group/user">
               <VideoPlayer stream={stream} isLocal={false} />
               <div className="absolute bottom-3 left-3">
-                <span className="px-2 py-1 rounded-md bg-black/60 backdrop-blur-md text-[10px] font-medium text-white">
-                  User {peerId}
+                <span className="px-2 py-1 rounded-md bg-black/60 backdrop-blur-md text-[10px] font-medium text-white flex flex-col items-start max-w-[150px]">
+                  <span className="truncate w-full">{participantProfiles[peerId]?.fullName || `User ${peerId}`}</span>
                 </span>
               </div>
+              {raisedHands.has(peerId) && (
+                <div className="absolute bottom-3 right-3">
+                  <span className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 border border-amber-500/30">
+                    <Hand className="w-4 h-4" />
+                  </span>
+                </div>
+              )}
               {isModerator && (
                 <div className="absolute top-2 right-2 opacity-0 group-hover/user:opacity-100 transition-opacity">
                   <button onClick={() => handleWarnUser(Number(peerId))} className="w-8 h-8 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors shadow-lg">
@@ -302,10 +442,53 @@ export default function SessionRoomPage() {
                   </>
                 )}
 
-                {activeSidebar === "vocab" && isModerator && (
-                  <button onClick={handleAddVocab} className="btn-ghost border border-white/10 border-dashed py-4 text-xs text-muted-foreground hover:text-white hover:border-white/30 transition-colors">
-                    + Thêm từ vựng mới
-                  </button>
+                {activeSidebar === "users" && (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
+                       <div className="w-10 h-10 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center font-bold">
+                         {user?.fullName?.[0] || 'U'}
+                       </div>
+                       <div className="flex-1 overflow-hidden">
+                         <p className="text-sm font-semibold text-white truncate">{user?.fullName || 'Bạn'} (Bạn)</p>
+                         <p className="text-xs text-muted-foreground truncate">{user?.email || ''}</p>
+                       </div>
+                    </div>
+                    {Object.keys(remoteStreams).map(peerId => {
+                      const p = participantProfiles[peerId];
+                      return (
+                        <div key={peerId} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10 group">
+                          <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+                            {p?.fullName?.[0] || 'U'}
+                          </div>
+                          <div className="flex-1 overflow-hidden">
+                            <p className="text-sm font-semibold text-white truncate">{p?.fullName || `User ${peerId}`}</p>
+                            <p className="text-xs text-muted-foreground truncate">{p?.email || ''}</p>
+                          </div>
+                          {isModerator && (
+                             <button onClick={() => handleWarnUser(Number(peerId))} className="p-2 opacity-0 group-hover:opacity-100 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-all" title="Cảnh cáo">
+                               <ShieldAlert className="w-4 h-4" />
+                             </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {activeSidebar === "vocab" && (
+                  <>
+                    {vocabList.map((v, i) => (
+                      <div key={i} className="p-3 bg-white/5 rounded-xl border border-white/10">
+                        <p className="text-amber-400 font-bold text-base">{v.word}</p>
+                        <p className="text-sm text-white mt-1">{v.meaning}</p>
+                      </div>
+                    ))}
+                    {isModerator && (
+                      <button onClick={handleAddVocab} className="btn-ghost border border-white/10 border-dashed py-4 text-xs text-muted-foreground hover:text-white hover:border-white/30 transition-colors">
+                        + Thêm từ vựng mới
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -369,16 +552,14 @@ export default function SessionRoomPage() {
             <Hand className="w-5 h-5" />
           </button>
 
-          {isModerator && (
-            <button 
-              onClick={() => setRecording(!recording)}
-              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all hidden md:flex ${
-                recording ? "bg-red-500 text-white animate-pulse" : "bg-white/10 hover:bg-white/20 text-white"
-              }`}
-            >
-              <Disc className="w-5 h-5" />
-            </button>
-          )}
+          <button 
+            onClick={toggleRecording}
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all hidden md:flex ${
+              recording ? "bg-red-500 text-white animate-pulse" : "bg-white/10 hover:bg-white/20 text-white"
+            }`}
+          >
+            <Disc className="w-5 h-5" />
+          </button>
 
           <div className="w-px h-8 bg-white/10 mx-2" />
 
@@ -429,12 +610,33 @@ export default function SessionRoomPage() {
               </div>
 
               <form onSubmit={submitReview} className="space-y-6">
+                <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10 mb-4">
+                   <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+                     {session?.moderatorName?.[0] || 'M'}
+                   </div>
+                   <div className="flex-1 overflow-hidden text-left">
+                     <p className="text-xs text-muted-foreground">Moderator</p>
+                     <p className="text-sm font-semibold text-white truncate">{session?.moderatorName || 'Moderator'}</p>
+                   </div>
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-white block text-center">Chất lượng Moderator</label>
                   <div className="flex justify-center gap-2">
                     {[1, 2, 3, 4, 5].map(i => (
-                      <button key={i} type="button" className="text-amber-400 hover:scale-110 transition-transform">
-                        <Star className="w-8 h-8 fill-amber-400" />
+                      <button key={i} type="button" onClick={() => setModeratorRating(i)} className={`hover:scale-110 transition-transform ${i <= moderatorRating ? 'text-amber-400' : 'text-gray-600'}`}>
+                        <Star className={`w-8 h-8 ${i <= moderatorRating ? 'fill-amber-400' : 'fill-gray-600'}`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-white block text-center">Chất lượng Chủ đề</label>
+                  <div className="flex justify-center gap-2">
+                    {[1, 2, 3, 4, 5].map(i => (
+                      <button key={i} type="button" onClick={() => setTopicRating(i)} className={`hover:scale-110 transition-transform ${i <= topicRating ? 'text-amber-400' : 'text-gray-600'}`}>
+                        <Star className={`w-8 h-8 ${i <= topicRating ? 'fill-amber-400' : 'fill-gray-600'}`} />
                       </button>
                     ))}
                   </div>
@@ -444,6 +646,8 @@ export default function SessionRoomPage() {
                   <label className="text-sm font-medium text-white block">Nhận xét (Tùy chọn)</label>
                   <textarea 
                     rows={3} 
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
                     placeholder="Buổi học rất hữu ích..."
                     className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-violet-500 resize-none"
                   />

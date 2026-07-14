@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { cn, staggerContainer, slideIn } from "@/lib/utils";
 import { 
   LayoutDashboard, Users, BookOpen, CalendarDays, 
-  ShieldCheck, ArrowLeft, LogOut
+  ShieldCheck, ArrowLeft, LogOut, Mail, MessageSquare, Library
 } from "lucide-react";
 import { authService } from "@/features/auth/authService";
 import { toast } from "sonner";
@@ -20,6 +20,9 @@ const adminNavItems = [
   { label: "Chủ đề học", href: "/admin/topics", icon: BookOpen },
   { label: "Sự kiện", href: "/admin/events", icon: CalendarDays },
   { label: "Duyệt Session", href: "/admin/sessions", icon: ShieldCheck },
+  { label: "Tài nguyên", href: "/admin/resources", icon: Library },
+  { label: "Marketing", href: "/admin/marketing", icon: Mail },
+  { label: "Hỗ trợ", href: "/admin/support", icon: MessageSquare },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { sessionService, SessionResponse } from "@/features/sessions/sessionService";
+import { moderatorService } from "@/features/moderator/moderatorService";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -18,7 +19,7 @@ export default function ModeratorHistoryPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    sessionService.getSessions()
+    moderatorService.getSessions()
       .then((data: any) => {
         const list = Array.isArray(data) ? data : (data?.content || []);
         // Show all sessions as history
@@ -28,9 +29,11 @@ export default function ModeratorHistoryPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = sessions.filter(s =>
-    s.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filtered = sessions.filter(s => {
+    const matchesSearch = s.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const isEnded = s.status === "COMPLETED" || s.status === "ENDED" || s.status === "CANCELLED";
+    return matchesSearch && isEnded;
+  });
 
   if (loading) return <LoadingSpinner size="lg" text="Đang tải lịch sử..." />;
 
@@ -146,7 +149,7 @@ export default function ModeratorHistoryPage() {
                 </span>
                 <span className={cn(
                   "px-2.5 py-1 rounded-md text-[10px] font-bold border",
-                  session.status === "COMPLETED" || session.status === "ENDED"
+                  session.status === "COMPLETED" || session.status === "ENDED" || session.status === "CLOSED"
                     ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
                     : "text-amber-400 bg-amber-500/10 border-amber-500/20"
                 )}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { staggerContainer, slideIn, cn } from "@/lib/utils";
 import { Star, MessageSquare, ThumbsUp, Filter, TrendingUp } from "lucide-react";
@@ -8,13 +8,29 @@ import { Star, MessageSquare, ThumbsUp, Filter, TrendingUp } from "lucide-react"
 export default function ModeratorReviewsPage() {
   const [filterRating, setFilterRating] = useState<number | null>(null);
 
-  // Note: Reviews will come from the backend API when the user receives real reviews
-  // This page is ready to display them when they arrive
-  const reviews: any[] = [];
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    import("@/features/moderator/moderatorService").then(mod => {
+      mod.moderatorService.getReviews()
+        .then(data => setReviews(data))
+        .catch(err => console.error(err))
+        .finally(() => setLoading(false));
+    });
+  }, []);
 
   const avgRating = reviews.length > 0
     ? (reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : "—";
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -116,25 +132,40 @@ export default function ModeratorReviewsPage() {
               variants={slideIn}
               className="glass-card rounded-xl p-5 border border-white/5 hover:border-amber-500/20 transition-all duration-300"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center text-amber-400 font-bold text-sm border border-amber-500/30">
-                    {review.userName?.[0] || "U"}
+              <div className="flex flex-col gap-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center text-amber-400 font-bold text-sm border border-amber-500/30">
+                      {review.userName?.[0] || "U"}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white">{review.userName || "Học viên"}</p>
+                      <p className="text-[10px] text-muted-foreground">Lớp học: {review.sessionTitle}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">{review.userName || "Học viên"}</p>
-                    <p className="text-[10px] text-muted-foreground">{review.sessionTitle}</p>
+                  <div className="text-right">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] text-muted-foreground">Moderator:</span>
+                      <div className="flex gap-0.5">
+                        {[1, 2, 3, 4, 5].map(i => (
+                          <Star key={`mod-${i}`} className={cn("w-3 h-3", i <= (review.moderatorRating || review.rating) ? "text-amber-400 fill-amber-400" : "text-white/10")} />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-muted-foreground">Chủ đề:</span>
+                      <div className="flex gap-0.5">
+                        {[1, 2, 3, 4, 5].map(i => (
+                          <Star key={`topic-${i}`} className={cn("w-3 h-3", i <= (review.topicRating || review.rating) ? "text-amber-400 fill-amber-400" : "text-white/10")} />
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="flex gap-0.5">
-                  {[1, 2, 3, 4, 5].map(i => (
-                    <Star key={i} className={cn("w-4 h-4", i <= review.rating ? "text-amber-400 fill-amber-400" : "text-white/10")} />
-                  ))}
-                </div>
+                {review.comment && (
+                  <p className="text-sm text-muted-foreground mt-3 pl-[52px]">&ldquo;{review.comment}&rdquo;</p>
+                )}
               </div>
-              {review.comment && (
-                <p className="text-sm text-muted-foreground mt-3 pl-[52px]">&ldquo;{review.comment}&rdquo;</p>
-              )}
             </motion.div>
           ))}
         </motion.div>

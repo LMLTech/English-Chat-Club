@@ -11,4 +11,5 @@ public interface SessionReviewRepositoryPort {
     void deleteById(Long id);
     void delete(SessionReview entity);
     boolean existsBySessionIdAndReviewerId(Long sessionId, Long reviewerId);
+    List<SessionReview> findBySessionIdIn(List<Long> sessionIds);
 }

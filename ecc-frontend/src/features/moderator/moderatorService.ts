@@ -5,7 +5,7 @@ export interface ModeratorSessionRequest {
   topicId: number;
   title: string;
   description: string;
-  coverImage: string;
+  coverImage?: string;
   maxParticipants: number;
   requiredLevel: string;
   startTime: string;
@@ -30,8 +30,18 @@ export interface ModerationVocabularyRequest {
 }
 
 export const moderatorService = {
+  getSessions: async (params?: any): Promise<SessionResponse[]> => {
+    const res = await axiosInstance.get('/api/moderator/sessions', { params });
+    return res.data.data;
+  },
+
   createSession: async (data: ModeratorSessionRequest): Promise<SessionResponse> => {
     const res = await axiosInstance.post('/api/moderator/sessions', data);
+    return res.data.data;
+  },
+
+  updateSession: async (id: number, data: ModeratorSessionRequest): Promise<SessionResponse> => {
+    const res = await axiosInstance.put(`/api/moderator/sessions/${id}`, data);
     return res.data.data;
   },
 
@@ -47,6 +57,22 @@ export const moderatorService = {
 
   addVocabulary: async (data: ModerationVocabularyRequest): Promise<any> => {
     const res = await axiosInstance.post('/api/moderation/vocabulary', data);
+    return res.data.data;
+  },
+
+  getReviews: async (): Promise<any[]> => {
+    const res = await axiosInstance.get('/api/moderator/sessions/reviews');
+    return res.data.data;
+  },
+
+  uploadCover: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await axiosInstance.post('/api/moderator/sessions/upload-cover', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
     return res.data.data;
   },
 };

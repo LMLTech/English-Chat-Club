@@ -44,4 +44,9 @@ public class SessionReviewRepositoryAdapter implements SessionReviewRepositoryPo
     public boolean existsBySessionIdAndReviewerId(Long sessionId, Long reviewerId) {
         return repository.existsBySessionIdAndReviewerId(sessionId, reviewerId);
     }
+    
+    @Override
+    public List<SessionReview> findBySessionIdIn(List<Long> sessionIds) {
+        return repository.findBySessionIdIn(sessionIds);
+    }
 }

@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface SessionReviewRepository extends JpaRepository<SessionReview, Long> {
     // Kiểm tra xem User đã từng review Session này chưa
     boolean existsBySessionIdAndReviewerId(Long sessionId, Long reviewerId);
+    
+    java.util.List<SessionReview> findBySessionIdIn(java.util.List<Long> sessionIds);
 }

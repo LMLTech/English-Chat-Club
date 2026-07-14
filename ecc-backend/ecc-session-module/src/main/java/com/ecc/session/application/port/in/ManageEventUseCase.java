@@ -11,4 +11,5 @@ public interface ManageEventUseCase {
     List<EventResponse> getAllEvents();
     void registerForEvent(Long eventId, Long userId);
     void updateAttendances(Long eventId, UpdateAttendanceRequest request);
+    List<Long> getMyRegistrations(Long userId);
 }

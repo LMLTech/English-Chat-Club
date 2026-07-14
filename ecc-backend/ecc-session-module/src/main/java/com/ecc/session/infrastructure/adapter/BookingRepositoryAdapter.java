@@ -28,4 +28,9 @@ public class BookingRepositoryAdapter implements BookingRepositoryPort {
     public Optional<Booking> findActiveByMemberIdAndSessionId(Long memberId, Long sessionId) {
         return bookingRepository.findActiveByMemberIdAndSessionId(memberId, sessionId);
     }
+
+    @Override
+    public java.util.List<Long> findBookedSessionIdsByMemberId(Long memberId) {
+        return bookingRepository.findBookedSessionIdsByMemberId(memberId);
+    }
 }

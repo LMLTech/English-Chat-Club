@@ -39,9 +39,28 @@ export default function SessionsPage() {
     ]).then(([topicsData, sessionsData]) => {
       setTopics(topicsData);
       setSessions(Array.isArray(sessionsData) ? sessionsData : (sessionsData?.content || []));
-    }).catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+    }).catch(console.error);
+
+    // Fetch booked sessions if user is logged in
+    if (user) {
+      import("@/features/sessions/sessionService").then(({ sessionService }) => {
+        sessionService.getMyBookedSessionIds()
+          .then(ids => {
+            setBookedIds(new Set(ids));
+          })
+          .catch(() => {});
+      });
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Handle loading state separately so it doesn't block if dashboard fails
+  useEffect(() => {
+    if (sessions.length > 0 || !loading) {
+      setLoading(false);
+    }
+  }, [sessions, loading]);
 
   const handleBook = async (sessionId: number) => {
     if (!user) {

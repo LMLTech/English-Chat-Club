@@ -55,4 +55,40 @@ public class SessionReviewService implements ManageSessionReviewUseCase {
         sessionReviewRepository.save(review);
         log.info("User {} đã gửi đánh giá thành công cho Session {}", reviewerId, sessionId);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.List<com.ecc.session.api.dto.response.ReviewResponse> getReviewsForModerator(Long moderatorId) {
+        java.util.List<Session> sessions = sessionRepository.findAll().stream()
+                .filter(s -> moderatorId.equals(s.getModeratorId()))
+                .collect(java.util.stream.Collectors.toList());
+
+        java.util.List<Long> sessionIds = sessions.stream()
+                .map(Session::getId)
+                .collect(java.util.stream.Collectors.toList());
+
+        if (sessionIds.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+
+        java.util.List<SessionReview> reviews = sessionReviewRepository.findBySessionIdIn(sessionIds);
+
+        return reviews.stream().map(r -> {
+            String title = sessions.stream()
+                    .filter(s -> s.getId().equals(r.getSessionId()))
+                    .map(Session::getTitle)
+                    .findFirst()
+                    .orElse("Unknown Session");
+            
+            // Tìm tên user, ở đây do không inject Identity Module nên dùng JDBC lấy tên học viên (nếu cùng DB)
+            String userName = "Học viên";
+            try {
+                userName = jdbcTemplate.queryForObject("SELECT full_name FROM users WHERE id = ?", String.class, r.getReviewerId());
+            } catch (Exception e) {
+                log.warn("Không tìm thấy tên user {}", r.getReviewerId());
+            }
+            
+            return com.ecc.session.api.dto.response.ReviewResponse.fromEntity(r, title, userName);
+        }).collect(java.util.stream.Collectors.toList());
+    }
 }

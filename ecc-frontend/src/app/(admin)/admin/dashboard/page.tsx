@@ -4,26 +4,39 @@ import { motion } from "framer-motion";
 import { Users, BookOpen, CalendarDays, ShieldCheck, Activity, TrendingUp, AlertTriangle } from "lucide-react";
 import { staggerContainer, scaleUp } from "@/lib/utils";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
-const stats = [
-  { title: "Tổng người dùng", value: "1,234", icon: Users, color: "text-blue-400", bg: "bg-blue-500/10" },
-  { title: "Phòng đang hoạt động", value: "12", icon: Activity, color: "text-rose-400", bg: "bg-rose-500/10" },
-  { title: "Sự kiện sắp tới", value: "3", icon: CalendarDays, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-  { title: "Báo cáo cần xử lý", value: "5", icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-500/10" },
-];
-
-const trafficData = [
-  { name: 'T2', users: 400, sessions: 240 },
-  { name: 'T3', users: 300, sessions: 139 },
-  { name: 'T4', users: 200, sessions: 980 },
-  { name: 'T5', users: 278, sessions: 390 },
-  { name: 'T6', users: 189, sessions: 480 },
-  { name: 'T7', users: 239, sessions: 380 },
-  { name: 'CN', users: 349, sessions: 430 },
-];
+import { adminService } from "@/features/admin/adminService";
 
 export default function AdminDashboard() {
+  const [statsData, setStatsData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    adminService.getDashboardStats()
+      .then(data => setStatsData(data))
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const stats = [
+    { title: "Tổng người dùng", value: statsData?.totalUsers || 0, icon: Users, color: "text-blue-400", bg: "bg-blue-500/10" },
+    { title: "Phòng đang hoạt động", value: statsData?.activeSessions || 0, icon: Activity, color: "text-rose-400", bg: "bg-rose-500/10" },
+    { title: "Sự kiện sắp tới", value: statsData?.upcomingEvents || 0, icon: CalendarDays, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+    { title: "Báo cáo cần xử lý", value: statsData?.pendingTickets || 0, icon: AlertTriangle, color: "text-amber-400", bg: "bg-amber-500/10" },
+  ];
+
+  const trafficData = statsData?.trafficData || [];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

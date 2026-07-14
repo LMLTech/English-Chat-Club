@@ -27,6 +27,20 @@ export interface BadgeResponse {
   awardedAt: string;
 }
 
+// ---- Events ----
+export interface EventResponse {
+  id: number;
+  title: string;
+  description: string;
+  imageUrl: string;
+  pointsRequired: number;
+  rewardPoints: number;
+  status: string;
+  startTime: string;
+  endTime: string;
+  attendancesCount?: number;
+}
+
 // ---- Leaderboard ----
 export interface LeaderboardEntryResponse {
   rank: number;
@@ -72,6 +86,22 @@ export const communityService = {
 
   getMyBadges: async (): Promise<BadgeResponse[]> => {
     const res = await axiosInstance.get('/api/community/me/badges');
+    return res.data.data;
+  },
+
+  // Events
+  getPublicEvents: async (): Promise<EventResponse[]> => {
+    const res = await axiosInstance.get('/api/events');
+    return res.data.data;
+  },
+
+  getMyEventRegistrations: async (): Promise<number[]> => {
+    const res = await axiosInstance.get('/api/events/my-registrations');
+    return res.data.data;
+  },
+
+  registerForEvent: async (eventId: number): Promise<any> => {
+    const res = await axiosInstance.post(`/api/events/${eventId}/register`);
     return res.data.data;
   },
 

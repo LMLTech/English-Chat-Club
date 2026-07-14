@@ -4,18 +4,26 @@ import { useState, useEffect } from "react";
 import { adminService } from "@/features/admin/adminService";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheck, CheckCircle2, Clock } from "lucide-react";
+import { ShieldCheck, CheckCircle2, Clock, Activity } from "lucide-react";
 import { slideIn, staggerContainer } from "@/lib/utils";
 
 export default function AdminSessionsPage() {
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [pendingSessions, setPendingSessions] = useState<any[]>([]);
+  const [activeSessions, setActiveSessions] = useState<any[]>([]);
   const [approvingId, setApprovingId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<'pending' | 'active'>('pending');
 
   useEffect(() => {
-    adminService.getPendingSessions()
-      .then(setSessions)
-      .catch(() => toast.error("Không thể tải danh sách session chờ duyệt"))
+    Promise.all([
+      adminService.getPendingSessions(),
+      adminService.getActiveSessions()
+    ])
+      .then(([pending, active]) => {
+        setPendingSessions(pending);
+        setActiveSessions(active);
+      })
+      .catch(() => toast.error("Không thể tải danh sách session"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -24,7 +32,10 @@ export default function AdminSessionsPage() {
     try {
       await adminService.approveSession(id);
       toast.success("Đã duyệt Session thành công!");
-      setSessions(prev => prev.filter(s => s.id !== id));
+      setPendingSessions(prev => prev.filter(s => s.id !== id));
+      // Refresh active sessions
+      const active = await adminService.getActiveSessions();
+      setActiveSessions(active);
     } catch (err: any) {
       toast.error("Lỗi khi duyệt session");
     } finally {
@@ -42,49 +53,104 @@ export default function AdminSessionsPage() {
         <p className="text-sm text-muted-foreground mt-1">Kiểm duyệt các phòng học do Moderator yêu cầu tạo</p>
       </div>
 
-      {sessions.length === 0 ? (
-        <div className="glass-card rounded-2xl p-12 text-center border border-white/5">
-          <CheckCircle2 className="w-16 h-16 text-emerald-400 opacity-50 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-white mb-2">Tất cả đã được xử lý</h2>
-          <p className="text-muted-foreground">Không còn session nào đang chờ duyệt lúc này.</p>
-        </div>
-      ) : (
-        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <AnimatePresence>
-            {sessions.map(session => (
-              <motion.div 
-                key={session.id} 
-                variants={slideIn} 
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="glass-card rounded-2xl p-5 border border-amber-500/20 bg-amber-500/5 relative overflow-hidden group"
-              >
-                <div className="absolute top-0 right-0 p-3">
-                  <span className="px-2 py-1 rounded bg-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> Chờ duyệt
-                  </span>
-                </div>
+      <div className="flex gap-4 border-b border-white/10 pb-2">
+        <button 
+          onClick={() => setTab('pending')}
+          className={`text-sm pb-2 font-medium transition-colors relative ${tab === 'pending' ? 'text-amber-400' : 'text-muted-foreground hover:text-white'}`}
+        >
+          Chờ duyệt ({pendingSessions.length})
+          {tab === 'pending' && <span className="absolute bottom-[-9px] left-0 right-0 h-0.5 bg-amber-400 rounded-full" />}
+        </button>
+        <button 
+          onClick={() => setTab('active')}
+          className={`text-sm pb-2 font-medium transition-colors relative ${tab === 'active' ? 'text-emerald-400' : 'text-muted-foreground hover:text-white'}`}
+        >
+          Đang hoạt động ({activeSessions.length})
+          {tab === 'active' && <span className="absolute bottom-[-9px] left-0 right-0 h-0.5 bg-emerald-400 rounded-full" />}
+        </button>
+      </div>
 
-                <div className="mt-4">
-                  <h3 className="text-lg font-bold text-white mb-1 line-clamp-1">{session.title}</h3>
-                  <p className="text-sm text-amber-200/60 mb-4">{session.moderatorName}</p>
-                  
-                  <div className="space-y-1.5 mb-6">
-                    <p className="text-xs text-muted-foreground">Thời gian: <span className="text-white">{session.scheduledAt ? new Date(session.scheduledAt).toLocaleString() : ''}</span></p>
-                    <p className="text-xs text-muted-foreground">Trình độ: <span className="text-white font-bold">{session.cefrLevel}</span></p>
+      {tab === 'pending' ? (
+        pendingSessions.length === 0 ? (
+          <div className="glass-card rounded-2xl p-12 text-center border border-white/5">
+            <CheckCircle2 className="w-16 h-16 text-emerald-400 opacity-50 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-white mb-2">Tất cả đã được xử lý</h2>
+            <p className="text-muted-foreground">Không còn session nào đang chờ duyệt lúc này.</p>
+          </div>
+        ) : (
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence>
+              {pendingSessions.map(session => (
+                <motion.div 
+                  key={session.id} 
+                  variants={slideIn} 
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="glass-card rounded-2xl p-5 border border-amber-500/20 bg-amber-500/5 relative overflow-hidden group"
+                >
+                  <div className="absolute top-0 right-0 p-3">
+                    <span className="px-2 py-1 rounded bg-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> Chờ duyệt
+                    </span>
                   </div>
 
-                  <button 
-                    onClick={() => handleApprove(session.id)}
-                    disabled={approvingId === session.id}
-                    className="w-full py-2.5 rounded-lg bg-amber-500 text-black font-bold text-sm hover:bg-amber-400 transition-colors shadow-[0_0_15px_rgba(245,158,11,0.2)] disabled:opacity-50"
-                  >
-                    {approvingId === session.id ? "Đang xử lý..." : "Chấp thuận mở phòng"}
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+                  <div className="mt-4">
+                    <h3 className="text-lg font-bold text-white mb-1 line-clamp-1">{session.title}</h3>
+                    <p className="text-sm text-amber-200/60 mb-4">{session.moderatorName || 'Moderator'}</p>
+                    
+                    <div className="space-y-1.5 mb-6">
+                      <p className="text-xs text-muted-foreground">Thời gian: <span className="text-white">{session.startTime ? new Date(session.startTime).toLocaleString('vi-VN') : session.scheduledAt ? new Date(session.scheduledAt).toLocaleString() : ''}</span></p>
+                      <p className="text-xs text-muted-foreground">Trình độ: <span className="text-white font-bold">{session.requiredLevel || session.cefrLevel}</span></p>
+                    </div>
+
+                    <button 
+                      onClick={() => handleApprove(session.id)}
+                      disabled={approvingId === session.id}
+                      className="w-full py-2.5 rounded-lg bg-amber-500 text-black font-bold text-sm hover:bg-amber-400 transition-colors shadow-[0_0_15px_rgba(245,158,11,0.2)] disabled:opacity-50"
+                    >
+                      {approvingId === session.id ? "Đang xử lý..." : "Chấp thuận mở phòng"}
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )
+      ) : (
+        activeSessions.length === 0 ? (
+          <div className="glass-card rounded-2xl p-12 text-center border border-white/5">
+            <h2 className="text-xl font-bold text-white mb-2">Không có phòng nào đang hoạt động</h2>
+            <p className="text-muted-foreground">Hiện tại hệ thống không có phòng nào ở trạng thái IN_PROGRESS hoặc OPEN.</p>
+          </div>
+        ) : (
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence>
+              {activeSessions.map(session => (
+                <motion.div 
+                  key={session.id} 
+                  variants={slideIn} 
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="glass-card rounded-2xl p-5 border border-emerald-500/20 bg-emerald-500/5 relative overflow-hidden group"
+                >
+                  <div className="absolute top-0 right-0 p-3">
+                    <span className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                      <Activity className="w-3 h-3" /> Đang hoạt động
+                    </span>
+                  </div>
+
+                  <div className="mt-4">
+                    <h3 className="text-lg font-bold text-white mb-1 line-clamp-1">{session.title}</h3>
+                    <p className="text-sm text-emerald-200/60 mb-4">{session.moderatorName || 'Moderator'}</p>
+                    
+                    <div className="space-y-1.5 mb-6">
+                      <p className="text-xs text-muted-foreground">Bắt đầu: <span className="text-white">{session.startTime ? new Date(session.startTime).toLocaleString('vi-VN') : ''}</span></p>
+                      <p className="text-xs text-muted-foreground">Học viên: <span className="text-white font-bold">{session.currentParticipants}/{session.maxParticipants}</span></p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )
       )}
     </div>
   );

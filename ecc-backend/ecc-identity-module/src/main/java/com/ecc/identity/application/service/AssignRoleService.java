@@ -26,7 +26,8 @@ public class AssignRoleService implements AssignRoleUseCase {
         Role role = roleRepository.findByName(roleName.toUpperCase())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy quyền: " + roleName));
 
-        // Thêm quyền mới vào danh sách quyền của User
+        // Xóa các quyền cũ và gán quyền mới
+        user.getRoles().clear();
         user.addRole(role);
         userRepository.save(user);
     }

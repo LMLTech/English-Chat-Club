@@ -11,7 +11,11 @@ public interface ManageSessionUseCase {
     BookingResponse bookSession(Long memberId, Long sessionId, String memberStatus, String memberCefrLevel);
     BookingResponse cancelBooking(Long memberId, Long sessionId);
     BookingResponse confirmPromotion(Long memberId, Long sessionId);
+    List<Long> getBookedSessionIds(Long memberId);
+    List<com.ecc.session.domain.model.VocabularyHighlight> getVocabulariesBySessionId(Long sessionId);
     List<Session> getAvailableSessions();
     List<Session> getPendingSessions();
+    List<Session> getActiveSessions();
+    List<Session> getModeratorSessions(Long moderatorId);
     com.ecc.session.api.dto.response.HandSignalResponse handleHandSignal(Long sessionId, Long senderId, com.ecc.session.api.dto.request.HandSignalRequest request);
 }

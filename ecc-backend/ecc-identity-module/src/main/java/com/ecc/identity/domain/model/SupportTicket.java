@@ -37,8 +37,25 @@ public class SupportTicket {
         return user != null ? user.getId() : null;
     }
 
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    public String getUserEmail() {
+        return user != null ? user.getEmail() : null;
+    }
+
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    public String getUserName() {
+        if (user == null) return null;
+        return user.getFullName();
+    }
+
     @Column(nullable = false, length = 255)
     private String subject;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String content;
+
+    @Column(columnDefinition = "TEXT")
+    private String replyMessage;
 
     @Column(nullable = false, length = 50)
     private String category; // TECHNICAL, ACCOUNT, COMPLAINT, OTHER

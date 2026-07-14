@@ -59,6 +59,9 @@ export default function LoginPage() {
             const decoded = parseJwt(data.accessToken);
             userRole = decoded?.roles?.[0] || decoded?.role || 'MEMBER';
           }
+          
+          userRole = (userRole || '').toUpperCase();
+          
           // Remove ROLE_ prefix if present for uniformity
           if (userRole.startsWith('ROLE_')) {
             userRole = userRole.replace('ROLE_', '');

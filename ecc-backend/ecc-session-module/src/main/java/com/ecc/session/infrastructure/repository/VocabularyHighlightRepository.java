@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface VocabularyHighlightRepository extends JpaRepository<VocabularyHighlight, Long> {
+    java.util.List<VocabularyHighlight> findBySessionId(Long sessionId);
 }

@@ -46,6 +46,16 @@ public class EventRegistrationRepositoryAdapter implements EventRegistrationRepo
     }
 
     @Override
+    public List<EventRegistration> findByUserId(Long userId) {
+        return repository.findByUserId(userId);
+    }
+
+    @Override
+    public List<EventRegistration> findByEventId(Long eventId) {
+        return repository.findByEvent_Id(eventId);
+    }
+
+    @Override
     public Optional<EventRegistration> findByEventAndUserId(com.ecc.session.domain.model.Event event, Long userId) {
         return repository.findByEventAndUserId(event, userId);
     }

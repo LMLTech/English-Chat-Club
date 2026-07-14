@@ -13,27 +13,15 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     adminService.getUsers()
       .then(res => {
         if (res && res.length > 0) setUsers(res);
-        else throw new Error("Empty or no API");
       })
-      .catch(async () => {
-        // Fallback: Fetch leaderboard to get real users to manage if API is missing
-        try {
-          const { communityService } = await import("@/features/community/communityService");
-          const leaderboard = await communityService.getLeaderboard({ type: "WEEKLY" });
-          setUsers(leaderboard.map((u: any) => ({
-            userId: u.userId,
-            fullName: u.userName,
-            email: `user${u.userId}@gmail.com`,
-            role: "MEMBER"
-          })));
-        } catch {
-          toast.error("Không thể tải danh sách người dùng");
-        }
+      .catch(() => {
+        toast.error("Không thể tải danh sách người dùng");
       })
       .finally(() => setLoading(false));
   }, []);
@@ -43,7 +31,7 @@ export default function AdminUsersPage() {
     try {
       await adminService.updateUserRole(userId, newRole);
       toast.success("Cập nhật phân quyền thành công!");
-      setUsers(prev => prev.map(u => u.userId === userId ? { ...u, role: newRole } : u));
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
     } catch (err: any) {
       toast.error("Lỗi khi cập nhật quyền");
     } finally {
@@ -67,7 +55,9 @@ export default function AdminUsersPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input 
               type="text" 
-              placeholder="Tìm kiếm người dùng theo email..." 
+              placeholder="Tìm kiếm người dùng theo tên hoặc email..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-black/40 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
             />
           </div>
@@ -87,9 +77,14 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {users.map(user => (
-                <tr key={user.userId} className="hover:bg-white/5 transition-colors group">
-                  <td className="px-6 py-4 text-muted-foreground">#{user.userId}</td>
+              {users.filter(user => {
+                const searchLower = searchQuery.toLowerCase();
+                const name = (user.fullName || user.name || "").toLowerCase();
+                const email = (user.email || "").toLowerCase();
+                return name.includes(searchLower) || email.includes(searchLower);
+              }).map(user => (
+                <tr key={user.id} className="hover:bg-white/5 transition-colors group">
+                  <td className="px-6 py-4 text-muted-foreground">#{user.id}</td>
                   <td className="px-6 py-4">
                     <p className="font-medium text-white">{user.fullName || user.name || "Unknown"}</p>
                     <p className="text-xs text-muted-foreground">{user.email}</p>
@@ -106,9 +101,9 @@ export default function AdminUsersPage() {
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <select 
-                        disabled={updatingId === user.userId}
+                        disabled={updatingId === user.id}
                         value={user.role?.replace('ROLE_', '') || 'MEMBER'}
-                        onChange={(e) => handleRoleChange(user.userId, `ROLE_${e.target.value}`)}
+                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
                         className="bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-blue-500 disabled:opacity-50"
                       >
                         {AVAILABLE_ROLES.map(role => (

@@ -15,7 +15,7 @@ public interface EmailMarketingPort {
     void sendHtmlEmail(String toAddress, String subject, String htmlContent);
 
     // Lấy danh sách email của User (Không query Entity User để giữ đúng kiến trúc)
-    List<String> getActiveUserEmails();
+    List<String> getActiveUserEmails(String targetAudience);
     
     List<EmailCampaign> getAllCampaigns();
 }
