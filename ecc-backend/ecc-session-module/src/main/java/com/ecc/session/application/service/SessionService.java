@@ -151,13 +151,20 @@ public class SessionService implements ManageSessionUseCase {
         int rowsAffected = sessionRepositoryPort.tryIncrementParticipants(sessionId);
 
         if (rowsAffected == 1) {
-            // 6a. Thành công → tạo Booking CONFIRMED
-            Booking booking = Booking.builder()
-                    .uuid(UUID.randomUUID())
-                    .memberId(memberId)
-                    .session(session)
-                    .status("CONFIRMED")
-                    .build();
+            // 6a. Thành công → tạo hoặc cập nhật Booking CONFIRMED
+            Booking booking = bookingRepositoryPort.findByMemberIdAndSessionId(memberId, sessionId).orElse(null);
+            
+            if (booking != null) {
+                booking.setStatus("CONFIRMED");
+                booking.setCancelledAt(null);
+            } else {
+                booking = Booking.builder()
+                        .uuid(UUID.randomUUID())
+                        .memberId(memberId)
+                        .session(session)
+                        .status("CONFIRMED")
+                        .build();
+            }
             booking = bookingRepositoryPort.save(booking);
             eventPublisher.publishEvent(new BookingConfirmedEvent(booking.getId(), sessionId, memberId));
 
