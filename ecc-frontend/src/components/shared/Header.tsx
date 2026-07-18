@@ -73,7 +73,7 @@ export default function Header() {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="h-16 border-b border-white/5 glass-card flex items-center gap-4 px-6 flex-shrink-0 bg-background/50 backdrop-blur-xl z-30"
+      className="h-20 border-b border-white/10 glass-panel flex items-center gap-6 px-8 flex-shrink-0 z-30 shadow-[0_5px_30px_rgba(0,0,0,0.3)]"
     >
       {/* Search */}
       <div className="flex-1 max-w-md">
@@ -81,8 +81,8 @@ export default function Header() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-violet-400 transition-colors" />
           <input
             type="search"
-            placeholder="Tìm kiếm..."
-            className="w-full h-9 pl-9 pr-4 rounded-lg bg-white/5 border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-violet-500/40 focus:bg-white/10 transition-all duration-300"
+            placeholder="Tìm kiếm khóa học, sự kiện..."
+            className="w-full h-11 pl-11 pr-4 rounded-xl bg-black/20 border border-white/10 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:border-violet-500/50 focus:bg-white/5 focus:shadow-[0_0_15px_rgba(139,92,246,0.15)] transition-all duration-300"
           />
         </div>
       </div>

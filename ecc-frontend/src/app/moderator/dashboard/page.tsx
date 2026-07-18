@@ -179,11 +179,11 @@ export default function ModeratorDashboard() {
     <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3 mb-2 tracking-tight">
-            <span className="bg-gradient-to-br from-amber-400 to-orange-500 text-transparent bg-clip-text">Moderator Dashboard</span>
-            <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_10px_rgba(251,191,36,0.8)]" />
+          <h1 className="text-3xl font-black text-white flex items-center gap-3 mb-2 tracking-tight drop-shadow-md">
+            <span className="bg-gradient-to-br from-amber-400 via-orange-400 to-amber-600 text-transparent bg-clip-text">Moderator Dashboard</span>
+            <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_15px_rgba(251,191,36,0.8)]" />
           </h1>
-          <p className="text-sm text-muted-foreground/80">Chào mừng trở lại! Bạn có <span className="text-amber-400 font-semibold">{sessions.length}</span> buổi học sắp diễn ra.</p>
+          <p className="text-slate-300 font-medium">Chào mừng trở lại! Bạn có <span className="text-amber-400 font-bold px-1">{sessions.length}</span> buổi học sắp diễn ra.</p>
         </div>
         
         <button
@@ -200,40 +200,52 @@ export default function ModeratorDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="glass-card p-5 rounded-xl border border-amber-500/10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-              <Video className="w-5 h-5 text-amber-400" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="relative glass-panel p-6 rounded-2xl overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/10 opacity-50 group-hover:opacity-80 transition-opacity duration-500" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 group-hover:animate-[spin_4s_linear_infinite] blur-xl pointer-events-none transition-opacity duration-700" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-black/20 border border-white/10 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
+                <Video className="w-6 h-6 text-amber-400 drop-shadow-md" />
+              </div>
+              <p className="text-sm font-semibold text-slate-300">Buổi đã dạy</p>
             </div>
-            <p className="text-sm font-medium text-muted-foreground">Buổi đã dạy</p>
+            <p className="text-4xl font-black text-white drop-shadow-sm">{sessions.length}</p>
           </div>
-          <p className="text-3xl font-bold text-white">{sessions.length}</p>
         </div>
 
-        <div className="glass-card p-5 rounded-xl border border-blue-500/10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-              <Users className="w-5 h-5 text-blue-400" />
+        <div className="relative glass-panel p-6 rounded-2xl overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 opacity-50 group-hover:opacity-80 transition-opacity duration-500" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 group-hover:animate-[spin_4s_linear_infinite] blur-xl pointer-events-none transition-opacity duration-700" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-black/20 border border-white/10 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
+                <Users className="w-6 h-6 text-blue-400 drop-shadow-md" />
+              </div>
+              <p className="text-sm font-semibold text-slate-300">Học viên tham gia</p>
             </div>
-            <p className="text-sm font-medium text-muted-foreground">Học viên tham gia</p>
+            <p className="text-4xl font-black text-white drop-shadow-sm">{sessions.reduce((sum, s) => sum + (s.currentParticipants || 0), 0)}</p>
           </div>
-          <p className="text-3xl font-bold text-white">{sessions.reduce((sum, s) => sum + (s.currentParticipants || 0), 0)}</p>
         </div>
 
-        <div className="glass-card p-5 rounded-xl border border-green-500/10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-              <Star className="w-5 h-5 text-green-400" />
+        <div className="relative glass-panel p-6 rounded-2xl overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-50 group-hover:opacity-80 transition-opacity duration-500" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 group-hover:animate-[spin_4s_linear_infinite] blur-xl pointer-events-none transition-opacity duration-700" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-black/20 border border-white/10 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
+                <Star className="w-6 h-6 text-green-400 drop-shadow-md" />
+              </div>
+              <p className="text-sm font-semibold text-slate-300">Đánh giá trung bình</p>
             </div>
-            <p className="text-sm font-medium text-muted-foreground">Đánh giá trung bình</p>
+            <p className="text-4xl font-black text-white drop-shadow-sm">{avgRating}<span className="text-lg text-slate-400 font-medium ml-1">/ 5</span></p>
           </div>
-          <p className="text-3xl font-bold text-white">{avgRating}<span className="text-sm text-muted-foreground font-normal">/5</span></p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 glass-card rounded-2xl border border-white/5 p-6 relative overflow-hidden">
+        <div className="lg:col-span-2 glass-panel rounded-2xl p-6 relative overflow-hidden group">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
               <Activity className="w-5 h-5 text-amber-400" />
@@ -266,22 +278,36 @@ export default function ModeratorDashboard() {
           </div>
         </div>
 
-        <div className="glass-card rounded-2xl border border-white/5 p-6 flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <div>
-            <h2 className="text-lg font-bold text-white mb-2">Trung tâm điều phối</h2>
-            <p className="text-sm text-muted-foreground mb-6">Bạn đang là người điều phối cho <strong className="text-white">{sessions.filter(s => s.status === "ACTIVE" || s.status === "IN_PROGRESS").length}</strong> phòng chat active hiện tại. Nhấn vào phòng để bắt đầu buổi nói chuyện.</p>
+        <div className="glass-panel rounded-2xl relative overflow-hidden group min-h-[300px] flex items-center shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-orange-900/40 to-black z-0" />
+          
+          <div className="absolute right-[-10%] bottom-[-10%] w-[120%] h-[120%] pointer-events-none z-0">
+            <img 
+              src="/moderator-welcome-bg.png" 
+              alt="Moderator Illustration" 
+              className="w-full h-full object-cover object-right-bottom opacity-70 animate-float-img mix-blend-screen"
+            />
           </div>
-          <button 
-          onClick={() => {
-            setEditingSessionId(null);
-            setForm({ ...form, title: "", description: "", startTime: "", endTime: "", coverImage: "" });
-            setIsCreating(true);
-          }}
-            className="w-full py-4 rounded-xl font-semibold text-black bg-amber-500 hover:bg-amber-400 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] hover:-translate-y-1"
-          >
-            + Lên lịch buổi học mới
-          </button>
+
+          <div className="relative z-10 p-8 flex flex-col justify-center h-full w-[70%]">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold mb-4 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+              <Star className="w-3 h-3" /> CHỈ ĐẠO
+            </div>
+            <h2 className="text-2xl font-black text-white mb-3 tracking-tight drop-shadow-md leading-tight">Trung tâm <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">điều phối</span></h2>
+            <p className="text-sm text-slate-300 mb-6 font-medium leading-relaxed drop-shadow-sm">
+              Điều phối <strong className="text-white text-lg mx-1">{sessions.filter(s => s.status === "ACTIVE" || s.status === "IN_PROGRESS").length}</strong> phòng chat active hiện tại. Nhấn vào phòng để bắt đầu buổi nói chuyện.
+            </p>
+            <button 
+              onClick={() => {
+                setEditingSessionId(null);
+                setForm({ ...form, title: "", description: "", startTime: "", endTime: "", coverImage: "" });
+                setIsCreating(true);
+              }}
+              className="px-6 py-3 rounded-xl font-bold text-black bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 transition-all shadow-[0_0_20px_rgba(245,158,11,0.4)] hover:shadow-[0_0_30px_rgba(245,158,11,0.6)] hover:-translate-y-1 w-fit"
+            >
+              + Lên lịch buổi học
+            </button>
+          </div>
         </div>
       </div>
 
@@ -315,29 +341,29 @@ export default function ModeratorDashboard() {
             return status === "COMPLETED" || status === "ENDED" || status === "CANCELLED" || status === "CLOSED";
           }
         }).map(session => (
-          <motion.div key={session.id} variants={slideIn} className="glass-card rounded-2xl p-5 border border-white/5 hover:border-amber-500/30 transition-all group">
+          <motion.div key={session.id} variants={slideIn} className="glass-panel rounded-2xl p-6 hover:-translate-y-1 transition-all duration-300 group">
             <div className="flex items-start justify-between mb-4">
-              <span className="px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-400 text-[10px] font-bold tracking-wider border border-amber-500/20">
+              <span className="px-3 py-1 rounded-lg bg-amber-500/10 text-amber-400 text-xs font-bold tracking-wider border border-amber-500/20 shadow-inner">
                 {session.requiredLevel}
               </span>
-              <span className="text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
+              <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full shadow-inner">
                 {session.status}
               </span>
             </div>
-            <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 group-hover:text-amber-300 transition-colors">
+            <h3 className="text-lg font-bold text-white mb-3 line-clamp-2 group-hover:text-amber-300 transition-colors drop-shadow-sm">
               {session.title}
             </h3>
-            <div className="space-y-2 mt-4 pt-4 border-t border-white/5">
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <CalendarIcon className="w-4 h-4 flex-shrink-0" /> 
+            <div className="space-y-2 mt-4 pt-4 border-t border-white/10">
+              <p className="text-sm font-medium text-slate-300 flex items-center gap-3">
+                <CalendarIcon className="w-4 h-4 flex-shrink-0 text-slate-500" /> 
                 {(() => {
                   const d = new Date(session.startTime);
                   const pad = (n: number) => n.toString().padStart(2, '0');
                   return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
                 })()}
               </p>
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <Clock className="w-4 h-4 flex-shrink-0" /> 
+              <p className="text-sm font-medium text-slate-300 flex items-center gap-3">
+                <Clock className="w-4 h-4 flex-shrink-0 text-slate-500" /> 
                 {(() => {
                   const s = new Date(session.startTime);
                   const e = new Date(session.endTime);
@@ -345,8 +371,8 @@ export default function ModeratorDashboard() {
                   return `${pad(s.getHours())}:${pad(s.getMinutes())} - ${pad(e.getHours())}:${pad(e.getMinutes())}`;
                 })()}
               </p>
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <Users className="w-4 h-4 flex-shrink-0" /> {session.currentParticipants}/{session.maxParticipants} học viên
+              <p className="text-sm font-medium text-slate-300 flex items-center gap-3">
+                <Users className="w-4 h-4 flex-shrink-0 text-slate-500" /> {session.currentParticipants} / {session.maxParticipants} học viên
               </p>
             </div>
             <div className="mt-6 flex gap-2">
@@ -379,7 +405,7 @@ export default function ModeratorDashboard() {
               {new Date() < new Date(session.endTime) && (
                 <button 
                   onClick={() => openEditModal(session)}
-                  className="px-4 py-2 rounded-lg bg-white/5 text-white font-medium text-sm hover:bg-white/10 transition-colors"
+                  className="px-4 py-2 rounded-lg bg-black/20 text-white font-bold text-sm hover:bg-white/10 transition-colors border border-white/10"
                 >
                   Sửa
                 </button>
@@ -393,13 +419,13 @@ export default function ModeratorDashboard() {
         {isCreating && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
             <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-lg bg-[#1a1d2d] rounded-2xl border border-white/10 p-6 shadow-2xl overflow-y-auto max-h-[90vh]"
+              initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="w-full max-w-lg glass-panel rounded-2xl p-8 shadow-[0_15px_50px_rgba(0,0,0,0.5)] overflow-y-auto max-h-[90vh] border border-white/10"
             >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white">{editingSessionId ? "Sửa Buổi Học" : "Tạo Buổi Học Mới"}</h2>
-                <button onClick={() => { setIsCreating(false); setEditingSessionId(null); }} className="text-muted-foreground hover:text-white">
-                  <X className="w-5 h-5" />
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-black text-white tracking-tight">{editingSessionId ? "Sửa Buổi Học" : "Tạo Buổi Học Mới"}</h2>
+                <button onClick={() => { setIsCreating(false); setEditingSessionId(null); }} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+                  <X className="w-4 h-4" />
                 </button>
               </div>
               <form onSubmit={handleCreate} className="space-y-4">
