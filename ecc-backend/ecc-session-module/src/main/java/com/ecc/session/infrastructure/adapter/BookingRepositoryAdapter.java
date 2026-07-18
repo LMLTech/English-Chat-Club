@@ -30,6 +30,11 @@ public class BookingRepositoryAdapter implements BookingRepositoryPort {
     }
 
     @Override
+    public Optional<Booking> findByMemberIdAndSessionId(Long memberId, Long sessionId) {
+        return bookingRepository.findByMemberIdAndSessionId(memberId, sessionId);
+    }
+
+    @Override
     public java.util.List<Long> findBookedSessionIdsByMemberId(Long memberId) {
         return bookingRepository.findBookedSessionIdsByMemberId(memberId);
     }
