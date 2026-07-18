@@ -68,7 +68,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-64 flex-shrink-0 glass-card border-r border-white/5 flex flex-col h-full bg-background/50 backdrop-blur-xl">
+    <aside className="w-64 flex-shrink-0 glass-panel border-r border-white/10 flex flex-col h-full z-20 shadow-[5px_0_30px_rgba(0,0,0,0.5)]">
       {/* Logo */}
       <div className="px-5 py-5 border-b border-white/5">
         <Link href="/dashboard" className="flex items-center gap-2.5 group">
@@ -104,8 +104,8 @@ export default function Sidebar() {
               <Link
                 href={item.href}
                 className={cn(
-                  "sidebar-item relative overflow-hidden group",
-                  active ? "active text-white" : "text-muted-foreground hover:text-foreground"
+                  "sidebar-item relative overflow-hidden group mx-2 rounded-xl py-2.5",
+                  active ? "active text-white bg-white/10 shadow-[0_0_15px_rgba(139,92,246,0.15)]" : "text-slate-400 hover:text-white hover:bg-white/5"
                 )}
               >
                 {active && (
@@ -171,7 +171,7 @@ export default function Sidebar() {
       </motion.nav>
 
       {/* User section */}
-      <div className="border-t border-white/5 p-3 space-y-1 bg-white/[0.02]">
+      <div className="border-t border-white/10 p-3 space-y-1 bg-black/20">
         <Link
           href="/profile"
           className={cn(
