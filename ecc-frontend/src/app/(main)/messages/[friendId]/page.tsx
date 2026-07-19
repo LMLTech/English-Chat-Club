@@ -27,7 +27,7 @@ export default function ChatRoomPage() {
   const [newMessage, setNewMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [recordTime, setRecordTime] = useState(0);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const recordInterval = useRef<NodeJS.Timeout | null>(null);
   const stompClientRef = useRef<Client | null>(null);
 
@@ -97,7 +97,9 @@ export default function ChatRoomPage() {
   }, [friendId, user?.userId, accessToken]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
   }, [messages]);
 
   const handleSend = (e?: React.FormEvent, type: "text" | "image" | "voice" = "text", content: string = "") => {
@@ -181,7 +183,7 @@ export default function ChatRoomPage() {
   if (loading) return <div className="h-full flex items-center justify-center"><LoadingSpinner text="Đang kết nối..." /></div>;
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0a0f] relative overflow-hidden">
+    <div className="flex-1 flex flex-col h-full bg-[#0a0a0f] relative overflow-hidden">
       {/* Chat Header */}
       <header className="h-16 border-b border-white/5 bg-background/50 backdrop-blur-xl px-6 flex items-center justify-between z-10 flex-shrink-0">
         <div className="flex items-center gap-4">
@@ -210,7 +212,7 @@ export default function ChatRoomPage() {
       </header>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-6 scroll-smooth">
         <div className="flex flex-col gap-6 max-w-4xl mx-auto">
           {/* Welcome section */}
           <div className="text-center my-8">
@@ -272,7 +274,6 @@ export default function ChatRoomPage() {
               );
             })}
           </AnimatePresence>
-          <div ref={messagesEndRef} />
         </div>
       </div>
 

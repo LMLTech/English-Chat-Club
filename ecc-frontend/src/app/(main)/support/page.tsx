@@ -124,11 +124,11 @@ export default function SupportPage() {
                     onChange={(e) => setCategory(e.target.value)}
                     className="ecc-input"
                   >
-                    <option value="TECHNICAL">Lỗi Kỹ Thuật (App/Web)</option>
-                    <option value="ACCOUNT">Tài khoản & Đăng nhập</option>
-                    <option value="PAYMENT">Thanh toán & Điểm thưởng</option>
-                    <option value="REPORT">Báo cáo vi phạm</option>
-                    <option value="OTHER">Khác</option>
+                    <option className="text-black" value="TECHNICAL">Lỗi Kỹ Thuật (App/Web)</option>
+                    <option className="text-black" value="ACCOUNT">Tài khoản & Đăng nhập</option>
+                    <option className="text-black" value="PAYMENT">Thanh toán & Điểm thưởng</option>
+                    <option className="text-black" value="REPORT">Báo cáo vi phạm</option>
+                    <option className="text-black" value="OTHER">Khác</option>
                   </select>
                 </div>
 
