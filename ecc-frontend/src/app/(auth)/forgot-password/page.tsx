@@ -11,6 +11,9 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [resetSuccess, setResetSuccess] = useState(false);
   
   // Create sparks for the background
   const [sparks, setSparks] = useState<Array<{id: number, left: string, size: number, delay: string, duration: string}>>([]);
@@ -35,6 +38,20 @@ export default function ForgotPasswordPage() {
       toast.success("Hướng dẫn đặt lại mật khẩu đã được gửi đến email!");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Không thể gửi email. Vui lòng thử lại!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await authService.resetPasswordWithOtp({ email, otp, newPassword });
+      setResetSuccess(true);
+      toast.success("Đặt lại mật khẩu thành công!");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Mã OTP không chính xác hoặc đã hết hạn!");
     } finally {
       setLoading(false);
     }
@@ -140,23 +157,100 @@ export default function ForgotPasswordPage() {
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative bg-gradient-to-bl from-black/40 to-indigo-950/20">
           <div className="w-full max-w-[400px] animate-fade-in space-y-6 relative z-10">
             
-            {sent ? (
+            {resetSuccess ? (
               <div className="text-center space-y-6">
                 <div className="w-24 h-24 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(16,185,129,0.3)] animate-float-img">
-                  <Mail className="w-12 h-12 text-emerald-400" />
+                  <ShieldCheck className="w-12 h-12 text-emerald-400" />
                 </div>
-                <h2 className="text-3xl font-bold text-white tracking-tight">Email đã được gửi!</h2>
+                <h2 className="text-3xl font-bold text-white tracking-tight">Thành công!</h2>
                 <p className="text-slate-300">
-                  Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến <strong className="text-orange-400 font-semibold">{email}</strong>. Vui lòng kiểm tra hộp thư của bạn (kể cả hộp thư rác).
+                  Mật khẩu của bạn đã được thay đổi. Bạn có thể đăng nhập bằng mật khẩu mới ngay bây giờ.
                 </p>
                 <Link 
                   href="/login" 
                   className="btn-click-effect inline-flex items-center justify-center gap-2 w-full py-4 px-4 rounded-xl font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] transition-all border border-emerald-500/30 group"
                 >
                   <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                  Về trang đăng nhập
+                  Đăng nhập ngay
                 </Link>
               </div>
+            ) : sent ? (
+              <>
+                <div className="text-center lg:text-left">
+                  <h2 className="text-3xl font-bold text-white tracking-tight mb-2 flex items-center justify-center lg:justify-start gap-2">
+                    Nhập mã bảo mật
+                  </h2>
+                  <p className="text-slate-400">
+                    Mã OTP đã được gửi đến <strong className="text-orange-400 font-semibold">{email}</strong>. Vui lòng kiểm tra hộp thư của bạn.
+                  </p>
+                </div>
+                
+                <form onSubmit={handleResetPassword} className="space-y-6 mt-8">
+                  <div className="space-y-2 group">
+                    <label className="block text-sm font-medium text-slate-300 transition-colors group-focus-within:text-orange-400">
+                      Mã OTP (6 số)
+                    </label>
+                    <div className="relative">
+                      <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-orange-400 transition-colors" />
+                      <input
+                        type="text"
+                        placeholder="Nhập mã OTP..."
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        required
+                        maxLength={6}
+                        className="fire-input w-full pl-12 pr-4 py-3.5 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-slate-500 focus:outline-none transition-all shadow-inner backdrop-blur-sm tracking-[0.5em] font-bold"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2 group">
+                    <label className="block text-sm font-medium text-slate-300 transition-colors group-focus-within:text-orange-400">
+                      Mật khẩu mới
+                    </label>
+                    <div className="relative">
+                      <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-orange-400 transition-colors" />
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                        minLength={6}
+                        className="fire-input w-full pl-12 pr-4 py-3.5 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-slate-500 focus:outline-none transition-all shadow-inner backdrop-blur-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="btn-click-effect relative overflow-hidden w-full py-4 px-4 rounded-xl font-bold text-white bg-gradient-to-r from-orange-600 via-amber-600 to-rose-600 hover:from-orange-500 hover:via-amber-500 hover:to-rose-500 focus:outline-none focus:ring-4 focus:ring-orange-500/40 shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed border border-orange-500/30"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Đang xử lý...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-[15px] tracking-wide">Đặt lại mật khẩu</span>
+                        <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                <div className="text-center pt-6 border-t border-white/5 mt-8 flex flex-col gap-3">
+                  <button
+                    onClick={() => { setSent(false); setOtp(""); setNewPassword(""); }}
+                    className="text-slate-400 hover:text-white font-semibold transition-colors flex items-center justify-center gap-2 group w-full"
+                  >
+                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                    Đổi email khác
+                  </button>
+                </div>
+              </>
             ) : (
               <>
                 <div className="text-center lg:text-left">

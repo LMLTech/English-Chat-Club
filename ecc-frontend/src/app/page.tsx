@@ -46,6 +46,7 @@ const PARTICLES = [
   "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=700&h=700&fit=crop",
   "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=700&h=700&fit=crop",
   "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=700&h=700&fit=crop",
+  "https://images.unsplash.com/photo-1524508762098-fd966ffb6ef9?w=700&h=700&fit=crop", // Ảnh mới thêm
 ];
 
 const FEATURES = [
@@ -128,6 +129,10 @@ const GALLERY_IMAGES = [
   { src: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=800&h=800&fit=crop", caption: "Câu lạc bộ đàm thoại", span: "" },
   { src: "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&h=1000&fit=crop", caption: "Không gian học tập tại quán cà phê", span: "row-span-2" },
   { src: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=800&fit=crop", caption: "Đội ngũ moderator English Chat Club", span: "" },
+  { src: "https://images.unsplash.com/photo-1528716321680-815a8cdb8cbe?w=800&h=800&fit=crop", caption: "Kết bạn toàn cầu", span: "" },
+  { src: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800&h=1000&fit=crop", caption: "Luyện nghe qua phim ảnh", span: "row-span-2" },
+  { src: "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=800&h=800&fit=crop", caption: "Câu lạc bộ đọc sách", span: "" },
+  { src: "https://images.unsplash.com/photo-1503428593586-e225b39bddfe?w=800&h=800&fit=crop", caption: "Thảo luận nhóm nhỏ", span: "" },
 ];
 
 const FAQS = [
@@ -600,6 +605,7 @@ export default function LandingPage() {
   const p5Y = useSpring(useTransform(galaxyScroll, [0, 1], [0, -120]), springConfig);
   const p6Y = useSpring(useTransform(galaxyScroll, [0, 1], [0, -300]), springConfig);
   const p7Y = useSpring(useTransform(galaxyScroll, [0, 1], [0, 120]), springConfig);
+  const p8Y = useSpring(useTransform(galaxyScroll, [0, 1], [0, 220]), springConfig);
 
   const featuresRef = useRef<HTMLElement>(null);
   const { scrollYProgress: featuresScroll } = useScroll({ target: featuresRef, offset: ["start end", "end start"] });
@@ -1023,6 +1029,10 @@ export default function LandingPage() {
           <motion.div style={{ y: p7Y, rotate: 3 }} className="absolute top-[5%] left-[45%] w-[110px] h-[110px] md:w-[160px] md:h-[160px] overflow-hidden rounded-full shadow-2xl z-0">
             <img src={PARTICLES[6]} className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" alt="Không gian học tập tại nhà" />
           </motion.div>
+          {/* Ảnh số 8 thêm vào để lấp khoảng trống bên trái, cân bằng với ảnh lớn bên phải */}
+          <motion.div style={{ y: p8Y, rotate: 15 }} className="absolute top-[42%] left-[12%] w-[130px] h-[130px] md:w-[220px] md:h-[220px] overflow-hidden rounded-[2.5rem] shadow-2xl z-20">
+            <img src={PARTICLES[7]} className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" alt="Nụ cười tự tin giao tiếp" />
+          </motion.div>
         </div>
 
         <div className="relative z-40 w-full max-w-7xl mx-auto px-6 flex flex-col items-center justify-center min-h-[60vh] text-center pointer-events-none mix-blend-difference text-white">
@@ -1041,6 +1051,14 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ─── SEPARATOR CẮT NGANG ─── */}
+      <div className="w-full py-16 flex justify-center relative z-10 overflow-hidden">
+        <div className="w-full max-w-4xl h-px bg-gradient-to-r from-transparent via-white/20 to-transparent relative">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-[3px] bg-gradient-to-r from-indigo-500 to-pink-500 blur-sm rounded-full" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-px bg-gradient-to-r from-indigo-300 to-pink-300 rounded-full" />
+        </div>
+      </div>
 
       {/* ─── ABOUT US ─── */}
       <section id="about" ref={aboutRef} className="relative py-32 md:py-44 px-6 md:px-12 w-full max-w-7xl mx-auto z-10 overflow-hidden">

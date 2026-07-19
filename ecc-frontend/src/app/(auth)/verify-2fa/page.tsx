@@ -62,73 +62,97 @@ export default function Verify2faPage() {
   };
 
   return (
-    <div className="auth-bg min-h-screen flex items-center justify-center p-4">
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-violet-600/10 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-blue-600/10 blur-3xl" />
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[#05050A] text-slate-200 overflow-hidden font-sans relative">
+      {/* CSS Animations */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes blob-spin {
+          0% { transform: rotate(0deg) scale(1); }
+          50% { transform: rotate(180deg) scale(1.1); }
+          100% { transform: rotate(360deg) scale(1); }
+        }
+        @keyframes scanline {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(100%); }
+        }
+        .btn-click-effect:active { transform: scale(0.95); }
+      `}} />
+
+      {/* Background Mesh */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-indigo-900/40 blur-[120px] animate-blob-spin"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-violet-900/30 blur-[120px] animate-blob-spin" style={{animationDelay: '7s'}}></div>
       </div>
 
-      <div className="relative w-full max-w-[380px] animate-fade-in">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center animate-pulse-glow">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-gradient">ECC</span>
+      <div className="relative z-10 w-full max-w-[420px] animate-fade-in">
+        <div className="text-center mb-8 flex flex-col items-center">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(99,102,241,0.5)] relative overflow-hidden group">
+            <div className="absolute inset-0 bg-white/20 -translate-y-full group-hover:animate-[scanline_1.5s_ease-in-out_infinite]"></div>
+            <Sparkles className="w-7 h-7 text-white" />
           </div>
+          <span className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400 tracking-tight">ECC SECURITY</span>
         </div>
 
-        <div className="glass-card rounded-2xl p-8 shadow-2xl text-center">
-          <div className="w-16 h-16 rounded-2xl bg-violet-500/20 border border-violet-500/30 flex items-center justify-center mx-auto mb-5">
-            <Shield className="w-8 h-8 text-violet-400" />
+        <div className="bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] p-8 sm:p-10 text-center relative overflow-hidden">
+          {/* Top glowing line */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-70"></div>
+
+          <div className="w-20 h-20 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center mx-auto mb-6 relative">
+             <div className="absolute inset-0 rounded-full border border-indigo-400/30 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
+             <Shield className="w-10 h-10 text-indigo-400" />
           </div>
 
-          <h1 className="text-2xl font-bold text-white mb-2">Xác thực 2 lớp</h1>
-          <p className="text-sm text-muted-foreground mb-6">
-            Nhập mã 6 số từ ứng dụng Authenticator của bạn
+          <h1 className="text-3xl font-bold text-white mb-3 tracking-tight">Xác thực 2 lớp</h1>
+          <p className="text-slate-400 mb-8 font-medium">
+            Mở ứng dụng Authenticator và nhập mã 6 số của bạn vào bên dưới
           </p>
 
-          <form onSubmit={handleVerify} className="space-y-5">
-            <input
-              type="text"
-              inputMode="numeric"
-              value={totpCode}
-              onChange={handleInput}
-              placeholder="000000"
-              maxLength={6}
-              required
-              className="ecc-input text-center text-3xl tracking-[0.5em] font-mono h-14"
-              autoFocus
-            />
+          <form onSubmit={handleVerify} className="space-y-8">
+            <div className="relative">
+              <input
+                type="text"
+                inputMode="numeric"
+                value={totpCode}
+                onChange={handleInput}
+                placeholder="• • • • • •"
+                maxLength={6}
+                required
+                className="w-full bg-black/40 border border-white/10 focus:border-indigo-500 text-center text-4xl tracking-[0.4em] font-mono h-20 rounded-2xl text-white placeholder:text-slate-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 transition-all shadow-inner backdrop-blur-sm"
+                autoFocus
+              />
+            </div>
 
             <button
               type="submit"
               disabled={loading || totpCode.length !== 6}
-              className="btn-primary w-full flex items-center justify-center gap-2"
+              className="btn-click-effect relative overflow-hidden w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/40 shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed border border-indigo-500/30"
             >
               {loading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Đang xác thực...</span>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Đang kiểm tra...</span>
                 </>
               ) : (
                 <>
-                  <Shield className="w-4 h-4" />
-                  <span>Xác thực</span>
+                  <Shield className="w-5 h-5" />
+                  <span className="text-[16px] tracking-wide">Xác Thực Ngay</span>
                 </>
               )}
             </button>
           </form>
 
-          <p className="text-xs text-muted-foreground mt-5">
-            Không có mã?{" "}
-            <button
-              onClick={() => router.push("/login")}
-              className="text-violet-400 hover:text-violet-300 transition-colors"
-            >
-              Quay lại đăng nhập
-            </button>
-          </p>
+          <div className="mt-8 pt-6 border-t border-white/5">
+            <p className="text-sm text-slate-400">
+              Không có thiết bị?{" "}
+              <button
+                type="button"
+                onClick={() => router.push("/login")}
+                className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors"
+              >
+                Quay lại đăng nhập
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     </div>
