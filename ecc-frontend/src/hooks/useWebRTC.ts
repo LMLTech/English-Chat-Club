@@ -43,7 +43,8 @@ export const useWebRTC = ({ sessionId, onChatMessageReceived, onHandSignalReceiv
           senderId: user.userId.toString(),
           targetId,
           payload
-        })
+        }),
+        headers: { 'content-type': 'application/json' }
       });
     }
   }, [sessionId, user]);
@@ -52,7 +53,8 @@ export const useWebRTC = ({ sessionId, onChatMessageReceived, onHandSignalReceiv
      if (stompClientRef.current?.connected) {
        stompClientRef.current.publish({
          destination: `/app/chat.sendMessage/${sessionId}`,
-         body: JSON.stringify({ content, type })
+         body: JSON.stringify({ content, type }),
+         headers: { 'content-type': 'application/json' }
        });
      } else {
        toast.error("Chưa kết nối đến phòng chat");
@@ -63,7 +65,8 @@ export const useWebRTC = ({ sessionId, onChatMessageReceived, onHandSignalReceiv
     if (stompClientRef.current?.connected) {
       stompClientRef.current.publish({
         destination: `/app/session.handSignal/${sessionId}`,
-        body: JSON.stringify({ action, targetUserId })
+        body: JSON.stringify({ action, targetUserId }),
+        headers: { 'content-type': 'application/json' }
       });
     }
   }, [sessionId]);

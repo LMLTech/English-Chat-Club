@@ -118,7 +118,8 @@ export default function ChatRoomPage() {
       
       stompClientRef.current.publish({
         destination: `/app/direct/${friendId}`,
-        body: JSON.stringify(chatMessage)
+        body: JSON.stringify(chatMessage),
+        headers: { 'content-type': 'application/json' }
       });
       
       // Optimistically add to UI, but note that the real id will come back from WebSocket 

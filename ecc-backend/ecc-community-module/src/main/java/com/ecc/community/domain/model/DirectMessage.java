@@ -44,7 +44,11 @@ public class DirectMessage {
     @Column(name = "read_at")
     private LocalDateTime readAt;
 
-    // Dùng thời gian deleted_at thay vì boolean is_deleted
+    @Column(name = "is_deleted", nullable = false)
+    @Builder.Default
+    private boolean isDeleted = false;
+
+    // Dùng thời gian deleted_at thay vì boolean is_deleted (nhưng DB vẫn còn is_deleted nên cần map lại)
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 

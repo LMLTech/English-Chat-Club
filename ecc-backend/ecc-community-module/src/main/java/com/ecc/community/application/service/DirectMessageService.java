@@ -33,8 +33,10 @@ public class DirectMessageService {
 
     @Transactional
     public DirectMessage sendDirectMessage(Long senderId, Long receiverId, String content, String attachmentUrl) {
-        // Sử dụng friendshipPort
-        if (!friendshipPort.existsByUserIdAndFriendId(senderId, receiverId)) {
+        // Kiểm tra cả 2 chiều đề phòng lỗi dữ liệu cũ
+        if (!friendshipPort.existsByUserIdAndFriendId(senderId, receiverId) && 
+            !friendshipPort.existsByUserIdAndFriendId(receiverId, senderId)) {
+            log.error("User {} and User {} are not friends. Message blocked.", senderId, receiverId);
             throw new SecurityException("Chỉ có thể nhắn tin với bạn bè");
         }
 
@@ -94,8 +96,9 @@ public class DirectMessageService {
 
     @Transactional(readOnly = true)
     public Page<DirectMessage> getChatHistory(Long userId, Long friendId, Pageable pageable) {
-        // Sử dụng friendshipPort
-        if (!friendshipPort.existsByUserIdAndFriendId(userId, friendId)) {
+        // Kiểm tra cả 2 chiều
+        if (!friendshipPort.existsByUserIdAndFriendId(userId, friendId) &&
+            !friendshipPort.existsByUserIdAndFriendId(friendId, userId)) {
             throw new SecurityException("Chỉ có thể xem lịch sử với bạn bè");
         }
         return directMessagePort.findConversationHistory(userId, friendId, pageable);
