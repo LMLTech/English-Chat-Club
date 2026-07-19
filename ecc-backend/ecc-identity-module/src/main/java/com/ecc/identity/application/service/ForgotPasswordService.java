@@ -1,7 +1,6 @@
 package com.ecc.identity.application.service;
 
 import com.ecc.common.exception.BadRequestException;
-import com.ecc.common.exception.UnauthorizedException;
 import com.ecc.identity.application.port.in.ForgotPasswordUseCase;
 import com.ecc.identity.application.port.out.TokenCachePort;
 import com.ecc.identity.application.port.out.UserRepositoryPort;
@@ -49,17 +48,52 @@ public class ForgotPasswordService implements ForgotPasswordUseCase {
                 .build();
         resetTokenPort.save(resetToken);
 
-        // 3. Gửi Email
+        // 3. Gửi Email (HTML)
         String subject = "[English Chat Club] Yêu cầu đặt lại mật khẩu";
-        String body = "Chào bạn,\n\n" +
-                "Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.\n" +
-                "Mã OTP bảo mật của bạn là: " + otp + "\n\n" +
-                "Hoặc bạn có thể nhấp vào đường link dưới đây để đổi mật khẩu:\n" +
-                "http://localhost:8080/api/auth/reset-password?token=" + rawToken + "\n\n" +
-                "Mã OTP và Link này sẽ hết hạn trong 15 phút.\n" +
-                "Nếu bạn không yêu cầu đổi mật khẩu, vui lòng bỏ qua email này.";
+        String htmlBody = "<!DOCTYPE html>"
+                + "<html>"
+                + "<head>"
+                + "<style>"
+                + "body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f7fa; margin: 0; padding: 0; }"
+                + ".container { max-w-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden; }"
+                + ".header { background: linear-gradient(135deg, #6366f1, #ec4899); padding: 30px 20px; text-align: center; color: white; }"
+                + ".header h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 1px; }"
+                + ".content { padding: 40px 30px; color: #334155; line-height: 1.6; font-size: 16px; }"
+                + ".otp-box { background-color: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 8px; padding: 20px; text-align: center; margin: 30px 0; }"
+                + ".otp-code { font-size: 32px; font-weight: 800; color: #0f172a; letter-spacing: 5px; margin: 0; }"
+                + ".button-container { text-align: center; margin-top: 30px; }"
+                + ".btn { display: inline-block; background-color: #6366f1; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-weight: 600; font-size: 16px; transition: background-color 0.3s; }"
+                + ".btn:hover { background-color: #4f46e5; }"
+                + ".footer { background-color: #f1f5f9; padding: 20px; text-align: center; color: #64748b; font-size: 13px; border-top: 1px solid #e2e8f0; }"
+                + "</style>"
+                + "</head>"
+                + "<body>"
+                + "<div class=\"container\">"
+                + "<div class=\"header\">"
+                + "<h1>ENGLISH CHAT CLUB</h1>"
+                + "</div>"
+                + "<div class=\"content\">"
+                + "<p>Chào bạn,</p>"
+                + "<p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản liên kết với email này. Vui lòng sử dụng mã OTP dưới đây để tiến hành khôi phục tài khoản của bạn:</p>"
+                + "<div class=\"otp-box\">"
+                + "<p style=\"margin-top: 0; margin-bottom: 10px; color: #64748b; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;\">Mã OTP bảo mật của bạn</p>"
+                + "<p class=\"otp-code\">" + otp + "</p>"
+                + "</div>"
+                + "<p>Hoặc nếu bạn muốn đặt lại mật khẩu thông qua liên kết trực tiếp, vui lòng nhấn vào nút bên dưới:</p>"
+                + "<div class=\"button-container\">"
+                + "<a href=\"http://localhost:3000/reset-password?token=" + rawToken + "\" class=\"btn\">Đặt Lại Mật Khẩu</a>"
+                + "</div>"
+                + "<p style=\"margin-top: 30px; font-size: 14px; color: #ef4444;\"><b>Lưu ý:</b> Mã OTP và liên kết này sẽ hết hạn trong vòng 15 phút.</p>"
+                + "</div>"
+                + "<div class=\"footer\">"
+                + "<p>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email và đảm bảo mật khẩu của bạn đủ mạnh.</p>"
+                + "<p>&copy; 2026 English Chat Club. All rights reserved.</p>"
+                + "</div>"
+                + "</div>"
+                + "</body>"
+                + "</html>";
 
-        emailService.sendEmail(email, subject, body);
+        emailService.sendHtmlEmail(email, subject, htmlBody);
     }
 
     @Override
@@ -70,7 +104,7 @@ public class ForgotPasswordService implements ForgotPasswordUseCase {
 
         String cachedOtp = tokenCachePort.getResetPasswordOtp(user.getId());
         if (cachedOtp == null || !cachedOtp.equals(otp)) {
-            throw new UnauthorizedException("Mã OTP không chính xác hoặc đã hết hạn.");
+            throw new BadRequestException("Mã OTP không chính xác hoặc đã hết hạn.");
         }
 
         updatePasswordAndCleanUp(user, newPassword);
