@@ -97,7 +97,7 @@ export default function ChatRoomPage() {
   }, [friendId, user?.userId, accessToken]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages]);
 
   const handleSend = (e?: React.FormEvent, type: "text" | "image" | "voice" = "text", content: string = "") => {
@@ -181,7 +181,7 @@ export default function ChatRoomPage() {
   if (loading) return <div className="h-full flex items-center justify-center"><LoadingSpinner text="Đang kết nối..." /></div>;
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0a0f] relative overflow-hidden">
+    <div className="flex flex-col flex-1 min-h-0 bg-[#0a0a0f] relative overflow-hidden">
       {/* Chat Header */}
       <header className="h-16 border-b border-white/5 bg-background/50 backdrop-blur-xl px-6 flex items-center justify-between z-10 flex-shrink-0">
         <div className="flex items-center gap-4">

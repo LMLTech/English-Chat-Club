@@ -52,7 +52,7 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
   });
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex overflow-hidden bg-black/20 rounded-tl-2xl border-t border-l border-white/5">
+    <div className="flex-1 h-full flex overflow-hidden bg-black/20 rounded-tl-2xl border-t border-l border-white/5">
       {/* Friends Sidebar (Discord style channel list) */}
       <aside className="w-80 flex-shrink-0 border-r border-white/5 bg-background/40 backdrop-blur-xl flex flex-col h-full z-10">
         <div className="h-14 border-b border-white/5 px-4 flex items-center justify-between shadow-sm">

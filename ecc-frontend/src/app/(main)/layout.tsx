@@ -7,6 +7,7 @@ import Sidebar from "@/components/shared/Sidebar";
 import Header from "@/components/shared/Header";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { profileService } from "@/features/profile/profileService";
+import { cn } from "@/lib/utils";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuthStore();
@@ -126,8 +127,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <Sidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
           <Header />
-          <main className="flex-1 overflow-y-auto p-6 scroll-smooth">
-            <div className="max-w-7xl mx-auto">
+          <main className={cn("flex-1 overflow-y-auto scroll-smooth flex flex-col min-h-0", !pathname?.startsWith('/messages') && "p-6")}>
+            <div className={cn("mx-auto flex-1 flex flex-col min-h-0", !pathname?.startsWith('/messages') ? "max-w-7xl" : "w-full")}>
               {children}
             </div>
           </main>
