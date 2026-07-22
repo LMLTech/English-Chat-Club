@@ -25,6 +25,7 @@ public class LearningResourceService implements LearningResourceUseCase {
                 .title(request.getTitle())
                 .type(request.getType())
                 .url(request.getUrl())
+                .imageUrl(request.getImageUrl())
                 .category(request.getCategory())
                 .uploadedBy(adminId)
                 .build();
@@ -42,6 +43,7 @@ public class LearningResourceService implements LearningResourceUseCase {
         resource.setTitle(request.getTitle());
         resource.setType(request.getType());
         resource.setUrl(request.getUrl());
+        resource.setImageUrl(request.getImageUrl());
         resource.setCategory(request.getCategory());
 
         log.info("[Content] Tài nguyên {} vừa được cập nhật", id);

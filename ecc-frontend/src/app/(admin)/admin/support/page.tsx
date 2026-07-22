@@ -116,9 +116,16 @@ export default function AdminSupportPage() {
                   )}
                 </div>
                 <h2 className="text-xl font-bold text-white mb-2">{selectedTicket.subject}</h2>
-                <div className="text-xs text-muted-foreground mb-4">
-                  Gửi bởi: <span className="text-white">{selectedTicket.userName || 'Unknown'}</span> 
-                  {selectedTicket.userEmail && <span className="ml-2 text-amber-400/80">({selectedTicket.userEmail})</span>}
+                <div className="flex items-center gap-3 mb-4 mt-4 bg-black/20 p-3 rounded-xl border border-white/5">
+                  <img 
+                    src={selectedTicket.userAvatarUrl || `https://i.pravatar.cc/150?u=${selectedTicket.userId}`} 
+                    alt="Avatar" 
+                    className="w-10 h-10 rounded-full object-cover border border-white/10" 
+                  />
+                  <div>
+                    <div className="text-sm font-bold text-white">{selectedTicket.userName || 'Người dùng ẩn danh'}</div>
+                    <div className="text-xs text-amber-400/80">{selectedTicket.userEmail || 'Không có email'}</div>
+                  </div>
                 </div>
                 <div className="text-sm text-muted-foreground bg-black/20 p-4 rounded-xl border border-white/5 leading-relaxed">
                   {selectedTicket.content}

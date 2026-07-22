@@ -20,11 +20,12 @@ public class GamificationService implements GamificationUseCase {
     private final MemberPointsPort memberPointsPort;
     private final PointTransactionPort pointTransactionPort;
     private final UserBadgePort userBadgePort;
+    private final LevelUpService levelUpService;
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public MemberPoints getMyPoints(Long userId) {
-        return memberPointsPort.findByUserId(userId)
+        MemberPoints memberPoints = memberPointsPort.findByUserId(userId)
                 .orElseGet(() -> memberPointsPort.save(
                         MemberPoints.builder()
                                 .userId(userId)
@@ -32,6 +33,9 @@ public class GamificationService implements GamificationUseCase {
                                 .currentLevel(1)
                                 .build()
                 ));
+        // Recalculate level just in case it was out of sync
+        levelUpService.checkAndLevelUp(memberPoints, memberPoints.getTotalPoints());
+        return memberPoints;
     }
 
     @Override

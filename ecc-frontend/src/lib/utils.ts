@@ -30,3 +30,37 @@ export const scaleUp: any = {
   hidden: { opacity: 0, scale: 0.95 },
   visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
 };
+
+export function getGamificationProgress(totalPoints: number) {
+  const thresholds = [0, 1000, 3000, 6000, 10000, 15000];
+  let currentLevel = 1;
+  for (let i = thresholds.length - 1; i >= 0; i--) {
+    if (totalPoints >= thresholds[i]) {
+      currentLevel = i + 1;
+      break;
+    }
+  }
+  
+  if (currentLevel >= 6) {
+    return {
+      currentLevel: 6,
+      currentPointsInLevel: totalPoints - 15000,
+      pointsNeededForNext: 0,
+      percentage: 100
+    };
+  }
+  
+  const currentLevelThreshold = thresholds[currentLevel - 1];
+  const nextLevelThreshold = thresholds[currentLevel];
+  const pointsInLevel = totalPoints - currentLevelThreshold;
+  const levelTotalPoints = nextLevelThreshold - currentLevelThreshold;
+  const pointsNeeded = nextLevelThreshold - totalPoints;
+  const percentage = Math.min((pointsInLevel / levelTotalPoints) * 100, 100);
+  
+  return {
+    currentLevel,
+    currentPointsInLevel: pointsInLevel,
+    pointsNeededForNext: pointsNeeded,
+    percentage
+  };
+}

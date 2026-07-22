@@ -37,6 +37,7 @@ export default function AdminResourcesPage() {
   const [title, setTitle] = useState("");
   const [type, setType] = useState("VIDEO");
   const [url, setUrl] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [category, setCategory] = useState("GRAMMAR");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -60,12 +61,14 @@ export default function AdminResourcesPage() {
       setTitle(resource.title);
       setType(resource.type);
       setUrl(resource.url);
+      setImageUrl(resource.imageUrl || "");
       setCategory(resource.category);
     } else {
       setEditingResource(null);
       setTitle("");
       setType("VIDEO");
       setUrl("");
+      setImageUrl("");
       setCategory("GRAMMAR");
     }
     setIsModalOpen(true);
@@ -82,7 +85,7 @@ export default function AdminResourcesPage() {
 
     setIsSubmitting(true);
     try {
-      const data = { title, type, url, category };
+      const data = { title, type, url, imageUrl, category };
       if (editingResource) {
         await contentService.updateResource(editingResource.id, data);
         toast.success("Cập nhật tài nguyên thành công!");
@@ -172,7 +175,16 @@ export default function AdminResourcesPage() {
                   return (
                     <tr key={resource.id} className="hover:bg-white/5 transition-colors group">
                       <td className="px-6 py-4">
-                        <div className="font-medium text-white line-clamp-2">{resource.title}</div>
+                        <div className="flex items-center gap-3">
+                          {resource.imageUrl ? (
+                            <img src={resource.imageUrl} alt={resource.title} className="w-10 h-10 object-cover rounded bg-black/40 border border-white/10" />
+                          ) : (
+                            <div className="w-10 h-10 rounded bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
+                              <TypeIcon className="w-4 h-4 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="font-medium text-white line-clamp-2">{resource.title}</div>
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <span className="px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider border bg-white/5 text-white/80 border-white/10">
@@ -285,6 +297,20 @@ export default function AdminResourcesPage() {
                   placeholder="https://..."
                   className="ecc-input"
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-white">Ảnh đại diện (URL)</label>
+                <input
+                  type="url"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://imgur.com/..."
+                  className="ecc-input"
+                />
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Nhập link ảnh công khai (Imgur, Facebook...) để làm ảnh cover cho tài liệu.
+                </p>
               </div>
 
               <div className="pt-4 flex items-center justify-end gap-3">

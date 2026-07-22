@@ -121,11 +121,12 @@ export default function EventsPage() {
                 </p>
 
                 <div className="space-y-2 mb-5 bg-white/5 p-3 rounded-xl border border-white/5">
-                  <div className="flex items-center gap-2 text-xs text-foreground/80">
-                    <Clock className="w-4 h-4 text-blue-400" />
-                    <span>
-                      {format(new Date(event.startTime), "HH:mm - dd/MM/yyyy", { locale: vi })}
-                    </span>
+                  <div className="flex items-start gap-2 text-xs text-foreground/80">
+                    <Clock className="w-4 h-4 text-blue-400 mt-0.5" />
+                    <div className="flex flex-col space-y-1">
+                      <span>Bắt đầu: {format(new Date(event.startTime), "dd/MM/yyyy - HH:mm", { locale: vi })}</span>
+                      <span>Kết thúc: {format(new Date(event.endTime), "dd/MM/yyyy - HH:mm", { locale: vi })}</span>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-foreground/80">
                     <Ticket className="w-4 h-4 text-rose-400" />

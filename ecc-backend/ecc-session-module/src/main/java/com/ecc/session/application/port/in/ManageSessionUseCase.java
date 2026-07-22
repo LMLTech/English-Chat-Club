@@ -15,6 +15,7 @@ public interface ManageSessionUseCase {
     List<com.ecc.session.domain.model.VocabularyHighlight> getVocabulariesBySessionId(Long sessionId);
     List<Session> getAvailableSessions();
     List<Session> getPendingSessions();
+    List<Session> getApprovedSessions();
     List<Session> getActiveSessions();
     List<Session> getModeratorSessions(Long moderatorId);
     com.ecc.session.api.dto.response.HandSignalResponse handleHandSignal(Long sessionId, Long senderId, com.ecc.session.api.dto.request.HandSignalRequest request);

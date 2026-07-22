@@ -53,8 +53,23 @@ public class PointsCalculatorService {
                                 .userId(userId)
                                 .totalPoints(0)
                                 .currentLevel(1)
+                                .currentStreak(0)
                                 .build()
                 ));
+
+        // Cập nhật Streak
+        java.time.LocalDate today = java.time.LocalDate.now();
+        if (memberPoints.getLastActivityDate() != null) {
+            java.time.LocalDate lastDate = memberPoints.getLastActivityDate().toLocalDate();
+            if (lastDate.isEqual(today.minusDays(1))) {
+                memberPoints.setCurrentStreak(memberPoints.getCurrentStreak() + 1);
+            } else if (lastDate.isBefore(today.minusDays(1))) {
+                memberPoints.setCurrentStreak(1);
+            }
+        } else {
+            memberPoints.setCurrentStreak(1);
+        }
+        memberPoints.setLastActivityDate(java.time.LocalDateTime.now());
 
         int newTotal = Math.max(0, memberPoints.getTotalPoints() + points);
         memberPoints.setTotalPoints(newTotal);

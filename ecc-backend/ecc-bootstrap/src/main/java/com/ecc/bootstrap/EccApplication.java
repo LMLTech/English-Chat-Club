@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling                  // ĐÓNG VAI TRÒ NHƯ CHÌA KHÓA KHỞI ĐỘNG CRON JOB
+@org.springframework.scheduling.annotation.EnableAsync // CHO PHÉP CHẠY BACKGROUND TASK (Vd: gửi email)
 @ComponentScan("com.ecc")          // Quét tất cả package com.ecc.*
 @EntityScan("com.ecc")             // Tìm entity trong com.ecc.*.infrastructure.entity
 @EnableJpaRepositories("com.ecc")  // Tìm JPA repository trong com.ecc.*.infrastructure.repository

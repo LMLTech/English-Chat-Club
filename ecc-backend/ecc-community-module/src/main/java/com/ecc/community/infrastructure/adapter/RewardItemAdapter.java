@@ -22,5 +22,11 @@ public class RewardItemAdapter implements RewardItemPort {
     public Page<RewardItem> findActiveItems(Pageable pageable) { return repository.findByIsActiveTrueAndDeletedAtIsNull(pageable); }
 
     @Override
+    public Page<RewardItem> findAll(Pageable pageable) { return repository.findAll(pageable); }
+
+    @Override
     public RewardItem save(RewardItem item) { return repository.save(item); }
+
+    @Override
+    public void deleteById(Long id) { repository.deleteById(id); }
 }

@@ -345,6 +345,14 @@ public class SessionService implements ManageSessionUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Session> getApprovedSessions() {
+        return sessionRepositoryPort.findAll().stream()
+                .filter(s -> "APPROVED".equals(s.getRoomStatus()))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Session> getActiveSessions() {
         return sessionRepositoryPort.findAll().stream()
                 .filter(s -> "IN_PROGRESS".equals(s.getStatus()) || "OPEN".equals(s.getStatus()))

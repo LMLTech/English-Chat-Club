@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import com.ecc.community.api.dto.request.RewardItemRequest;
+import com.ecc.community.domain.model.RewardItem;
 
 @RestController
 @RequestMapping("/api/community/rewards")
@@ -40,6 +42,86 @@ public class RewardStoreController {
                         .build());
 
         return ResponseEntity.ok(ApiResponse.success(items));
+    }
+
+    @GetMapping("/admin")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<ApiResponse<Page<RewardItemResponse>>> getAllRewards(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        Page<RewardItemResponse> items = rewardStoreUseCase.getAllRewards(PageRequest.of(page, size))
+                .map(item -> RewardItemResponse.builder()
+                        .id(item.getId())
+                        .name(item.getName())
+                        .description(item.getDescription())
+                        .imageUrl(item.getImageUrl())
+                        .pointsCost(item.getPointsCost())
+                        .type(item.getType())
+                        .stockQuantity(item.getStockQuantity())
+                        .isAvailable(item.getIsActive() && (item.getStockQuantity() == null || item.getStockQuantity() > 0))
+                        .build());
+
+        return ResponseEntity.ok(ApiResponse.success(items));
+    }
+
+    @PostMapping("/admin")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @Auditable(action = "CREATE_REWARD", description = "Tạo phần thưởng mới")
+    public ResponseEntity<ApiResponse<RewardItemResponse>> createReward(@Valid @RequestBody RewardItemRequest request) {
+        RewardItem item = RewardItem.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .imageUrl(request.getImageUrl())
+                .pointsCost(request.getPointsCost())
+                .type(request.getType())
+                .stockQuantity(request.getStockQuantity())
+                .isActive(request.getIsActive())
+                .build();
+        
+        RewardItem saved = rewardStoreUseCase.createRewardItem(item);
+        return ResponseEntity.ok(ApiResponse.success(mapToResponse(saved)));
+    }
+
+    @PutMapping("/admin/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @Auditable(action = "UPDATE_REWARD", description = "Cập nhật phần thưởng")
+    public ResponseEntity<ApiResponse<RewardItemResponse>> updateReward(
+            @PathVariable Long id,
+            @Valid @RequestBody RewardItemRequest request) {
+        RewardItem item = RewardItem.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .imageUrl(request.getImageUrl())
+                .pointsCost(request.getPointsCost())
+                .type(request.getType())
+                .stockQuantity(request.getStockQuantity())
+                .isActive(request.getIsActive())
+                .build();
+        
+        RewardItem updated = rewardStoreUseCase.updateRewardItem(id, item);
+        return ResponseEntity.ok(ApiResponse.success(mapToResponse(updated)));
+    }
+
+    @DeleteMapping("/admin/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @Auditable(action = "DELETE_REWARD", description = "Xóa phần thưởng")
+    public ResponseEntity<ApiResponse<String>> deleteReward(@PathVariable Long id) {
+        rewardStoreUseCase.deleteRewardItem(id);
+        return ResponseEntity.ok(ApiResponse.success("Xóa phần thưởng thành công"));
+    }
+
+    private RewardItemResponse mapToResponse(RewardItem item) {
+        return RewardItemResponse.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .imageUrl(item.getImageUrl())
+                .pointsCost(item.getPointsCost())
+                .type(item.getType())
+                .stockQuantity(item.getStockQuantity())
+                .isAvailable(item.getIsActive() && (item.getStockQuantity() == null || item.getStockQuantity() > 0))
+                .build();
     }
 
     @GetMapping("/my-orders")

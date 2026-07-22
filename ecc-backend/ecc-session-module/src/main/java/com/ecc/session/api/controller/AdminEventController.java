@@ -34,6 +34,15 @@ public class AdminEventController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @PutMapping("/{id}")
+    @Auditable(action = "UPDATE_EVENT", description = "Cập nhật sự kiện")
+    public ResponseEntity<ApiResponse<EventResponse>> updateEvent(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateEventRequest request) {
+        EventResponse response = eventService.updateEvent(id, request);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     @PutMapping("/{id}/attendances")
     @Auditable(action = "UPDATE_ATTENDANCE", description = "Cập nhật điểm danh")
     public ResponseEntity<ApiResponse<Void>> updateAttendances(

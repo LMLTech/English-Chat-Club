@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { cn, staggerContainer, slideIn } from "@/lib/utils";
 import { 
   LayoutDashboard, Video, CalendarDays, 
-  Star, ArrowLeft, LogOut, User
+  Star, ArrowLeft, LogOut, User, Users, LifeBuoy
 } from "lucide-react";
 import { authService } from "@/features/auth/authService";
 import { toast } from "sonner";
@@ -19,7 +19,9 @@ const moderatorNavItems = [
   { label: "Quản lý phòng", href: "/moderator/rooms", icon: Video },
   { label: "Lịch sử dạy", href: "/moderator/history", icon: CalendarDays },
   { label: "Đánh giá", href: "/moderator/reviews", icon: Star },
+  { label: "Bạn bè", href: "/moderator/friends", icon: Users },
   { label: "Hồ sơ cá nhân", href: "/moderator/profile", icon: User },
+  { label: "Hỗ trợ", href: "/moderator/support", icon: LifeBuoy },
 ];
 
 export default function ModeratorLayout({ children }: { children: React.ReactNode }) {

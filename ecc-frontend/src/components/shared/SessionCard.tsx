@@ -40,7 +40,15 @@ export default function SessionCard({ session, onBook, onCancel, isBooked, isFul
   const participantPercent = Math.round((session.currentParticipants / session.maxParticipants) * 100);
 
   return (
-    <div className="session-card">
+    <div className="session-card overflow-hidden">
+      {/* Cover Image */}
+      {session.coverImage && (
+        <div className="w-full h-32 -mx-4 -mt-4 mb-4 relative">
+          <img src={session.coverImage} alt={session.title} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#161821] to-transparent"></div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex-1 min-w-0">

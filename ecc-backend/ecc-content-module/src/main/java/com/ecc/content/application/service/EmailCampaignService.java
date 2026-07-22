@@ -48,6 +48,11 @@ public class EmailCampaignService implements EmailCampaignUseCase {
         EmailCampaign campaign = marketingPort.findCampaignById(campaignId)
                 .orElseThrow(() -> new IllegalArgumentException("Campaign không tồn tại"));
 
+        if ("SENDING".equals(campaign.getStatus()) || "SENT".equals(campaign.getStatus())) {
+            log.warn("[Marketing] Campaign {} đang được gửi hoặc đã gửi xong, bỏ qua request gửi trùng lặp.", campaignId);
+            return;
+        }
+
         campaign.setStatus("SENDING");
         marketingPort.saveCampaign(campaign);
 

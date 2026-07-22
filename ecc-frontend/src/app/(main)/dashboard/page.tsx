@@ -10,6 +10,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import Link from "next/link";
 import Image from "next/image";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { getGamificationProgress } from "@/lib/utils";
 
 const studyActivityData = [
   { name: 'T2', xp: 120 },
@@ -163,13 +164,13 @@ export default function DashboardPage() {
               <div>
                 <div className="flex justify-between text-sm font-medium text-slate-300 mb-3">
                   <span>Level {points.currentLevel}</span>
-                  <span>Level {points.currentLevel + 1}</span>
+                  <span>Level {getGamificationProgress(points.totalPoints).currentLevel >= 6 ? 6 : points.currentLevel + 1}</span>
                 </div>
                 <div className="w-full h-3.5 rounded-full bg-black/40 overflow-hidden border border-white/5 shadow-inner">
                   <div
                     className="h-full rounded-full relative"
                     style={{
-                      width: `${Math.min((points.totalPoints % 1000) / 10, 100)}%`,
+                      width: `${getGamificationProgress(points.totalPoints).percentage}%`,
                       background: "linear-gradient(90deg, #8b5cf6, #06b6d4)",
                       boxShadow: "0 0 10px rgba(139, 92, 246, 0.5)"
                     }}
@@ -178,7 +179,9 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <p className="text-sm text-slate-400 mt-2 font-medium">
-                  Cần thêm <strong className="text-violet-400">{1000 - (points.totalPoints % 1000)} XP</strong> để thăng cấp.
+                  {getGamificationProgress(points.totalPoints).currentLevel >= 6 
+                    ? "Đã đạt cấp tối đa" 
+                    : <>Cần thêm <strong className="text-violet-400">{getGamificationProgress(points.totalPoints).pointsNeededForNext.toLocaleString()} XP</strong> để thăng cấp.</>}
                 </p>
               </div>
             </div>

@@ -9,15 +9,16 @@ import { motion } from "framer-motion";
 import { cn, staggerContainer, slideIn } from "@/lib/utils";
 import { 
   LayoutDashboard, Users, BookOpen, CalendarDays, 
-  ShieldCheck, ArrowLeft, LogOut, Mail, MessageSquare, Library
+  ShieldCheck, ArrowLeft, LogOut, Mail, MessageSquare, Library, Gift, BarChart
 } from "lucide-react";
 import { authService } from "@/features/auth/authService";
 import { toast } from "sonner";
 
 const adminNavItems = [
   { label: "Tổng quan", href: "/admin/dashboard", icon: LayoutDashboard },
-  { label: "Người dùng", href: "/admin/users", icon: Users },
-  { label: "Chủ đề học", href: "/admin/topics", icon: BookOpen },
+  { label: "Cộng đồng & Diễn đàn", href: "/admin/forum", icon: MessageSquare },
+  { label: "Cửa hàng quà tặng", href: "/admin/rewards", icon: Gift },
+  { label: "Báo cáo thống kê", href: "/admin/reports", icon: BarChart },
   { label: "Sự kiện", href: "/admin/events", icon: CalendarDays },
   { label: "Duyệt Session", href: "/admin/sessions", icon: ShieldCheck },
   { label: "Tài nguyên", href: "/admin/resources", icon: Library },

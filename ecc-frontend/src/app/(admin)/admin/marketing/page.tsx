@@ -15,7 +15,7 @@ export default function AdminMarketingPage() {
     title: "",
     subject: "",
     htmlContent: "",
-    targetSegment: "",
+    targetSegment: "{}",
     imageUrl: ""
   });
 
@@ -54,7 +54,7 @@ export default function AdminMarketingPage() {
       toast.success("Tạo chiến dịch thành công!");
       setCampaigns(prev => [newCampaign, ...prev]);
       setShowModal(false);
-      setFormData({ title: "", subject: "", htmlContent: "", targetSegment: "", imageUrl: "" });
+      setFormData({ title: "", subject: "", htmlContent: "", targetSegment: "{}", imageUrl: "" });
     } catch (err) {
       toast.error("Lỗi khi tạo chiến dịch");
     } finally {
@@ -73,13 +73,15 @@ export default function AdminMarketingPage() {
     }
   };
 
-  // Fake image upload for UI demonstration (since there is no generic upload endpoint in backend)
   const handleFakeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const fakeUrl = URL.createObjectURL(file);
-      setFormData({ ...formData, imageUrl: fakeUrl });
-      toast.success("Đã tải ảnh lên thành công (Demo)");
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, imageUrl: reader.result as string });
+        toast.success("Đã tải ảnh lên thành công");
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -173,15 +175,19 @@ export default function AdminMarketingPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Hình ảnh quảng cáo</label>
-                <div className="flex items-center gap-3">
-                  {formData.imageUrl && (
-                    <img src={formData.imageUrl} alt="Preview" className="h-10 w-10 object-cover rounded-md border border-white/10" />
-                  )}
-                  <button type="button" onClick={() => document.getElementById('campaign-img')?.click()} className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-white transition-colors flex items-center gap-2">
-                    <ImageIcon className="w-4 h-4" /> {formData.imageUrl ? 'Thay ảnh khác' : 'Tải ảnh lên'}
-                  </button>
-                  <input type="file" id="campaign-img" accept="image/*" className="hidden" onChange={handleFakeUpload} />
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Hình ảnh quảng cáo (URL hoặc Tải lên)</label>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    {formData.imageUrl && (
+                      <img src={formData.imageUrl} alt="Preview" className="h-10 w-10 object-cover rounded-md border border-white/10" />
+                    )}
+                    <input 
+                      type="text" value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})}
+                      className="flex-1 bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
+                      placeholder="Dán đường dẫn (URL) ảnh public từ Google Drive, Imgur, Facebook..."
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground italic">Lưu ý: Không dùng ảnh từ máy tính. Bạn phải up ảnh lên một trang web (VD: Imgur, Facebook) rồi copy link hình ảnh dán vào đây để Gmail có thể hiển thị được.</p>
                 </div>
               </div>
 
@@ -190,17 +196,26 @@ export default function AdminMarketingPage() {
                 <textarea 
                   value={formData.htmlContent} onChange={e => setFormData({...formData, htmlContent: e.target.value})}
                   className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 min-h-[150px] font-mono"
-                  placeholder="<h1>Chào bạn!</h1><p>Nội dung email...</p>"
+                  placeholder="<h1>Chào bạn!</h1><br><p>Lưu ý dùng các thẻ HTML như <br> hoặc <p> để xuống dòng...</p>"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Phân khúc gửi (Tùy chọn)</label>
-                <input 
-                  type="text" value={formData.targetSegment} onChange={e => setFormData({...formData, targetSegment: e.target.value})}
-                  className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500"
-                  placeholder='VD: {"level": "B1"}'
-                />
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Phân khúc gửi (Đối tượng nhận)</label>
+                <div className="relative">
+                  <select 
+                    value={formData.targetSegment} 
+                    onChange={e => setFormData({...formData, targetSegment: e.target.value})}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 appearance-none cursor-pointer"
+                  >
+                    <option value='{}' className="bg-[#12141c]">Tất cả người dùng (All Users)</option>
+                    <option value='"MEMBER"' className="bg-[#12141c]">Chỉ Học viên (Members)</option>
+                    <option value='"MODERATOR"' className="bg-[#12141c]">Chỉ Điều phối viên (Moderators)</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-muted-foreground">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </div>
+                </div>
               </div>
             </div>
             

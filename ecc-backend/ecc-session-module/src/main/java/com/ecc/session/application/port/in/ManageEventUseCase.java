@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface ManageEventUseCase {
     EventResponse createEvent(CreateEventRequest request);
+    EventResponse updateEvent(Long id, CreateEventRequest request);
     List<EventResponse> getAllEvents();
     void registerForEvent(Long eventId, Long userId);
     void updateAttendances(Long eventId, UpdateAttendanceRequest request);

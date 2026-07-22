@@ -20,7 +20,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class GamificationEventListener {
 
-    private static final int BASE_SESSION_POINTS         = 5;
+    private static final int BASE_SESSION_POINTS         = 50;
     private static final int VOCABULARY_PRAISE_POINTS    = 5;
 
     private final PointsCalculatorService pointsCalculatorService; // Xử lý điểm (Flow 3.1)
