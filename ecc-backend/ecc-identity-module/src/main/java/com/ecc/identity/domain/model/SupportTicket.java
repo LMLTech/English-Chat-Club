@@ -48,6 +48,12 @@ public class SupportTicket {
         return user.getFullName();
     }
 
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    public String getUserAvatarUrl() {
+        if (user == null) return null;
+        return user.getAvatarUrl();
+    }
+
     @Column(nullable = false, length = 255)
     private String subject;
 

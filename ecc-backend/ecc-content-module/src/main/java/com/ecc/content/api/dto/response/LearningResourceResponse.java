@@ -11,6 +11,7 @@ public class LearningResourceResponse {
     private String title;
     private String type;
     private String url;
+    private String imageUrl;
     private String category;
     private LocalDateTime createdAt;
 }

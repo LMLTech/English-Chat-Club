@@ -17,4 +17,5 @@ public class LearningResourceRequest {
     private String url;
 
     private String category;
+    private String imageUrl;
 }

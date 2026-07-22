@@ -37,6 +37,43 @@ public class RewardStoreService implements RewardStoreUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    public Page<RewardItem> getAllRewards(Pageable pageable) {
+        return rewardItemPort.findAll(pageable);
+    }
+
+    @Override
+    @Transactional
+    public RewardItem createRewardItem(RewardItem item) {
+        return rewardItemPort.save(item);
+    }
+
+    @Override
+    @Transactional
+    public RewardItem updateRewardItem(Long id, RewardItem item) {
+        RewardItem existing = rewardItemPort.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy món quà"));
+        existing.setName(item.getName());
+        existing.setDescription(item.getDescription());
+        existing.setImageUrl(item.getImageUrl());
+        existing.setPointsCost(item.getPointsCost());
+        existing.setType(item.getType());
+        existing.setStockQuantity(item.getStockQuantity());
+        existing.setIsActive(item.getIsActive());
+        return rewardItemPort.save(existing);
+    }
+
+    @Override
+    @Transactional
+    public void deleteRewardItem(Long id) {
+        RewardItem existing = rewardItemPort.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy món quà"));
+        existing.setDeletedAt(LocalDateTime.now());
+        existing.setIsActive(false);
+        rewardItemPort.save(existing);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Page<RedemptionOrder> getMyOrders(Long userId, Pageable pageable) {
         return redemptionOrderPort.findByUserId(userId, pageable);
     }

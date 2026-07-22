@@ -59,12 +59,15 @@ public class EmailMarketingAdapter implements EmailMarketingPort {
 
     @Override
     public List<String> getActiveUserEmails(String targetAudience) {
-        String sql = "SELECT email FROM users WHERE status = 'ACTIVE'";
-        
         if ("MEMBER".equals(targetAudience) || "MODERATOR".equals(targetAudience)) {
-            sql += " AND role = '" + targetAudience + "'";
+            String sql = "SELECT u.email FROM users u " +
+                         "JOIN user_roles ur ON u.id = ur.user_id " +
+                         "JOIN roles r ON ur.role_id = r.id " +
+                         "WHERE u.status = 'ACTIVE' AND r.name = ?";
+            return jdbcTemplate.queryForList(sql, String.class, targetAudience);
         }
         
+        String sql = "SELECT email FROM users WHERE status = 'ACTIVE'";
         return jdbcTemplate.queryForList(sql, String.class);
     }
 

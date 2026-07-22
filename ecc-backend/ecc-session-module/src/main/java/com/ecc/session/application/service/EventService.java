@@ -44,6 +44,23 @@ public class EventService implements ManageEventUseCase {
         return EventResponse.fromEntity(event);
     }
 
+    @Transactional
+    public EventResponse updateEvent(Long id, CreateEventRequest request) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Sự kiện không tồn tại"));
+
+        event.setTitle(request.getTitle());
+        event.setDescription(request.getDescription());
+        event.setImageUrl(request.getImageUrl());
+        event.setPointsRequired(request.getPointsRequired());
+        event.setRewardPoints(request.getRewardPoints());
+        event.setStartTime(request.getStartTime());
+        event.setEndTime(request.getEndTime());
+
+        event = eventRepository.save(event);
+        return EventResponse.fromEntity(event);
+    }
+
     @Transactional(readOnly = true)
     public List<EventResponse> getAllEvents() {
         return eventRepository.findAll().stream()

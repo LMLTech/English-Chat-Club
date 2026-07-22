@@ -39,6 +39,9 @@ public class LevelUpService {
 
             log.info("[Gamification] 🎉 userId={} lên LEVEL {} ({})",
                     memberPoints.getUserId(), newLevel, eligibleLevel.getTitle());
+        } else {
+            // ALWAYS publish to ensure CEFR level is synced in case of failures or manual data changes
+            eventPublisher.publishEvent(new LevelUpEvent(memberPoints.getUserId(), currentLevel));
         }
     }
 }

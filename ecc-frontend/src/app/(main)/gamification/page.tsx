@@ -7,6 +7,7 @@ import EmptyState from "@/components/shared/EmptyState";
 import { Trophy, Award, TrendingUp, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
+import { getGamificationProgress } from "@/lib/utils";
 
 export default function GamificationPage() {
   const [points, setPoints] = useState<MemberPointsResponse | null>(null);
@@ -62,19 +63,21 @@ export default function GamificationPage() {
             <div className="w-full sm:w-48 flex-shrink-0">
               <div className="flex justify-between text-xs text-muted-foreground mb-2">
                 <span>Level {points.currentLevel}</span>
-                <span>Level {points.currentLevel + 1}</span>
+                <span>Level {points.currentLevel >= 6 ? 6 : points.currentLevel + 1}</span>
               </div>
               <div className="w-full h-3 rounded-full bg-white/5 overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-700"
                   style={{
-                    width: `${Math.min((points.totalPoints % 1000) / 10, 100)}%`,
+                    width: `${getGamificationProgress(points.totalPoints).percentage}%`,
                     background: "linear-gradient(90deg, #f59e0b, #ef4444)"
                   }}
                 />
               </div>
               <p className="text-xs text-muted-foreground mt-1 text-right">
-                {1000 - (points.totalPoints % 1000)} điểm nữa
+                {getGamificationProgress(points.totalPoints).currentLevel >= 6 
+                  ? "Đã đạt cấp tối đa" 
+                  : `${getGamificationProgress(points.totalPoints).pointsNeededForNext.toLocaleString()} điểm nữa`}
               </p>
             </div>
           </div>
@@ -108,6 +111,17 @@ export default function GamificationPage() {
             </button>
           );
         })}
+        <button
+          onClick={() => setActiveTab("levels" as any)}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === "levels"
+              ? "bg-violet-500 text-white shadow-lg"
+              : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+          }`}
+        >
+          <Trophy className="w-3.5 h-3.5" />
+          Bảng phân bậc điểm
+        </button>
       </div>
 
       {/* Points History */}
@@ -188,6 +202,43 @@ export default function GamificationPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* Levels Breakdown */}
+      {activeTab === "levels" && (
+        <div className="glass-card rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-white/5 flex items-center gap-2">
+            <Trophy className="w-5 h-5 text-amber-400" />
+            <h2 className="text-sm font-semibold text-foreground">Bảng phân bậc trình độ (CEFR)</h2>
+          </div>
+          <div className="p-5 overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="text-xs text-muted-foreground uppercase bg-white/5">
+                <tr>
+                  <th className="px-4 py-3 rounded-l-lg">Cấp độ Gamification</th>
+                  <th className="px-4 py-3">Trình độ CEFR</th>
+                  <th className="px-4 py-3 rounded-r-lg">Điểm yêu cầu</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {[
+                  { gamification: "Level 1", cefr: "A1", points: "0 - 999" },
+                  { gamification: "Level 2", cefr: "A2", points: "1,000 - 2,999" },
+                  { gamification: "Level 3", cefr: "B1", points: "3,000 - 5,999" },
+                  { gamification: "Level 4", cefr: "B2", points: "6,000 - 9,999" },
+                  { gamification: "Level 5", cefr: "C1", points: "10,000 - 14,999" },
+                  { gamification: "Level 6", cefr: "C2", points: "15,000+" },
+                ].map((level, i) => (
+                  <tr key={i} className="hover:bg-white/5 transition-colors">
+                    <td className="px-4 py-3 font-medium text-white">{level.gamification}</td>
+                    <td className="px-4 py-3 text-amber-400 font-bold">{level.cefr}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{level.points} điểm</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
     </div>
   );

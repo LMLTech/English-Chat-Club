@@ -36,6 +36,13 @@ public class MemberPoints {
     @Column(name = "current_level", nullable = false)
     private Integer currentLevel = 1;
 
+    @Builder.Default
+    @Column(name = "current_streak", nullable = false)
+    private Integer currentStreak = 0;
+
+    @Column(name = "last_activity_date")
+    private LocalDateTime lastActivityDate;
+
     // Optimistic Lock: tránh cập nhật điểm đè nhau khi có nhiều event đồng thời
     @Version
     @Column(nullable = false)

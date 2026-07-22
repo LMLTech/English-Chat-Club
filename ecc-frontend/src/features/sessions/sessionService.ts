@@ -22,6 +22,7 @@ export interface SessionResponse {
   moderatorId: number;
   moderatorName?: string;
   zoomLink?: string;
+  coverImage?: string;
 }
 
 export interface BookingResponse {

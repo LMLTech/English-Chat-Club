@@ -33,6 +33,9 @@ public class LearningResource {
     @Column(length = 100)
     private String category;
 
+    @Column(name = "image_url", columnDefinition = "TEXT")
+    private String imageUrl;
+
     // Chỉ lưu ID để không phụ thuộc cứng vào Identity Module
     @Column(name = "uploaded_by", nullable = false)
     private Long uploadedBy;

@@ -29,6 +29,7 @@ export interface LearningResourceResponse {
   title: string;
   type: string;
   url: string;
+  imageUrl?: string;
   category: string;
   createdAt: string;
 }
@@ -37,6 +38,7 @@ export interface LearningResourceRequest {
   title: string;
   type: string;
   url: string;
+  imageUrl?: string;
   category: string;
 }
 

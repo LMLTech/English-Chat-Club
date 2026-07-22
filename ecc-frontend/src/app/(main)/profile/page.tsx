@@ -22,6 +22,7 @@ const getRoleBadge = (role: string) => {
 export default function ProfilePage() {
   const { user, setUser } = useAuthStore();
   const [profile, setProfile] = useState<UserProfileResponse | null>(null);
+  const [levelTitle, setLevelTitle] = useState("A1");
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -63,6 +64,15 @@ export default function ProfilePage() {
           avatarUrl: data.avatarUrl || "",
           cefrLevel: data.cefrLevel || "A1"
         });
+      })
+      .catch(console.error);
+
+    import("@/features/community/communityService")
+      .then(m => m.communityService.getMyPoints())
+      .then(points => {
+        if (points && points.levelTitle) {
+          setLevelTitle(points.levelTitle.replace("Bậc ", ""));
+        }
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -249,9 +259,9 @@ export default function ProfilePage() {
                   {profile.role}
                 </span>
               )}
-              {profile?.cefrLevel && (
+              {levelTitle && (
                 <span className="badge-pill border text-xs text-blue-400 bg-blue-500/10 border-blue-500/20">
-                  {profile.cefrLevel}
+                  {levelTitle}
                 </span>
               )}
               <span className={`badge-pill border text-xs ${

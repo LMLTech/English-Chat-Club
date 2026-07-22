@@ -111,9 +111,15 @@ export default function ResourcesPage() {
                   className="block glass-card rounded-xl p-5 hover:border-white/15 hover:-translate-y-1 transition-all duration-200 group"
                 >
                   <div className="flex items-start gap-3 mb-3">
-                    <div className={`w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 ${typeStyle}`}>
-                      <TypeIcon className="w-5 h-5" />
-                    </div>
+                    {resource.imageUrl ? (
+                      <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 border border-white/10">
+                        <img src={resource.imageUrl} alt={resource.title} className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className={`w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 ${typeStyle}`}>
+                        <TypeIcon className="w-5 h-5" />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-semibold text-foreground group-hover:text-violet-300 transition-colors line-clamp-2 leading-snug">
                         {resource.title}

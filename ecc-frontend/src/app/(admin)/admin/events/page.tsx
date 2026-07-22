@@ -21,6 +21,7 @@ export default function AdminEventsPage() {
     endTime: ""
   });
   const [submitting, setSubmitting] = useState(false);
+  const [editingEventId, setEditingEventId] = useState<number | null>(null);
 
   const fetchEvents = async () => {
     try {
@@ -41,13 +42,23 @@ export default function AdminEventsPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await adminService.createEvent({
-        ...form,
-        startTime: new Date(form.startTime).toISOString(),
-        endTime: new Date(form.endTime).toISOString()
-      });
-      toast.success("Tạo sự kiện thành công!");
+      if (editingEventId) {
+        await adminService.updateEvent(editingEventId, {
+          ...form,
+          startTime: new Date(form.startTime).toISOString(),
+          endTime: new Date(form.endTime).toISOString()
+        });
+        toast.success("Cập nhật sự kiện thành công!");
+      } else {
+        await adminService.createEvent({
+          ...form,
+          startTime: new Date(form.startTime).toISOString(),
+          endTime: new Date(form.endTime).toISOString()
+        });
+        toast.success("Tạo sự kiện thành công!");
+      }
       setForm({ title: "", description: "", imageUrl: "", pointsRequired: 0, rewardPoints: 100, startTime: "", endTime: "" });
+      setEditingEventId(null);
       fetchEvents();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Lỗi khi tạo sự kiện");
@@ -72,7 +83,7 @@ export default function AdminEventsPage() {
           
           <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-6">
             <Plus className="w-5 h-5 text-emerald-400" />
-            Tạo Sự Kiện Mới
+            {editingEventId ? "Sửa Sự Kiện" : "Tạo Sự Kiện Mới"}
           </h2>
           
           <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
@@ -87,26 +98,18 @@ export default function AdminEventsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-white">Hình ảnh đại diện (Tùy chọn)</label>
+              <label className="text-sm font-medium text-white">Hình ảnh đại diện (URL) *</label>
               <div className="flex items-center gap-3">
                 {form.imageUrl && (
                   <img src={form.imageUrl} alt="Preview" className="h-10 w-10 object-cover rounded-md border border-white/10" />
                 )}
-                <button type="button" onClick={() => document.getElementById('event-img-upload')?.click()} className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm text-white transition-colors flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4" /> {form.imageUrl ? 'Thay ảnh khác' : 'Tải ảnh lên'}
-                </button>
                 <input 
-                  type="file" 
-                  id="event-img-upload" 
-                  accept="image/*" 
-                  className="hidden" 
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      setForm({...form, imageUrl: URL.createObjectURL(file)});
-                      toast.success("Đã tải ảnh lên (Demo)");
-                    }
-                  }} 
+                  type="text" 
+                  value={form.imageUrl} 
+                  onChange={e => setForm({...form, imageUrl: e.target.value})} 
+                  required 
+                  className="ecc-input flex-1" 
+                  placeholder="https://..."
                 />
               </div>
             </div>
@@ -131,9 +134,16 @@ export default function AdminEventsPage() {
               <input type="datetime-local" value={form.endTime} onChange={e => setForm({...form, endTime: e.target.value})} required className="ecc-input" />
             </div>
 
-            <button type="submit" disabled={submitting} className="btn-primary w-full mt-6 py-3 bg-emerald-500 hover:bg-emerald-600 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-              {submitting ? "Đang tạo..." : "Khởi tạo sự kiện"}
-            </button>
+            <div className="flex gap-2 mt-6">
+              <button type="submit" disabled={submitting} className="btn-primary flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                {submitting ? "Đang xử lý..." : editingEventId ? "Cập nhật" : "Khởi tạo sự kiện"}
+              </button>
+              {editingEventId && (
+                <button type="button" onClick={() => { setEditingEventId(null); setForm({ title: "", description: "", imageUrl: "", pointsRequired: 0, rewardPoints: 100, startTime: "", endTime: "" }); }} className="btn-ghost py-3 px-4 text-white">
+                  Hủy
+                </button>
+              )}
+            </div>
           </form>
         </motion.div>
 
@@ -151,14 +161,34 @@ export default function AdminEventsPage() {
               {events.map((event) => (
                 <motion.div key={event.id} variants={scaleUp} className="glass-card p-5 rounded-xl border border-white/5 hover:border-emerald-500/30 transition-colors">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-mono text-muted-foreground">#{event.id}</span>
-                    <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${
-                      event.status === 'UPCOMING' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                      event.status === 'ONGOING' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                      'bg-white/5 text-muted-foreground border-white/10'
-                    }`}>
-                      {event.status}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono text-muted-foreground">#{event.id}</span>
+                      <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${
+                        event.status === 'UPCOMING' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                        event.status === 'ONGOING' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                        'bg-white/5 text-muted-foreground border-white/10'
+                      }`}>
+                        {event.status}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setEditingEventId(event.id);
+                        setForm({
+                          title: event.title,
+                          description: event.description,
+                          imageUrl: event.imageUrl || "",
+                          pointsRequired: event.pointsRequired,
+                          rewardPoints: event.rewardPoints,
+                          startTime: new Date(event.startTime).toISOString().slice(0, 16),
+                          endTime: new Date(event.endTime).toISOString().slice(0, 16)
+                        });
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className="text-xs px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-emerald-400 transition-colors"
+                    >
+                      Sửa
+                    </button>
                   </div>
                   {event.imageUrl && (
                     <div className="w-full h-32 mb-3 rounded-lg overflow-hidden bg-black/40 border border-white/5">

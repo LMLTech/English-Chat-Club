@@ -47,7 +47,7 @@ public class DashboardAdapter implements DashboardPort {
     @Override
     public int countAttendedSessions(Long userId) {
         String sql = "SELECT COUNT(*) FROM bookings b JOIN sessions s ON b.session_id = s.id " +
-                     "WHERE b.member_id = ? AND b.status IN ('CONFIRMED', 'ATTENDED') AND s.status = 'COMPLETED'";
+                     "WHERE b.member_id = ? AND (b.status IN ('CONFIRMED', 'ATTENDED') AND (s.status = 'COMPLETED' OR (s.status != 'CANCELLED' AND s.end_time < NOW())))";
         try {
             Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId);
             return count != null ? count : 0;
@@ -71,7 +71,7 @@ public class DashboardAdapter implements DashboardPort {
 
     @Override
     public int countUpcomingBookings(Long userId) {
-        String sql = "SELECT COUNT(*) FROM bookings b JOIN sessions s ON b.session_id = s.id WHERE b.member_id = ? AND b.status IN ('CONFIRMED', 'PENDING_CONFIRM') AND s.status = 'SCHEDULED'";
+        String sql = "SELECT COUNT(*) FROM bookings b JOIN sessions s ON b.session_id = s.id WHERE b.member_id = ? AND b.status IN ('CONFIRMED', 'PENDING_CONFIRM') AND s.status != 'CANCELLED' AND s.start_time > NOW()";
         try {
             Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId);
             return count != null ? count : 0;
@@ -97,7 +97,7 @@ public class DashboardAdapter implements DashboardPort {
     public List<Map<String, Object>> getUpcomingSessions(Long userId) {
         String sql = "SELECT s.id, s.title, s.start_time as startTime, s.end_time as endTime, s.cover_image as coverImage, s.status, s.required_level as requiredLevel " +
                      "FROM bookings b JOIN sessions s ON b.session_id = s.id " +
-                     "WHERE b.member_id = ? AND b.status IN ('CONFIRMED', 'PENDING_CONFIRM') AND s.status = 'SCHEDULED' " +
+                     "WHERE b.member_id = ? AND b.status IN ('CONFIRMED', 'PENDING_CONFIRM') AND s.status != 'CANCELLED' AND s.start_time > NOW() " +
                      "ORDER BY s.start_time ASC LIMIT 5";
         try {
             return jdbcTemplate.queryForList(sql, userId);
@@ -111,7 +111,7 @@ public class DashboardAdapter implements DashboardPort {
     public List<Map<String, Object>> getOngoingSessions(Long userId) {
         String sql = "SELECT s.id, s.title, s.start_time as startTime, s.end_time as endTime, s.cover_image as coverImage, s.status, s.required_level as requiredLevel " +
                      "FROM bookings b JOIN sessions s ON b.session_id = s.id " +
-                     "WHERE b.member_id = ? AND b.status IN ('CONFIRMED', 'PENDING_CONFIRM') AND s.status = 'ONGOING' " +
+                     "WHERE b.member_id = ? AND b.status IN ('CONFIRMED', 'PENDING_CONFIRM') AND s.status != 'CANCELLED' AND s.start_time <= NOW() AND s.end_time >= NOW() " +
                      "ORDER BY s.start_time ASC LIMIT 5";
         try {
             return jdbcTemplate.queryForList(sql, userId);
@@ -125,7 +125,7 @@ public class DashboardAdapter implements DashboardPort {
     public List<Map<String, Object>> getClosedSessions(Long userId) {
         String sql = "SELECT s.id, s.title, s.start_time as startTime, s.end_time as endTime, s.cover_image as coverImage, s.status, s.required_level as requiredLevel " +
                      "FROM bookings b JOIN sessions s ON b.session_id = s.id " +
-                     "WHERE b.member_id = ? AND b.status IN ('CONFIRMED', 'ATTENDED', 'PENDING_CONFIRM') AND s.status IN ('COMPLETED', 'CANCELLED') " +
+                     "WHERE b.member_id = ? AND (b.status IN ('CONFIRMED', 'ATTENDED', 'PENDING_CONFIRM') AND (s.status IN ('COMPLETED', 'CANCELLED') OR (s.status != 'CANCELLED' AND s.end_time < NOW()))) " +
                      "ORDER BY s.start_time DESC LIMIT 5";
         try {
             return jdbcTemplate.queryForList(sql, userId);

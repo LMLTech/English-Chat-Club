@@ -81,6 +81,7 @@ public class LearningResourceController {
                 .type(resource.getType())
                 .url(resource.getUrl())
                 .category(resource.getCategory())
+                .imageUrl(resource.getImageUrl())
                 .createdAt(resource.getCreatedAt())
                 .build();
     }

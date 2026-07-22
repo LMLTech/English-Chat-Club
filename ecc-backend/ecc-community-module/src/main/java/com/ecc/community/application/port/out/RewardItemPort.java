@@ -8,5 +8,7 @@ import java.util.Optional;
 public interface RewardItemPort {
     Optional<RewardItem> findById(Long id);
     Page<RewardItem> findActiveItems(Pageable pageable);
+    Page<RewardItem> findAll(Pageable pageable);
     RewardItem save(RewardItem rewardItem);
+    void deleteById(Long id);
 }

@@ -10,6 +10,7 @@ export interface SupportTicket {
   replyMessage?: string;
   userEmail?: string;
   userName?: string;
+  userAvatarUrl?: string;
 }
 
 export interface EmailCampaign {
@@ -88,6 +89,11 @@ export const adminService = {
     return res.data.data?.content || res.data.data || [];
   },
 
+  getApprovedSessions: async (): Promise<any[]> => {
+    const res = await axiosInstance.get('/api/admin/sessions/approved');
+    return res.data.data?.content || res.data.data || [];
+  },
+
   // Topics
   getTopics: async (): Promise<AdminTopicResponse[]> => {
     const res = await axiosInstance.get('/api/admin/topics');
@@ -130,8 +136,14 @@ export const adminService = {
     const res = await axiosInstance.post('/api/admin/events', data);
     return res.data.data;
   },
-
-  updateAttendances: async (id: number, attendedUserIds: number[]): Promise<any> => {
+  updateEvent: async (id: number, data: AdminEventRequest): Promise<AdminEventResponse> => {
+    const res = await axiosInstance.put(`/api/admin/events/${id}`, data);
+    return res.data.data;
+  },
+  deleteEvent: async (id: number): Promise<void> => {
+    await axiosInstance.delete(`/api/admin/events/${id}`);
+  },
+  markEventAttendances: async (id: number, attendedUserIds: number[]): Promise<void> => {
     const res = await axiosInstance.put(`/api/admin/events/${id}/attendances`, { attendedUserIds });
     return res.data.data;
   },

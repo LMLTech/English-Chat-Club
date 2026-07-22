@@ -62,7 +62,8 @@ const VideoPlayer = ({ stream, isLocal, muted = false }: { stream: MediaStream |
   if (!stream) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-black/60">
-        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-xl text-white/40">
+        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-xl text-white/40 overflow-hidden">
+          {/* Default fallback */}
           U
         </div>
       </div>
@@ -370,8 +371,12 @@ export default function SessionRoomPage() {
             {videoOn ? (
               <VideoPlayer stream={localStream} isLocal={true} />
             ) : (
-              <div className="w-24 h-24 rounded-full bg-violet-500/20 flex items-center justify-center text-4xl text-violet-400 border border-violet-500/30">
-                {user?.fullName?.[0] || "U"}
+              <div className="w-24 h-24 rounded-full bg-violet-500/20 flex items-center justify-center text-4xl text-violet-400 border border-violet-500/30 overflow-hidden">
+                {user?.avatarUrl ? (
+                  <img src={user.avatarUrl} alt="Your Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  user?.fullName?.[0] || "U"
+                )}
               </div>
             )}
             <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
@@ -387,10 +392,22 @@ export default function SessionRoomPage() {
           </div>
 
               {/* Other Participants */}
-          {Object.entries(remoteStreams).map(([peerId, stream]) => (
-            <div key={peerId} className="relative rounded-2xl bg-black/40 border border-white/5 overflow-hidden flex items-center justify-center group/user">
-              <VideoPlayer stream={stream} isLocal={false} />
-              <div className="absolute bottom-3 left-3">
+          {Object.entries(remoteStreams).map(([peerId, stream]) => {
+            const p = participantProfiles[peerId];
+            return (
+              <div key={peerId} className="relative rounded-2xl bg-black/40 border border-white/5 overflow-hidden flex items-center justify-center group/user">
+                {stream ? (
+                  <VideoPlayer stream={stream} isLocal={false} />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-xl text-white/40 overflow-hidden border border-white/10">
+                    {p?.avatarUrl ? (
+                      <img src={p.avatarUrl} alt={p.fullName || "User Avatar"} className="w-full h-full object-cover" />
+                    ) : (
+                      p?.fullName?.[0] || "U"
+                    )}
+                  </div>
+                )}
+                <div className="absolute bottom-3 left-3">
                 <span className="px-2 py-1 rounded-md bg-black/60 backdrop-blur-md text-[10px] font-medium text-white flex flex-col items-start max-w-[150px]">
                   <span className="truncate w-full">{participantProfiles[peerId]?.fullName || `User ${peerId}`}</span>
                 </span>
@@ -410,7 +427,8 @@ export default function SessionRoomPage() {
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Sidebar Panel */}
@@ -445,8 +463,12 @@ export default function SessionRoomPage() {
                 {activeSidebar === "users" && (
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
-                       <div className="w-10 h-10 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center font-bold">
-                         {user?.fullName?.[0] || 'U'}
+                       <div className="w-10 h-10 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center font-bold overflow-hidden">
+                         {user?.avatarUrl ? (
+                           <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                         ) : (
+                           user?.fullName?.[0] || 'U'
+                         )}
                        </div>
                        <div className="flex-1 overflow-hidden">
                          <p className="text-sm font-semibold text-white truncate">{user?.fullName || 'Bạn'} (Bạn)</p>
@@ -457,8 +479,12 @@ export default function SessionRoomPage() {
                       const p = participantProfiles[peerId];
                       return (
                         <div key={peerId} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10 group">
-                          <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
-                            {p?.fullName?.[0] || 'U'}
+                          <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold overflow-hidden">
+                            {p?.avatarUrl ? (
+                              <img src={p.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                              p?.fullName?.[0] || 'U'
+                            )}
                           </div>
                           <div className="flex-1 overflow-hidden">
                             <p className="text-sm font-semibold text-white truncate">{p?.fullName || `User ${peerId}`}</p>
