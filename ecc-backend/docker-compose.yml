@@ -29,6 +29,44 @@ services:
     networks:
       - ecc-network
 
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${PROJECT_NAME}-backend
+    restart: always
+    env_file:
+      - ./application-env.properties
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - ecc-network
+
+  frontend:
+    build:
+      context: ../ecc-frontend
+      dockerfile: Dockerfile
+    container_name: ${PROJECT_NAME}-frontend
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - ecc-network
+
 # Volume lưu dữ liệu MySQL và Redis trong container
 volumes:
   ecc-mysql-data:
